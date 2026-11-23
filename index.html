@@ -504,6 +504,21 @@ body.idle .hud{transition:opacity 2.5s}
 #kuji line{stroke:#ffb454;stroke-width:1.6;stroke-linecap:round}
 @media (max-width:1300px){#stones{grid-template-columns:repeat(7,1fr)}}
 @media (max-width:1000px){#stones{grid-template-columns:1fr 1fr}.rside{grid-template-columns:1fr 1fr 1fr;width:auto}.mrow{grid-template-columns:60px 1fr 60px}}
+/* round 13: the intro is the instrument's own effect, live, with the lens as the door */
+#gate{background:transparent;place-items:end center;cursor:pointer}
+#gate::after{background:radial-gradient(ellipse at 50% 46%,transparent 28%,rgba(0,0,0,.6) 100%)}
+#gateVid{display:none}
+#gate:not(.gone)~.hud{opacity:0;pointer-events:none}
+.gate-in{padding:0 24px 11vh;text-align:center;width:100%}
+.gate-in .mark{font-size:clamp(50px,8.5vw,132px);filter:drop-shadow(0 6px 34px rgba(0,0,0,.85))}
+.gate-in p{display:block;margin:14px auto 0;max-width:62ch;font-size:clamp(8.5px,1vw,12px);letter-spacing:.3em;line-height:1.8;text-shadow:0 0 14px #000,0 0 4px #000}
+@keyframes breathe{0%,100%{box-shadow:0 0 40px rgba(255,255,255,.08),inset 0 0 30px rgba(255,255,255,.05);border-color:rgba(255,255,255,.4)}50%{box-shadow:0 0 90px rgba(255,255,255,.28),inset 0 0 60px rgba(255,255,255,.16);border-color:#fff}}
+#enter{position:fixed;left:50%;top:50%;right:auto;bottom:auto;transform:translate(-50%,-50%);width:220px;height:220px;margin:0;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:none;
+  display:grid;place-items:center;animation:breathe 6s ease-in-out infinite}
+#enter span{position:static;transform:none;font-family:var(--tech);font-size:13px;letter-spacing:.55em;padding-left:.55em;text-shadow:0 0 16px #000,0 0 6px #000}
+.gate-foot{justify-content:center;text-align:center;left:0;right:0;font-size:12px}
+@media (max-width:1000px){.gate-in{padding-bottom:13vh}.gate-in .mark{font-size:clamp(40px,13vw,70px)}.gate-foot{bottom:22px;font-size:10px}}
+@media (prefers-reduced-motion:reduce){#enter{animation:none}}
 </style>
 </head>
 <body>
