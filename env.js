@@ -54,7 +54,7 @@ const ENVS=[
  ['bleed',[GL([5,5],[260,420],[.5],[5,8],.2,{w:'triangle'})]],['red tide',[SW([7,10],[200,700,200],.8,{n:'brown',ft:'lowpass'}),B('brown',120,.3)]],
  ['faint',[D([6200],.04,{trem:[.2,.6]}),HB(48,.5),B('pink',400,.1)]],['sacrifice',[{k:'beat',bpm:54,f:60,g:1,pat:[0],d:.5},PI(.12,[110,110],8,.25,{h:2.4,att:.01}),B('brown',200,.2)]]]},
 {id:'breath',n:'Breath',col:'#8fd4ff',line:'Air moving in and out of a body.',sig:[0,7,14],snd:[
- ['six breaths',[SW([10,10],[400,1100,400],.9,{duty:.95,rise:.42})]],['sleeping',[SW([4.4,5],[300,700,300],.7,{duty:.85,rise:.4})]],['panting',[SW([.55,.7],[700,1600,700],.8,{duty:.8})]],
+ ['six breaths',[SW([10,10],[400,1100,400],.9,{duty:.95,rise:.42})]],['slow breathing',[SW([4.4,5],[300,700,300],.7,{duty:.85,rise:.4})]],['panting',[SW([.55,.7],[700,1600,700],.8,{duty:.8})]],
  ['close, left ear',[SW([3.6,4.4],[900,2400,900],.9,{pan:-.9,duty:.8})]],['close, right ear',[SW([3.3,4.1],[900,2400,900],.9,{pan:.9,duty:.8})]],
  ['sigh',[GL([6,6],[330,440],[.6],[1.4,2.2],.25,{w:'sawtooth',form:1}),SW([6,8],[1200,2200,600],.35,{duty:.3})]],
  ['whisper wind',[B('pink',1800,.5,{ft:'bandpass',q:1.2,sw:[.13,900],lfo:[.21,.5]})]],['breath of the room',[B('brown',220,.5,{lfo:[.09,.6]})]],
@@ -135,11 +135,21 @@ const ENVS=[
  ['toll',[{k:'ping',rate:.11,f:[65,65],d:9,g:.5,att:.008,h:2.4,tick:300},{k:'ping',rate:.11,f:[78,78],d:6,g:.25,att:.008,tick:300}]],
  ['whispers',[SW([.3,1.1],[1400,2800,1700],.5,{pan:'alt',duty:.6,q:3})]],['descent',[{k:'shep',dir:-1,g:.5}]],['quake',[B('brown',60,1.6,{lfo:[.11,.7]}),BU(.2,[40,90],[.3,.6],1.5,{q:1,tick:500})]]]}
 ];
+/* real recordings on the pads where synthesis sounds least real; the synth version is the fallback */
+const REAL={'e:lust:3':['lust-breath',1],'e:animal:0':['purr',1],'e:animal:3':['wolf',0],'e:breath:1':['breath',1],'e:wet:1':['rain',1],'e:heat:1':['fire',1],'e:underworld:0':['cave',1],'e:celestial:0':['choir',1]};
+const RLV={'e:animal:3':.4,'e:breath:1':.45,'e:celestial:0':1.4,'e:heat:1':3,'e:lust:3':3,'e:underworld:0':1.3,'e:wet:1':3};
+const SB={};
+function loadS(ctx,name){return SB[name]||(SB[name]=fetch('media/audio/'+name+'.mp3').then(r=>{if(!r.ok)throw new Error('missing');return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>ctx.decodeAudioData(b,ok,no))))}
+G.sample=(name,loop,fallback)=>(ctx,out,L)=>{let dead=false;L.src.push({stop(){dead=true}});
+  loadS(ctx,name).then(buf=>{if(dead)return;const play=t=>{const s=ctx.createBufferSource();s.buffer=buf;if(loop){s.loop=true;s.loopStart=.04;s.loopEnd=buf.duration-.07}s.connect(out);s.start(t||0);L.src.push(s)};
+    if(loop)play();else{let next=0;L.every(500,t=>{if(t<next)return;next=t+buf.duration+5+Math.random()*9;play(t)})}})
+  .catch(()=>{delete SB[name];if(!dead)fallback(ctx,out,L)})};
 /* loudness trims per environment sound, filled in from measurement */
 const ELV={"e:blood:1":1.6,"e:blood:5":0.69,"e:blood:6":1.67,"e:blood:8":1.6,"e:blood:9":1.9,"e:blood:11":1.72,"e:blood:13":2.5,"e:blood:14":2.5,"e:blood:15":1.41,"e:breath:1":1.6,"e:breath:2":1.6,"e:breath:6":1.22,"e:breath:7":2.2,"e:breath:8":1.28,"e:breath:10":1.6,"e:breath:11":1.6,"e:breath:12":2.5,"e:breath:14":1.28,"e:breath:15":1.2,"e:magnetism:0":1.15,"e:magnetism:1":0.65,"e:magnetism:2":0.65,"e:magnetism:4":0.66,"e:magnetism:5":0.5,"e:magnetism:6":0.64,"e:magnetism:8":0.76,"e:magnetism:9":0.6,"e:magnetism:10":1.34,"e:magnetism:11":1.49,"e:magnetism:13":1.04,"e:magnetism:14":1.04,"e:magnetism:15":0.6,"e:heat:1":2.5,"e:heat:2":1.72,"e:heat:4":1.04,"e:heat:6":1.45,"e:heat:8":1.62,"e:heat:9":2.12,"e:heat:10":2.29,"e:heat:11":1.2,"e:heat:12":2.5,"e:heat:13":0.95,"e:heat:14":0.7,"e:heat:15":0.54,"e:wet:0":0.77,"e:wet:1":2.5,"e:wet:2":1.53,"e:wet:3":0.92,"e:wet:5":1.45,"e:wet:7":1.96,"e:wet:8":1.96,"e:wet:11":1.6,"e:wet:12":1.22,"e:wet:14":2.5,"e:wet:15":1.31,"e:universe:0":0.75,"e:universe:1":0.77,"e:universe:2":2.5,"e:universe:3":2.5,"e:universe:4":1.1,"e:universe:5":0.58,"e:universe:6":0.56,"e:universe:7":0.4,"e:universe:10":1.62,"e:universe:12":1.72,"e:universe:13":0.65,"e:universe:14":0.4,"e:universe:15":0.45,"e:lust:0":0.4,"e:lust:2":1.6,"e:lust:8":1.22,"e:lust:10":0.4,"e:lust:11":0.4,"e:lust:12":2.5,"e:lust:13":1.49,"e:lust:14":0.74,"e:animal:0":0.52,"e:animal:1":0.4,"e:animal:2":0.45,"e:animal:9":2.39,"e:animal:11":1.6,"e:animal:12":1.6,"e:animal:14":2.2,"e:animal:15":2.5,"e:celestial:0":2.5,"e:celestial:1":1.9,"e:celestial:4":1.6,"e:celestial:5":2.5,"e:celestial:7":2.5,"e:celestial:8":1.38,"e:celestial:9":0.86,"e:celestial:10":0.79,"e:celestial:11":0.72,"e:celestial:12":0.4,"e:celestial:13":0.4,"e:celestial:14":2.5,"e:celestial:15":0.85,"e:underworld:0":0.46,"e:underworld:1":0.69,"e:underworld:2":1.9,"e:underworld:4":1.34,"e:underworld:6":2.5,"e:underworld:8":1.6,"e:underworld:9":0.5,"e:underworld:10":0.41,"e:underworld:11":0.4,"e:underworld:14":0.4,"e:underworld:15":0.4};
-ENVS.forEach(e=>e.snd.forEach(([n,specs],i)=>{const id=`e:${e.id}:${i}`,b={id,n,cat:e.n.toLowerCase()+' stone',tag:ME,verb:1,env:e.id,lvl:ELV[id]||1,
-  info:`${n[0].toUpperCase()+n.slice(1)}. One of the sixteen sounds of the ${e.n} stone. ${e.line}`,
-  gen:(ctx,out,L)=>{specs.forEach(s=>prim(ctx,out,L,structuredClone(s)));if(L.fol)L.upd=()=>L.fol.forEach(([o,v])=>o.frequency.setTargetAtTime(hBase()*v,ctx.currentTime,.6))}};BANK.push(b);BK[id]=b}));
+ENVS.forEach(e=>e.snd.forEach(([n,specs],i)=>{const id=`e:${e.id}:${i}`,syn=(ctx,out,L)=>{specs.forEach(s=>prim(ctx,out,L,structuredClone(s)));if(L.fol)L.upd=()=>L.fol.forEach(([o,v])=>o.frequency.setTargetAtTime(hBase()*v,ctx.currentTime,.6))},rl=REAL[id],
+  b={id,n,cat:e.n.toLowerCase()+' stone',tag:ME,verb:rl?0:1,env:e.id,lvl:rl?(RLV[id]||1):(ELV[id]||1),
+  info:`${n[0].toUpperCase()+n.slice(1)}. One of the sixteen sounds of the ${e.n} stone. ${e.line}`+(rl?' A recording, not synthesis.':''),
+  gen:rl?G.sample(rl[0],rl[1],syn):syn};BANK.push(b);BK[id]=b}));
 
 /* ---------- a wider frequency library ---------- */
 const addB=b=>{BANK.push(b);BK[b.id]=b};
@@ -182,7 +192,7 @@ function paintPads(){
 function buildPads(){
   const e=ENVS.find(x=>x.id===ENV),el=$('#pads');
   if(!e){el.innerHTML='<h3>Choose a stone</h3><p class="vh">Each stone opens sixteen sounds of its own. Press a stone below.</p>';return}
-  el.innerHTML=`<h3>${e.n}</h3><p class="vh">${e.line} Press a pad to add it. Scroll on a pad to set its level.</p><div class="padg">`+e.snd.map(([n],i)=>`<button class="pad" data-id="e:${e.id}:${i}"><span>${n}</span></button>`).join('')+'</div>';
+  el.innerHTML=`<h3>${e.n}</h3><p class="vh">${e.line} Press a pad to add it. Scroll on a pad to set its level.</p><div class="padg">`+e.snd.map(([n],i)=>`<button class="pad${REAL[`e:${e.id}:${i}`]?' rec':''}" data-id="e:${e.id}:${i}"><span>${n}</span></button>`).join('')+'</div>';
 }
 function setEnv(id,start){
   const e=ENVS.find(x=>x.id===id),prev=ENV;
@@ -222,6 +232,7 @@ $('#modes').addEventListener('click',()=>say('beat · '+S.mode));
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up)})();
 
 /* ---------- boot ---------- */
+{const order=[];BANK.forEach(b=>{if(!order.includes(b.cat))order.push(b.cat)});BANK.sort((a,b)=>order.indexOf(a.cat)-order.indexOf(b.cat))}
 bankBoot();buildPads();paintPads();
 (function chips(){const el=$('#bank'),row=document.createElement('div');row.className='chips';[...el.querySelectorAll('h4')].forEach(h=>{const c=document.createElement('button');c.className='chip';c.textContent=h.textContent;c.onclick=()=>h.scrollIntoView({block:'start',behavior:'smooth'});row.appendChild(c)});
   el.querySelector('.q').after(row)})();
@@ -245,3 +256,8 @@ function paintLive(){const L=liveList(),key=L.map(x=>x[0]).join('|')+silenced;if
   L.forEach(([n,off])=>{const b=document.createElement('button');b.className='lv';b.textContent=n;b.title='Turn off '+n;b.onclick=()=>{off();paintKnobs();applyAll();say(n+' · off')};el.appendChild(b)})}
 setInterval(paintLive,400);paintLive();
 $$('.ktabs .pill').forEach(b=>b.onclick=()=>{$('#knobs').dataset.b=b.dataset.b;$$('.ktabs .pill').forEach(x=>x.classList.toggle('on',x===b));say(b.textContent)});
+
+/* ---------- phone tabs and close buttons on the menus ---------- */
+$('.hud').dataset.tab='play';
+$('#tabs').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;$('.hud').dataset.tab=b.dataset.t;$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));DR.forEach(d=>$('#'+d).hidden=true);$('.hud').scrollTop=0};
+DR.forEach(d=>{const b=document.createElement('button');b.className='pill dclose';b.textContent='close';b.onclick=()=>{$('#'+d).hidden=true};$('#'+d).prepend(b)});
