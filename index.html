@@ -420,6 +420,77 @@ body.idle .hud{transition:opacity 2.5s}
   .gate-in .mark{font-size:26px}.gate-in p{font-size:8.5px;max-width:30ch}
   .gate-foot{font-size:10px;padding:0 14px;bottom:44px}#enter{bottom:14px;right:14px}
 }
+
+/* ---------- round 11: glass that glows from inside, reset, volume, tables ---------- */
+.hud,.hud *{-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.hud button,.key,.pad,.stone,.knob,#monad,#dial,#keys,#tabs,#tabs *{-webkit-user-select:none;user-select:none}
+#keys,.key,#monad,.knob{touch-action:none}
+.hud input[type=search],.hud input[type=text]{-webkit-user-select:text;user-select:text}
+@keyframes und{0%{background-position:0% 100%,0 0}50%{background-position:100% 60%,0 0}100%{background-position:40% 0%,0 0}}
+.pill,.vb,.chip,.seg button,.stone,.pad,.st,#tabs button,.hb{--glow:var(--amber);color:#fff;border:1px solid rgba(255,255,255,.34);
+  background:radial-gradient(60% 90% at 50% 50%,color-mix(in srgb,var(--glow) 34%,transparent),transparent 72%),linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.03) 46%,rgba(255,255,255,.09));
+  background-size:260% 260%,100% 100%;background-repeat:no-repeat;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -10px 16px -10px color-mix(in srgb,var(--glow) 70%,transparent),inset 0 0 0 1px rgba(0,0,0,.25),0 4px 14px rgba(0,0,0,.5);
+  backdrop-filter:blur(7px) saturate(1.3);text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.stone{--glow:var(--c)}.pad{--glow:var(--env)}.st{--glow:#fff}
+.pill.on,.vb.on,.seg button.on,.hb.on,.chip.on,#tabs button.on{color:#fff;border-color:#fff;
+  background:radial-gradient(70% 110% at 50% 50%,color-mix(in srgb,var(--glow) 95%,#fff),color-mix(in srgb,var(--glow) 45%,transparent) 75%),linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.08));
+  background-size:260% 260%,100% 100%;box-shadow:inset 0 1px 0 #fff,inset 0 0 18px color-mix(in srgb,var(--glow) 80%,#fff),0 0 26px color-mix(in srgb,var(--glow) 75%,transparent),0 4px 14px rgba(0,0,0,.5);text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.stone.on,.pad.on{color:#fff;font-weight:600;border-color:#fff;
+  background:radial-gradient(70% 110% at 50% 50%,color-mix(in srgb,var(--glow) 95%,#fff),color-mix(in srgb,var(--glow) 40%,transparent) 78%),linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,.06));background-size:260% 260%,100% 100%;
+  box-shadow:inset 0 1px 0 #fff,inset 0 0 20px color-mix(in srgb,var(--glow) 80%,#fff),0 0 28px color-mix(in srgb,var(--glow) 75%,transparent),0 4px 14px rgba(0,0,0,.5);text-shadow:0 1px 3px #000}
+.st.on{background:radial-gradient(70% 110% at 50% 50%,rgba(255,180,84,.75),rgba(255,180,84,.2) 78%),linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,.05));background-size:260% 260%,100% 100%;border-color:#fff}
+.pad.on::after{background:#fff}
+.pill.on::before{filter:none}
+#bSilence{--glow:#ff4a4a;color:#fff}#bSilence.on{--glow:#ff2a2a}
+#bReset{--glow:#fff;font-weight:700;letter-spacing:.2em;border-color:#fff}
+@media (min-width:1001px) and (prefers-reduced-motion:no-preference){
+  .top .pill,.stone,.pad,.rside .pill,.st.on,.ktabs .pill{animation:und 9s ease-in-out infinite alternate}
+  .stone:nth-child(2n),.pad:nth-child(3n),.top .pill:nth-child(2n),.rside .pill:nth-child(2n){animation-duration:12s;animation-delay:-4s}
+  .stone:nth-child(3n),.pad:nth-child(4n+1),.rside .pill:nth-child(3n){animation-duration:15s;animation-delay:-9s}
+}
+#volBox{display:flex;align-items:center;gap:8px;padding:0 12px;height:38px;border-radius:7px;border:1px solid rgba(255,255,255,.34);background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.03));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 14px rgba(0,0,0,.5);backdrop-filter:blur(7px)}
+#volBox span{font-family:var(--tech);font-size:9.5px;letter-spacing:.14em}
+#vol{width:120px;height:22px;accent-color:var(--amber)}
+#stones{grid-template-columns:repeat(12,1fr);gap:6px}.stone{padding:0 7px;gap:6px;font-size:8.5px}
+.rside{grid-template-columns:repeat(3,1fr);width:330px}.rside .pill{padding:8px 4px;font-size:9px;min-height:34px}
+#bHide{grid-column:auto}
+#row2{grid-column:1/-1;display:flex;gap:12px;align-items:center;min-height:36px}
+#row2 #live{flex:1;min-width:0}
+.acts{display:flex;gap:6px;flex:none}.acts .pill{padding:7px 10px;min-height:32px;font-size:9px;white-space:nowrap}
+.acts .pill::before{content:"";display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-2px;background-position:center;background-size:contain;background-repeat:no-repeat}
+#bHide::before{display:none}
+.rside{grid-template-columns:repeat(3,1fr)}
+#rhud{position:absolute;left:50%;top:50%;width:min(27vh,23vw,270px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:3;display:grid;place-content:center;gap:6px;text-align:center;padding:16px;
+  background:radial-gradient(circle,rgba(0,0,0,.86),rgba(0,0,0,.7) 70%,transparent)}
+#rBig{font-family:var(--serif);font-style:italic;font-weight:600;font-size:clamp(17px,2.3vh,26px);line-height:1.15;white-space:pre-line;color:#fff}
+#rHint{font-size:11px;line-height:1.35;opacity:.85}#rCnt{font-family:var(--tech);font-size:10px;color:var(--amber);letter-spacing:.1em}
+#rStop{justify-self:center;min-height:28px;padding:5px 14px;font-size:9px}
+#dial.dimmed text{opacity:.0}
+.hb{border-radius:7px;padding:8px 6px;min-height:52px;display:grid;gap:1px;place-content:center;text-align:center}
+.hb b{font-family:var(--body);font-weight:600;font-size:17px;line-height:1;font-variant-numeric:tabular-nums}.hb span{font-family:var(--tech);font-size:8px;letter-spacing:.08em;opacity:.85}
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}
+.drawer .note{font-size:13px;line-height:1.5;padding:10px 12px;border:1px solid rgba(255,255,255,.14);border-radius:6px;margin:8px 0;max-width:66ch}
+.prow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid rgba(255,255,255,.1)}
+.prow b{font-family:var(--serif);font-style:italic;font-weight:600;font-size:20px}.prow p{font-size:12.5px;line-height:1.45;opacity:.85;margin:2px 0 0;max-width:60ch}
+.prow .tag{margin:0 6px 0 0;vertical-align:2px}
+#fIn{width:100%;padding:11px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.45);color:#fff;font:inherit;font-size:15px;margin:8px 0}
+#fRead{font-size:13px;line-height:1.6}
+@media (max-width:1000px){
+  .pill,.vb,.chip,.stone,.pad,.st,#tabs button,.hb,#volBox{backdrop-filter:none!important;animation:none!important}
+  #row2{display:contents}
+  .acts{display:none;flex:none}.hud[data-tab=more] .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.acts .pill{min-height:48px;white-space:normal}
+  .hud[data-tab=mix] #row2 #live{display:flex}
+  #row2 #live{flex:none}
+  .drawer{background:#0b0b0d!important}
+  #volBox{flex:1 1 100%;order:8}#vol{flex:1;width:auto;height:34px}
+  #bReset{display:block!important;flex:0 0 auto;min-height:36px}
+  #stones{grid-template-columns:1fr 1fr}.rside{grid-template-columns:1fr 1fr 1fr;width:auto}
+  .hud[data-tab=stones] #pads{display:block}
+  .hgrid{grid-template-columns:repeat(3,1fr)}
+  #rhud{width:min(60vw,250px)}
+  .key kbd{display:none}
+}
 </style>
 </head>
 <body>
@@ -447,6 +518,8 @@ body.idle .hud{transition:opacity 2.5s}
     <div id="lcd" role="status" aria-live="polite"></div>
     <span class="sp"></span>
     <button class="pill" id="bSilence" title="Cut all sound at once. Space bar does the same.">silence</button>
+    <button class="pill" id="bReset" title="Stop everything and put the board back to its starting places">reset</button>
+    <label id="volBox" title="Volume of everything"><span>volume</span><input type="range" id="vol" min="0" max="1" step=".01" value=".8" aria-label="Volume"></label>
     <button class="pill" id="bFilm" title="Change the film">film</button>
     <button class="pill" id="bPossess" title="The machine plays itself. Touch a key to steer it.">possess</button>
     <button class="pill" id="bDescent" title="Fifteen minutes, sinking slowly to the bottom">descent</button>
@@ -461,6 +534,7 @@ body.idle .hud{transition:opacity 2.5s}
   <div class="shell" id="shellL"><nav class="jelly" id="states" aria-label="States"></nav></div>
 
   <section id="core">
+    <div id="rhud" hidden><b id="rBig"></b><span id="rHint"></span><span id="rCnt"></span><button class="pill" id="rStop">stop</button></div>
     <svg id="wyrm" viewBox="-420 -330 840 660" aria-hidden="true">
       <defs>
         <radialGradient id="gScale" cx=".34" cy=".28" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".22" stop-color="#c4cbde"/><stop offset=".55" stop-color="#3a3e52"/><stop offset=".8" stop-color="#090910"/><stop offset="1" stop-color="#8e97b4"/></radialGradient>
@@ -516,9 +590,9 @@ body.idle .hud{transition:opacity 2.5s}
     <div class="knobwrap"><div class="ktabs"><button class="pill on" data-b="s">sound dials</button><button class="pill" data-b="v">vision dials</button></div><div class="jelly knobs" id="knobs" data-b="s"></div></div>
     <button id="monad" aria-label="Monad. Tap to change planet, hold to trace the square"><span id="monP">saturn</span><b id="monN">15</b><i>monad</i></button>
     <div id="keys"></div>
-    <div class="rside"><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">voice</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
+    <div class="rside"><button class="pill" id="bHeal">healing</button><button class="pill" id="bBody">body</button><button class="pill" id="bTrance">trance</button><button class="pill" id="bRites">rites</button><button class="pill" id="bForge">forge</button><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">voice</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
   </footer>
-  <div class="jelly drawer" id="vox" hidden></div><div class="jelly drawer" id="bank" hidden></div><div class="jelly drawer" id="presets" hidden></div><div class="jelly drawer" id="codex" hidden></div>
+  <div class="jelly drawer" id="vox" hidden></div><div class="jelly drawer" id="bank" hidden></div><div class="jelly drawer" id="presets" hidden></div><div class="jelly drawer" id="codex" hidden></div><div class="jelly drawer" id="heal" hidden></div><div class="jelly drawer" id="body" hidden></div><div class="jelly drawer" id="trance" hidden></div><div class="jelly drawer" id="rites" hidden></div><div class="jelly drawer" id="forge" hidden></div>
   <p class="hint">Play the bottom two rows of your keyboard, a MIDI keyboard, or touch the keys. Every note is in tune with the state. Space bar is silence.</p>
 </main>
 
@@ -648,7 +722,7 @@ const TRIM={"bowed strings":1.16,"choir":1.09,"crystal bowl":0.88,"glass armonic
 const VOICES=VOX.map(v=>v.n);
 
 /* ---------- films: the serpent opens; the film button walks through the rest ---------- */
-const FILMS=['gate-serpent','gate-01-red-tide','gate-02-black-pyramid','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist'];
+const FILMS=['gate-serpent','gate-01-red-tide','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist'];
 let film=0;
 function setFilm(i){film=(i+FILMS.length)%FILMS.length;$('#veil').src='media/'+FILMS[film]+'.mp4';const b=$('#bFilm');if(b)b.textContent='film '+(film+1)+' of '+FILMS.length}
 function nextFilm(){setFilm(film+1)}
@@ -658,7 +732,7 @@ $('#bFilm').onclick=()=>{nextFilm();$('#veil').play().catch(()=>{})};
 /* ---------- audio ---------- */
 const A={};
 function initAudio(){
-  const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?'playback':'interactive'}),sr=ctx.sampleRate;
+  const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.045:'interactive'}),sr=ctx.sampleRate;
   A.master=ctx.createGain();A.master.gain.value=0;A.master.gain.linearRampToValueAtTime(.8,ctx.currentTime+2.5);
   const lim=ctx.createDynamicsCompressor();lim.threshold.value=-6;lim.ratio.value=12;lim.attack.value=.003;lim.release.value=.2;
   A.vol=ctx.createGain();A.vol.gain.value=S.vol;A.master.connect(lim).connect(A.vol).connect(ctx.destination);
@@ -974,8 +1048,8 @@ function frame(ms){
     proof()}
   pluck*=.94;vt+=dt*(.08+S.speed*2.3);descentTick(ms);
   gl.useProgram(pr);gl.bindFramebuffer(gl.FRAMEBUFFER,fbo[cur].f);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,fbo[1-cur].t);gl.uniform1i(U.pv,0);gl.uniform1f(U.fb,S.trails);
-  gl.uniform2f(U.r,cv.width,cv.height);gl.uniform1f(U.t,vt);gl.uniform1f(U.lvl,lvl);gl.uniform1f(U.br,breath);gl.uniform1f(U.md,s.vis);
-  gl.uniform1f(U.inten,.45+S.veil*1.1);gl.uniform1f(U.vis,S.vision);gl.uniform1f(U.mir,S.mirrors);gl.uniform1f(U.tws,S.twist);gl.uniform1f(U.wrp,S.warp);gl.uniform1f(U.hue,S.hue);vidTex();gl.uniform1f(U.spd,1);gl.uniform1f(U.pk,pluck);ptr.a*=.975;gl.uniform2f(U.m,ptr.x,ptr.y);gl.uniform1f(U.ma,ptr.a);
+  gl.uniform2f(U.r,cv.width,cv.height);gl.uniform1f(U.t,vt);gl.uniform1f(U.lvl,lvl);gl.uniform1f(U.br,breath);gl.uniform1f(U.md,window.VMODE!=null?window.VMODE:s.vis);
+  gl.uniform1f(U.inten,.45+S.veil*1.1);gl.uniform1f(U.vis,S.vision);gl.uniform1f(U.mir,S.mirrors+(window.REVV||0)*.35);gl.uniform1f(U.tws,S.twist+(window.REVV||0)*.9);gl.uniform1f(U.wrp,S.warp);gl.uniform1f(U.hue,S.hue);vidTex();gl.uniform1f(U.spd,1);gl.uniform1f(U.pk,pluck);ptr.a*=.975;gl.uniform2f(U.m,ptr.x,ptr.y);gl.uniform1f(U.ma,ptr.a);
   gl.uniform3fv(U.c1,rgb(window.ENVCOL||s.cols[0]));gl.uniform3fv(U.c2,rgb(s.cols[1]));gl.uniform3fv(U.c3,rgb(s.cols[2]));
   gl.drawArrays(gl.TRIANGLES,0,3);
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.useProgram(pr2);gl.bindTexture(gl.TEXTURE_2D,fbo[cur].t);gl.uniform1i(U2.s,0);gl.uniform2f(U2.r,cv.width,cv.height);gl.uniform1f(U2.t,vt);
@@ -1057,5 +1131,6 @@ window.__bd={S,A,STATES,setState};
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
 <script src="bank.js"></script>
 <script src="env.js"></script>
+<script src="table.js"></script>
 </body>
 </html>
