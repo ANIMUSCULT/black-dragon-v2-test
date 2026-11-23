@@ -52,7 +52,8 @@ $('#heal').addEventListener('click',e=>{const t=e.target.closest('button');if(!t
 /* ================= PROGRAM RUNNER: body programs and trance inductions ================= */
 let RUN=null,plen=1;
 const SNAPK=['fc','beat','mode','breath','veil','vision','trails','twist','mirrors','speed'];
-function showHud(on){$('#rhud').hidden=!on;$('#dial').classList.toggle('dimmed',on)}
+const MIX={keys:.5,world:.5,tones:.5,monad:.5,rites:.5};
+function showHud(on){$('#rhud').hidden=!on;$('#dial').classList.toggle('dimmed',on);if(!on)$('#kuji').innerHTML=''}
 function hudSet(big,hint,cnt){$('#rBig').textContent=big||'';$('#rHint').textContent=hint||'';$('#rCnt').textContent=cnt||''}
 function stopRun(quiet){if(!RUN)return;const r=RUN;RUN=null;clearInterval(r.tm);(r.timers||[]).forEach(clearTimeout);showHud(false);window.VMODE=null;
   (r.on||[]).forEach(id=>setLayer(id,null));Object.assign(S,r.snap);paintDial();paintModes();paintKnobs();applyAll();$('#bBreath').classList.toggle('on',S.breath);if(A.ctx)A.breathT0=A.ctx.currentTime;
@@ -182,21 +183,53 @@ const RITUALS=[
   script:'PHAT ×7 · Let it be cut · PHAT ×7 · Let it be cut · PHAT ×7',realm:7,vis:7,spiral:.4,beat:3,
   steps:[{t:'say',big:'Offer everything\nyou cling to.',dur:8,hint:'Hold nothing back.'},...[0,1,2].flatMap(r=>[{t:'phat',n:7,dur:1.8,hint:'Shout it. Cut.'},{t:'say',big:'Let it be cut.',dur:5}]),{t:'say',big:'…',dur:8,hint:'Rest in what remains.'}]}
 ];
+const KUJI=['RIN','PYŌ','TŌ','SHA','KAI','JIN','RETSU','ZAI','ZEN'];
+const HIFUMI=[['HI FU MI YO I MU NA YA KO TO',10],['MO CHI RO RA NE SHI KI RU',8],['YU I TSU WA NU SO WO TA HA KU ME KA',12],['U O E NI SA RI HE TE',8],['NO MA SU A SE E HO RE KE',9]];
+const PISTIS=['AEĒIOUŌ','IAŌ','AŌI','ŌIA','PSINŌTHER','THERNŌPS','NŌPSITHER','ZAGOURĒ','PAGOURĒ','NETHMOMAŌTH','NEPSIOMAŌTH','MARACHACHTHA','THŌBARRABAU','THARNACHACHAN','ZOROKOTHORA','IEOU','SABAŌTH'];
+RITUALS.push(
+ {name:'The Nine Cuts',src:'Kuji-in · Ge Hong\'s Baopuzi, 4th century; Shugendō',line:'Nine syllables, nine cuts: the grid that seals out harm.',
+  intent:'Ge Hong wrote down nine characters to be spoken when entering the mountains, to keep away evil spirits and danger. Japanese mountain ascetics carried them into kuji-kiri: one syllable for each cut of the hand-sword, across and down in turn, until a grid of nine lines seals the space around you.',
+  how:['Make the sword hand: index and middle fingers straight, the others folded under the thumb.','Speak each syllable sharply and cut the air the way the line is drawn: across, then down.','Three rounds. The grid is wiped and drawn again each time.'],
+  script:'RIN · PYŌ · TŌ · SHA · KAI · JIN · RETSU · ZAI · ZEN',realm:5,vis:13,spiral:0,beat:10,
+  steps:[{t:'say',big:'Make the\nsword hand.',dur:6,hint:'Two fingers straight. The rest folded.',clear:1},...[0,1,2].flatMap(r=>[{t:'say',big:r?'Again.':'Cut.',dur:2.5,clear:1},...KUJI.map((w,i)=>({t:'cut',w,ci:i,dur:2.4,deg:i,hint:i%2?'Cut down':'Cut across'}))]),{t:'phat',big:'RIN PYŌ TŌ\nSHA KAI JIN\nRETSU ZAI ZEN',dur:4},{t:'say',big:'Sealed.',dur:6,hint:'Leave the grid standing.'}]},
+ {name:'The Immovable One',src:'Shingon Buddhism · the mantra of Fudō Myōō',line:'The wrathful protector who burns away every obstacle.',
+  intent:'Fudō Myōō sits in a halo of flame holding a sword to cut through delusion and a rope to bind demons. His mantra is chanted in the goma fire rite while offerings burn. Its words honour the vajras and call on the violent, greatly wrathful one to destroy whatever stands in the way.',
+  how:['Sit with your back straight. Picture a wall of fire in front of you.','Chant the short mantra seven times on the tone, then the long mantra three times.','Let the voice come from low in the belly, steady and hard.'],
+  script:'Nōmaku sanmanda bazaradan kan ×7\nNōmaku sanmanda bazaradan senda makaroshada sowataya un tarata kanman ×3',realm:7,vis:14,spiral:.2,beat:4,
+  steps:[{t:'say',big:'Fire before you.\nBreathe.',dur:7,hint:'See it burning.'},{t:'word',w:'NŌMAKU SANMANDA\nBAZARADAN KAN',n:7,dur:5.2,deg:0,hint:'no-ma-ku san-man-da ba-za-ra-dan kan'},
+   {t:'word',w:'NŌMAKU SANMANDA BAZARADAN\nSENDA MAKAROSHADA\nSOWATAYA UN TARATA KANMAN',n:3,dur:11,deg:0,hint:'Long mantra. One vowel per tone.'},{t:'phat',big:'KAN',dur:3},{t:'say',big:'Nothing\nmoves you.',dur:8,hint:'Sit in the fire.'}]},
+ {name:'The Hifumi Norito',src:'Shinto · the forty-seven sounds',line:'Every sound of the old tongue, spoken once, to turn misfortune.',
+  intent:'A Shinto purification chant of forty-seven syllables, each sound of the old Japanese syllabary used once. Tradition says it was first sung to draw the sun goddess Amaterasu out of the cave where she hid, and it is said to turn misfortune into fortune. It closes by shaking the ten sacred treasures.',
+  how:['Kneel or sit. Clap twice when the screen tells you.','Chant one syllable on each tone, evenly, like a slow drum.','Three times through, then the closing words.'],
+  script:HIFUMI.map(h=>h[0].toLowerCase()).join('\n')+'\nfurube yura yura to furube',realm:1,vis:10,spiral:0,beat:8,
+  steps:[{t:'clap',big:'Clap twice.',dur:4,hint:'Two sharp claps.'},...[0,1,2].flatMap(()=>HIFUMI.map(([w,n],i)=>({t:'word',w,dur:n*.62,deg:i,hint:'One syllable per tone.'}))),{t:'word',w:'FURUBE YURA YURA TO FURUBE',dur:6,deg:2,hint:'Shake the treasures.'},{t:'clap',big:'Clap twice.',dur:4},{t:'say',big:'Purified.',dur:6}]},
+ {name:'The Saviour\'s Invocation',src:'Pistis Sophia · Askew Codex, 4th century',line:'The secret names called out over the Ocean.',
+  intent:'In the Pistis Sophia, the risen Jesus gathers his disciples by the Ocean, turns to the four corners of the world and calls out a chain of vowels and secret names before he opens the mysteries. The book\'s heart is Sophia, Wisdom, who fell from the light and was lifted back up.',
+  how:['Turn to each corner of the room as the screen tells you.','Intone IAŌ three times, then each name of the invocation on its tone.','Slowly. Let every name ring out.'],
+  script:'IAŌ IAŌ IAŌ\n'+PISTIS.map(w=>w.toLowerCase()).join(' · '),realm:2,vis:8,spiral:.25,beat:6,
+  steps:[{t:'say',big:'Turn to the\nfour corners.',dur:8,hint:'East, south, west, north.'},{t:'word',w:'IAŌ',n:3,dur:3.4,deg:0,hint:'ee-ah-oh'},...PISTIS.map((w,i)=>({t:'word',w,dur:Math.max(2.4,[...w].filter(c=>VOWEL_F[c]).length*.7),deg:i%7,hint:i?'':'The seven vowels.'})),{t:'say',big:'The light\ncomes down.',dur:9,hint:'Stay in the stillness.'}]});
+const MB=n=>{if(!A[n]){A[n]=A.ctx.createGain();A[n].gain.value=MIX[n==='monBus'?'monad':'rites']*2;A[n].connect(A.master)}return A[n]};
+function kujiCut(i){const h=i%2===0,k=Math.floor(i/2),ln=document.createElementNS('http://www.w3.org/2000/svg','line'),sc=n=>(n-50)*2.2;
+  if(h){const y=sc(30+k*10);ln.setAttribute('x1',sc(26));ln.setAttribute('x2',sc(74));ln.setAttribute('y1',y);ln.setAttribute('y2',y)}else{const x=sc(32+k*12);ln.setAttribute('x1',x);ln.setAttribute('x2',x);ln.setAttribute('y1',sc(24));ln.setAttribute('y2',sc(76))}
+  $('#kuji').appendChild(ln)}
 function chant(v,f,dur){const ctx=A.ctx,t=ctx.currentTime,out=ctx.createGain(),fm=VOWEL_F[v]||VOWEL_F.A,pre=ctx.createGain();while(f>260)f/=2;
   out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.5,t+.08);out.gain.setValueAtTime(.5,t+dur*.75);out.gain.linearRampToValueAtTime(0,t+dur*.98);
   [-7,0,6].forEach(d=>{const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=d;o.connect(pre);o.start(t);o.stop(t+dur)});
-  fm.forEach((ff,k)=>pre.connect(bq(ctx,'bandpass',ff,9)).connect(gn(ctx,[1,.55,.25][k]*2)).connect(out));out.connect(A.vBus)}
+  fm.forEach((ff,k)=>pre.connect(bq(ctx,'bandpass',ff,9)).connect(gn(ctx,[1,.55,.25][k]*2)).connect(out));out.connect(MB('riteBus'))}
 function riteStep(r,i){
   if(RUN!==r)return;const st=r.steps[i];if(!st)return stopRun();const n=st.n||1,ctx=A.ctx;let k=0;
   const one=()=>{if(RUN!==r)return;k++;const cnt=n>1?`${k} of ${n}`:'',hint=st.hint||'',t=ctx.currentTime;
+    if(st.clear)$('#kuji').innerHTML='';
     if(st.t==='say')hudSet(st.big,hint,cnt);
     else if(st.t==='v'){hudSet(st.v,hint,cnt);chant(st.v,degFreq(st.deg||0),st.dur*.95);pluck=1}
     else if(st.t==='word'){hudSet(st.w,hint,cnt);const id='R'+i+'_'+k,d=((st.deg||0)%15+15)%15;noteOn(id,d,.8);r.timers.push(setTimeout(()=>noteOff(id,d),st.dur*820))}
     else if(st.t==='breath'){hudSet('Breathe in',hint,cnt);const s=ctx.createBufferSource(),f=bq(ctx,'bandpass',500,1),g=ctx.createGain();s.buffer=NB.pink;f.frequency.linearRampToValueAtTime(1500,t+st.dur*.5);f.frequency.linearRampToValueAtTime(400,t+st.dur);
-      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.9,t+st.dur*.45);g.gain.linearRampToValueAtTime(0,t+st.dur);s.connect(f).connect(g).connect(A.vBus);s.start(t,0,st.dur)}
-    else if(st.t==='hiss'){hudSet('SSSS',hint,cnt);const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=NB.white;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.8,t+.3);g.gain.linearRampToValueAtTime(0,t+st.dur*.9);s.connect(bq(ctx,'highpass',4500)).connect(g).connect(A.vBus);s.start(t,0,st.dur)}
-    else if(st.t==='pop'){hudSet('P',hint,cnt);blip(ctx,A.vBus,t,900,2,.05,3,0);pluck=1.4}
-    else if(st.t==='phat'){hudSet(st.big||'PHAT',hint,cnt);blip(ctx,A.vBus,t,1400,1.2,.14,4,0);ping(ctx,A.vBus,t,110,45,.35,1,0,.004);pluck=1.8}
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.9,t+st.dur*.45);g.gain.linearRampToValueAtTime(0,t+st.dur);s.connect(f).connect(g).connect(MB('riteBus'));s.start(t,0,st.dur)}
+    else if(st.t==='hiss'){hudSet('SSSS',hint,cnt);const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=NB.white;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.8,t+.3);g.gain.linearRampToValueAtTime(0,t+st.dur*.9);s.connect(bq(ctx,'highpass',4500)).connect(g).connect(MB('riteBus'));s.start(t,0,st.dur)}
+    else if(st.t==='pop'){hudSet('P',hint,cnt);blip(ctx,MB('riteBus'),t,900,2,.05,3,0);pluck=1.4}
+    else if(st.t==='phat'){hudSet(st.big||'PHAT',hint,cnt);blip(ctx,MB('riteBus'),t,1400,1.2,.14,4,0);ping(ctx,MB('riteBus'),t,110,45,.35,1,0,.004);pluck=1.8}
+    else if(st.t==='cut'){if(st.ci===0)$('#kuji').innerHTML='';hudSet(st.w,hint,cnt);kujiCut(st.ci);blip(ctx,MB('riteBus'),t,2600,3,.09,3,0);const id='R'+i+'_'+k,d=((st.deg||0)%15+15)%15;noteOn(id,d,.9);r.timers.push(setTimeout(()=>noteOff(id,d),st.dur*700));pluck=1.5}
+    else if(st.t==='clap'){hudSet(st.big||'Clap twice.',hint,cnt);[0,.32].forEach(d=>blip(ctx,MB('riteBus'),t+d,1400,1.2,.12,3.4,0));pluck=1.3}
     r.timers.push(setTimeout(k<n?one:()=>riteStep(r,i+1),st.dur*1000))};one()}
 function runRite(rt,btn){
   if(!A.ctx)return;if(RUN){const same=RUN.name===rt.name;stopRun(true);if(same)return}
@@ -235,7 +268,7 @@ $('#forge').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='fI
 /* ================= THE MONAD: hold to rev through its five stages ================= */
 const STAGES=['monad','dyad','triad','tetrad','decad'];let REV=null;
 function revStart(){
-  if(REV||!A.ctx||silenced)return;const ctx=A.ctx,t=ctx.currentTime,g=gn(ctx,0),base=hBase();g.gain.setTargetAtTime(.5,t,.3);g.connect(A.master);g.connect(A.verb);
+  if(REV||!A.ctx||silenced)return;const ctx=A.ctx,t=ctx.currentTime,g=gn(ctx,0),base=hBase();g.gain.setTargetAtTime(.5,t,.3);g.connect(MB('monBus'));g.connect(A.verb);
   const nz=loopN(ctx,NB.pink),bp=bq(ctx,'bandpass',200,4);bp.frequency.setValueAtTime(200,t);bp.frequency.exponentialRampToValueAtTime(5200,t+9);nz.connect(bp).connect(gn(ctx,.3)).connect(g);
   const ris=ctx.createOscillator();ris.type='sawtooth';ris.frequency.setValueAtTime(base/2,t);ris.frequency.exponentialRampToValueAtTime(base*4,t+9);ris.connect(bq(ctx,'lowpass',1800)).connect(gn(ctx,.07)).connect(g);ris.start();
   REV={g,src:[nz,ris],st:-1,t0:performance.now(),base};$('#monad').classList.add('rev');REV.tm=setInterval(revTick,110);revTick()}
@@ -282,3 +315,75 @@ buildHeal();buildAllProgs();buildRites();buildForge();
 /* header: the action buttons share a row with the sounding-now strip so the readout line has room */
 {const row=document.createElement('div');row.id='row2';$('#live').before(row);row.append($('#live'));const acts=document.createElement('div');acts.className='acts';
   ['bFilm','bPossess','bDescent','bTide','bBreath','bRec','bSave','bLoad','fLoad','bHide'].forEach(id=>{const x=$('#'+id);if(x)acts.append(x)});row.append(acts)}
+
+/* ================= THE MIXER: five faders with level lights, as in Black Dragon 01 ================= */
+const MXB=[['keys','vBus',.5],['world','bankBus',1.3],['tones','toneBus',1],['monad','monBus',1],['rites','riteBus',1]],MXA={};
+function applyMix(){if(!A.ctx)return;MXB.forEach(([k,b,base])=>{if(k==='monad'||k==='rites')MB(b);A[b].gain.setTargetAtTime(base*MIX[k]*2,A.ctx.currentTime,.04)})}
+{const d=document.createElement('div');d.className='jelly drawer';d.id='mixer';d.hidden=true;$('#forge').after(d);DR.push('mixer');
+  d.innerHTML='<button class="pill dclose">close</button><h3>Mixer</h3><p class="vh">Five faders. Keys are what you play; world is every stone and bank sound; tones are the beat and the healing table; then the Monad and the rites. The middle is the normal level.</p>'
+    +MXB.map(([k])=>`<label class="mrow"><span>${k}</span><input type="range" min="0" max="1" step=".01" value="${MIX[k]}" data-k="${k}" aria-label="${k} level"><div class="meter"><i data-m="${k}"></i></div></label>`).join('')
+    +'<button class="vb" id="mxReset" style="margin-top:12px">all faders to the middle</button>';
+  d.querySelector('.dclose').onclick=()=>{d.hidden=true};
+  d.addEventListener('input',e=>{const k=e.target.dataset.k;if(k){MIX[k]=+e.target.value;applyMix();say(`${k} · ${Math.round(MIX[k]*200)}`)}});
+  d.querySelector('#mxReset').onclick=()=>{MXB.forEach(([k])=>{MIX[k]=.5;d.querySelector(`input[data-k=${k}]`).value=.5});applyMix();say('mixer · all faders to the middle')};
+  const b=document.createElement('button');b.className='pill';b.id='bMixer';b.textContent='mixer';$('.rside').insertBefore(b,$('#bPresets'));b.onclick=e=>{e.stopPropagation();openDr('mixer')};
+  const buf=new Uint8Array(256);
+  setInterval(()=>{if(d.hidden||!A.ctx)return;MXB.forEach(([k,bn])=>{if(!A[bn])return;if(!MXA[k]){MXA[k]=A.ctx.createAnalyser();MXA[k].fftSize=256;A[bn].connect(MXA[k])}
+    MXA[k].getByteTimeDomainData(buf);let p=0;for(const v of buf)p=Math.max(p,Math.abs(v-128));d.querySelector(`i[data-m=${k}]`).style.width=Math.min(100,p/128*160)+'%'})},90)}
+
+/* ================= sessions: one shape for files and for the three save slots ================= */
+function snapshot(){return JSON.parse(JSON.stringify({...S,black_dragon:2,saved:new Date().toISOString(),state:STATES[S.state].id,voiceName:VOICES[S.voice],tun,recipe,mix:MIX}))}
+function applySession(d){
+  if(!d||d.black_dragon!==2)throw new Error('not a session');stopRun(true);
+  for(const k of Object.keys(S))if(k in d&&typeof d[k]===typeof S[k])S[k]=d[k];if(!S.layers||typeof S.layers!=='object')S.layers={};
+  if(d.voiceName&&VOICES.includes(d.voiceName))S.voice=VOICES.indexOf(d.voiceName);S.voice=clamp(S.voice|0,0,VOX.length-1);S.beat=clamp(S.beat,.5,40);
+  if(d.mix)Object.keys(MIX).forEach(k=>{if(typeof d.mix[k]==='number')MIX[k]=d.mix[k]});if(Number.isInteger(d.tun)&&TUN[d.tun])tun=d.tun;if(Number.isInteger(d.recipe)&&RECIPES[d.recipe])recipe=d.recipe;
+  const i=STATES.findIndex(s=>s.id===d.state);setState(i<0?0:i,true);paintKnobs();if(A.ctx)bankSync();else paintBank();setEnv(S.env||null,false);setVoice(S.voice);
+  $('#bBreath').classList.toggle('on',S.breath);$('#bTide').classList.toggle('on',S.tide);$$('.tn').forEach((x,j)=>x.classList.toggle('on',j===tun));
+  $$('#mixer input').forEach(x=>{x.value=MIX[x.dataset.k]});applyMix();buildHeal()}
+$('#bSave').onclick=()=>save(new Blob([JSON.stringify(snapshot(),null,1)],{type:'application/json'}),'black-dragon-'+stamp()+'.dragon');
+function readSession(f){f.text().then(t=>{applySession(JSON.parse(t));say('session loaded')}).catch(()=>say('that file is not a black dragon session. choose a .dragon file'))}
+$('#fLoad').onchange=e=>{if(e.target.files[0])readSession(e.target.files[0]);e.target.value=''};
+let SLOTS=[null,null,null];try{const v=JSON.parse(localStorage.getItem('bd2-slots'));if(Array.isArray(v))SLOTS=[0,1,2].map(i=>v[i]||null)}catch(_){}
+{const acts=$('.acts'),names=['I','II','III'];
+  names.slice().reverse().forEach(nm=>{const i=names.indexOf(nm),b=document.createElement('button');b.className='pill slot';b.textContent=nm;b.title='Save slot '+nm+'. Press an empty slot to store the whole board; press a lit one to return to it; hold to store over it.';acts.insertBefore(b,acts.firstChild);
+    let tm=null,held=false;const store=()=>{SLOTS[i]=snapshot();try{localStorage.setItem('bd2-slots',JSON.stringify(SLOTS))}catch(_){}paint();say('saved to slot '+nm)};
+    b.addEventListener('pointerdown',()=>{held=false;tm=setTimeout(()=>{held=true;store()},650)});
+    b.addEventListener('pointerup',()=>{clearTimeout(tm);if(held)return;if(SLOTS[i]){try{applySession(SLOTS[i]);say('slot '+nm+' recalled')}catch(_){say('slot '+nm+' could not be read')}}else store()});
+    b.addEventListener('pointerleave',()=>clearTimeout(tm))});
+  function paint(){[...acts.querySelectorAll('.slot')].forEach(b=>b.classList.toggle('on',!!SLOTS[names.indexOf(b.textContent)]))}paint()}
+
+/* ================= journey lengths, dice and freeze ================= */
+{const el=$('#trance'),box=document.createElement('div');box.innerHTML='<h4>Journey</h4><p class="vh">A slow glide from alert beta down to deep delta, as in Black Dragon 01.</p><div class="vg">'+[15,30,45].map(m=>`<button class="vb jr" data-m="${m}">${m} minutes</button>`).join('')+'<button class="vb" id="jrStop">stop the journey</button></div>';
+  el.querySelector('.vh').after(box);box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;e.stopPropagation();if(b.id==='jrStop'){stopDescent();say('journey stopped');return}
+    stopRun(true);S.beat=18;paintDial();applyBeat();desc={t0:performance.now(),from:18,to:1.5,dur:+b.dataset.m*60e3};$('#bDescent').classList.add('on');el.hidden=true;say(`journey · ${b.dataset.m} minutes · beta to delta`)})}
+{const kt=$('.ktabs'),mk=(id,txt,title)=>{const b=document.createElement('button');b.className='pill mini';b.id=id;b.textContent=txt;b.title=title;kt.append(b);return b};
+  mk('bDice','dice','Throw the vision dials').onclick=()=>{const r=(a,b)=>+(a+Math.random()*(b-a)).toFixed(2);Object.assign(S,{vision:r(.3,1),trails:r(0,.8),twist:r(0,.6),mirrors:Math.random()<.5?0:r(.1,.9),warp:r(0,.6),hue:Math.random()<.5?0:r(0,1),split:r(.1,.8),speed:r(.15,.8),lens:r(.3,.75)});
+    window.VMODE=Math.random()*6|0;paintKnobs();applyAll();say('dice · the vision is thrown')};
+  const fz=mk('bFreeze','freeze','Hold the vision still');fz.onclick=()=>{window.FREEZE=!window.FREEZE;fz.classList.toggle('on',!!window.FREEZE);say(window.FREEZE?'freeze · the vision is held':'freeze off')}}
+
+/* ================= the small screen in Proof: spectrum, figure, seal ================= */
+window.PEARL=0;
+{const sp=$('#spec'),x=sp.getContext('2d'),names=['spectrum','figure','seal'],bl=new Float32Array(1024),br=new Float32Array(1024);sp.title='Press to change the view: spectrum, figure, seal';
+  sp.addEventListener('click',()=>{window.PEARL=(window.PEARL+1)%3;say('proof screen · '+names[window.PEARL])});
+  (function loop(){requestAnimationFrame(loop);if(!window.PEARL||!A.ctx)return;const W=sp.width,H=sp.height;x.clearRect(0,0,W,H);x.lineWidth=2;x.strokeStyle='#ffb454';x.beginPath();
+    if(window.PEARL===1){A.anL.getFloatTimeDomainData(bl);A.anR.getFloatTimeDomainData(br);let m=.02;for(let i=0;i<1024;i++)m=Math.max(m,Math.abs(bl[i]),Math.abs(br[i]));const k=H*.45/m;
+      for(let i=0;i<1024;i++){const px=W/2+bl[i]*k,py=H/2-br[i]*k;i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke()}
+    else if(FORGED){const k=H*.9/176;FORGED.pts.forEach((pt,i)=>{const px=W/2+pt[0]*k,py=H/2+pt[1]*k;i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()}
+    else{x.fillStyle='rgba(255,255,255,.6)';x.font='20px "Chakra Petch"';x.textAlign='center';x.fillText('forge a seal to see it here',W/2,H/2+7)}})()}
+
+/* ================= video: a vertical clip of the glass with the sound, for sharing ================= */
+let VREC=null;
+{const b=document.createElement('button');b.className='pill';b.id='bVid';b.textContent='record video';b.title='Record a vertical 9:16 clip with sound. Press again to stop and save.';$('#bRec').after(b);
+  b.onclick=()=>{
+    if(VREC){VREC.stop();return}if(!A.ctx||!window.MediaRecorder)return say('this browser cannot record video');
+    const c=document.createElement('canvas');c.width=720;c.height=1280;const x=c.getContext('2d'),dest=A.ctx.createMediaStreamDestination();A.vol.connect(dest);
+    const stream=c.captureStream(30);dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+    const mime=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));if(!mime)return say('this browser cannot record video');
+    const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:6e6}),chunks=[];rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+    rec.onstop=()=>{window.afterFrame=null;try{A.vol.disconnect(dest)}catch(_){}VREC=null;b.classList.remove('on');b.textContent='record video';save(new Blob(chunks,{type:mime}),'black-dragon-'+stamp()+(mime.includes('mp4')?'.mp4':'.webm'));say('video saved')};
+    window.afterFrame=()=>{const sw=Math.min(cv.width,cv.height*9/16),sh=sw*16/9,sx=(cv.width-sw)/2,sy=(cv.height-sh)/2;x.drawImage(cv,sx,sy,sw,sh,0,0,720,1280);
+      x.fillStyle='rgba(255,255,255,.92)';x.textAlign='center';x.font='44px "Pirata One"';x.fillText('Black Dragon II',360,1150);x.font='20px "Michroma"';x.fillText(`${STATES[S.state].name.toLowerCase()} · ${S.beat} hz`,360,1196)};
+    rec.start(1000);VREC=rec;b.classList.add('on');b.textContent='stop video';say('recording video · up to ten minutes');setTimeout(()=>{if(VREC===rec)rec.stop()},600000)}}
+
+applyMix();document.addEventListener('pointerdown',()=>setTimeout(applyMix,400),{once:true});

@@ -452,7 +452,7 @@ body.idle .hud{transition:opacity 2.5s}
 #volBox{display:flex;align-items:center;gap:8px;padding:0 12px;height:38px;border-radius:7px;border:1px solid rgba(255,255,255,.34);background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.03));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 14px rgba(0,0,0,.5);backdrop-filter:blur(7px)}
 #volBox span{font-family:var(--tech);font-size:9.5px;letter-spacing:.14em}
 #vol{width:120px;height:22px;accent-color:var(--amber)}
-#stones{grid-template-columns:repeat(12,1fr);gap:6px}.stone{padding:0 7px;gap:6px;font-size:8.5px}
+#stones{grid-template-columns:repeat(14,1fr);gap:5px}.stone{padding:0 7px;gap:6px;font-size:8.5px}
 .rside{grid-template-columns:repeat(3,1fr);width:330px}.rside .pill{padding:8px 4px;font-size:9px;min-height:34px}
 #bHide{grid-column:auto}
 #row2{grid-column:1/-1;display:flex;gap:12px;align-items:center;min-height:36px}
@@ -491,6 +491,19 @@ body.idle .hud{transition:opacity 2.5s}
   #rhud{width:min(60vw,250px)}
   .key kbd{display:none}
 }
+
+/* round 12: the rest of v1, in the same glass */
+.stone{padding:0 6px;gap:5px;font-size:8px}.stone i{width:15px;height:15px}
+.rside{grid-template-columns:repeat(4,1fr);width:350px}.rside .pill{font-size:8.5px;padding:8px 2px}
+.slot{min-width:34px;font-family:var(--serif)!important;font-style:italic;font-size:15px!important;padding:4px 8px!important}.slot::before{display:none!important}
+.ktabs .mini{flex:none}
+.mrow{display:grid;grid-template-columns:70px 1fr 90px;gap:12px;align-items:center;padding:9px 0}
+.mrow span{font-family:var(--tech);font-size:10px;letter-spacing:.12em}.mrow input{width:100%;height:26px;accent-color:var(--amber)}
+.meter{height:10px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3df5c0,var(--amber) 70%,#ff4a4a)}
+#spec{cursor:pointer}
+#kuji line{stroke:#ffb454;stroke-width:1.6;stroke-linecap:round}
+@media (max-width:1300px){#stones{grid-template-columns:repeat(7,1fr)}}
+@media (max-width:1000px){#stones{grid-template-columns:1fr 1fr}.rside{grid-template-columns:1fr 1fr 1fr;width:auto}.mrow{grid-template-columns:60px 1fr 60px}}
 </style>
 </head>
 <body>
@@ -561,6 +574,7 @@ body.idle .hud{transition:opacity 2.5s}
       <text id="bandN" text-anchor="middle" y="-48">Theta</text>
       <text id="bandD" text-anchor="middle" y="66" font-size="9" opacity=".7" letter-spacing="1">drowsy, dreamlike</text>
       <g id="monadG" opacity=".35"><polyline id="seal" fill="none" stroke="#ffb454" stroke-width="1.2" stroke-linejoin="round"/><circle id="sealDot" r="4" fill="#ffb454" opacity="0"/></g>
+      <g id="kuji"></g>
       <text id="monadT" text-anchor="middle" y="104" font-size="8" letter-spacing="2" opacity=".85">saturn · 3×3 · 15</text>
       <g id="handle"><circle r="13" fill="url(#gChrome)" stroke="#000"/><circle r="5" fill="var(--b)"/></g>
     </svg>
@@ -631,7 +645,9 @@ const STATES=[
   note:'Near 19 Hz sits under hearing. In a 2003 concert, 17 Hz raised reports of unease by 22 percent. Small speakers cannot make it; use headphones or a subwoofer.'}
 ];
 const BANDS=[[4,'Delta','deep sleep'],[8,'Theta','drowsy, dreamlike'],[13,'Alpha','calm, awake'],[30,'Beta','alert'],[99,'Gamma','sharp focus']];
-const S={vol:.8,layers:{},env:'',speed:.4,twist:0,mirrors:0,warp:0,hue:0,split:.3,grain:.4,lens:.5,state:1,beat:6,fc:136.1,mode:'binaural',tone:.55,body:.5,air:0,close:0,space:.6,vision:.6,veil:.5,trails:.35,voice:0,breath:false,tide:true};
+const S={vol:.8,echo:.5,att:.5,rel:.5,layers:{},env:'',speed:.4,twist:0,mirrors:0,warp:0,hue:0,split:.3,grain:.4,lens:.5,state:1,beat:6,fc:136.1,mode:'binaural',tone:.55,body:.5,air:0,close:0,space:.6,vision:.6,veil:.5,trails:.35,voice:0,breath:false,tide:true};
+/* the carrier dial reads and writes S.fc on a log scale, 40 to 600 Hz; it never nudges an exact tone */
+Object.defineProperty(S,'car',{enumerable:false,get(){return clamp(Math.log(S.fc/40)/Math.log(15),0,1)},set(v){const f=40*Math.pow(15,clamp(v,0,1));if(Math.abs(f-S.fc)/S.fc>.004)S.fc=+f.toFixed(1)}});
 /* ---------- the voices. Each one is a recipe; the engine below builds it per note ---------- */
 const VOX=[
  /* glass and metal */
@@ -803,7 +819,7 @@ function applyBeat(){
 }
 function applyAll(){
   applyBeat();if(!A.ctx)return;const s=STATES[S.state];
-  at(A.tone.gain,S.tone*.5);at(A.body.gain,S.body*.5);at(A.air.gain,S.air*.6);at(A.wet.gain,S.space*.7);at(A.close.gain,S.close*.9,.3);
+  at(A.tone.gain,S.tone*.5);at(A.body.gain,S.body*.5);at(A.air.gain,S.air*.6);at(A.wet.gain,S.space*.7);at(A.echoIn.gain,S.echo*.56);at(A.close.gain,S.close*.9,.3);
   at(A.airLP.frequency,s.airLP||6000,.8);at(A.sub.frequency,s.ghost||19,.2);at(A.subG.gain,s.ghost?S.tone*.5:0,.6);
   at(A.brG.gain,S.breath?S.body*.28:0,.5);
   if(!silenced)at(A.vol.gain,S.vol,.05);bankApply();
@@ -853,9 +869,9 @@ function noteOn(id,i,vel=1){
     ng.gain.setValueAtTime(l,t);if(dec>0)ng.gain.exponentialRampToValueAtTime(.0005,t+dec);else if(dec<0)ng.gain.setTargetAtTime(l*.3,t+.2,-dec);n.connect(b).connect(ng).connect(pre);n.start(t,Math.random()*5);os.push(n)});
   if(V.vib){const [rt,dp,dl]=V.vib,vb=ctx.createOscillator(),vg=ctx.createGain();vb.frequency.value=rt;vg.gain.setValueAtTime(0,t);vg.gain.setTargetAtTime(f*dp,t+(dl||0),.4);vb.connect(vg);tonal.forEach(o=>vg.connect(o.frequency));vb.start(t);os.push(vb)}
   if(V.trem){const tr=ctx.createOscillator(),tg=ctx.createGain();tr.frequency.value=V.trem[0]+Math.random()*.6;tg.gain.value=V.trem[1]*vel;tr.connect(tg).connect(g.gain);tr.start(t);os.push(tr)}
-  const a=V.a||.01,peak=(V.peak||.3)*(V.trim||1)*vel;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);
+  const a=(V.a||.01)*Math.pow(2,(S.att-.5)*4),peak=(V.peak||.3)*(V.trim||1)*vel;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);
   if(V.d)g.gain.setTargetAtTime(peak*(V.s||0),t+a,V.d);
-  held[id]={g,os,rel:V.r||1.5,i};flash(i,true);pluck=1;
+  held[id]={g,os,rel:(V.r||1.5)*Math.pow(2,(S.rel-.5)*4),i};flash(i,true);pluck=1;
 }
 function noteOff(id,i){
   const h=held[id];if(!h)return;delete held[id];const t=A.ctx.currentTime;
@@ -918,7 +934,7 @@ dial.addEventListener('pointermove',e=>dragging&&dialAt(e));dial.addEventListene
 dial.addEventListener('keydown',e=>{const k={ArrowUp:1.03,ArrowRight:1.03,ArrowDown:1/1.03,ArrowLeft:1/1.03}[e.key];if(k){e.preventDefault();S.beat=+clamp(S.beat*k,.5,40).toFixed(2);paintDial();applyBeat()}});
 
 /* ---------- knobs ---------- */
-const KN=[['vol','volume','s'],['tone','tone','s'],['body','body','s'],['air','air','s'],['close','close','s'],['space','space','s'],['vision','effect','v'],['trails','trails','v'],['veil','exposure','v'],['speed','speed','v'],['twist','twist','v'],['mirrors','mirrors','v'],['warp','warp','v'],['hue','colour','v'],['split','split','v'],['grain','grain','v'],['lens','lens','v']];
+const KN=[['vol','volume','s'],['tone','tone','s'],['body','body','s'],['air','air','s'],['close','close','s'],['space','space','s'],['echo','echo','s'],['att','attack','s'],['rel','release','s'],['car','carrier','s'],['vision','effect','v'],['trails','trails','v'],['veil','exposure','v'],['speed','speed','v'],['twist','twist','v'],['mirrors','mirrors','v'],['warp','warp','v'],['hue','colour','v'],['split','split','v'],['grain','grain','v'],['lens','lens','v']];
 const knobEls={};
 KN.forEach(([k,l,bk])=>{const d=document.createElement('div');d.className='knob';d.dataset.b=bk;d.tabIndex=0;d.innerHTML=`<i></i><span>${l}</span>`;$('#knobs').appendChild(d);knobEls[k]=d;
   const set=v=>{S[k]=clamp(v,0,1);d.style.setProperty('--v',S[k]);applyAll();$('#veil').style.opacity=S.veil};
@@ -980,6 +996,7 @@ function proof(){
       else{lab('tones, merged','beat, as set','too close to split');$('#mL').textContent=f(peak(A.bufL,S.fc+S.beat/2,6));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent='–'}}
     else{lab('carrier','pulse, as set','');$('#mL').textContent=f(peak(A.bufL,S.fc,2.5));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent='–'}
   }
+  if(window.PEARL)return;
   const W=spec.width,H=spec.height,hz=A.ctx.sampleRate/A.anL.fftSize,f1=20,f2=1200;sx.clearRect(0,0,W,H);
   const draw=(buf,col)=>{sx.beginPath();for(let x=0;x<W;x++){const f=f1*Math.pow(f2/f1,x/W),v=buf[Math.round(f/hz)],y=H-clamp((v+100)/80,0,1)*H;x?sx.lineTo(x,y):sx.moveTo(x,y)}sx.strokeStyle=col;sx.lineWidth=2;sx.stroke()};
   draw(A.bufM,'rgba(255,255,255,.55)');draw(A.bufL,'#ffb454');
@@ -1046,7 +1063,7 @@ function frame(ms){
     if(S.breath){const ph=((A.ctx.currentTime-A.breathT0)*.1)%1;breath=.5-.5*Math.cos(ph*2*Math.PI);$('#breathRing').setAttribute('r',70+breath*62);$('#breathRing').setAttribute('opacity',.35+breath*.5)}
     else $('#breathRing').setAttribute('opacity',0);
     proof()}
-  pluck*=.94;vt+=dt*(.08+S.speed*2.3);descentTick(ms);
+  pluck*=.94;vt+=window.FREEZE?0:dt*(.08+S.speed*2.3);descentTick(ms);
   gl.useProgram(pr);gl.bindFramebuffer(gl.FRAMEBUFFER,fbo[cur].f);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,fbo[1-cur].t);gl.uniform1i(U.pv,0);gl.uniform1f(U.fb,S.trails);
   gl.uniform2f(U.r,cv.width,cv.height);gl.uniform1f(U.t,vt);gl.uniform1f(U.lvl,lvl);gl.uniform1f(U.br,breath);gl.uniform1f(U.md,window.VMODE!=null?window.VMODE:s.vis);
   gl.uniform1f(U.inten,.45+S.veil*1.1);gl.uniform1f(U.vis,S.vision);gl.uniform1f(U.mir,S.mirrors+(window.REVV||0)*.35);gl.uniform1f(U.tws,S.twist+(window.REVV||0)*.9);gl.uniform1f(U.wrp,S.warp);gl.uniform1f(U.hue,S.hue);vidTex();gl.uniform1f(U.spd,1);gl.uniform1f(U.pk,pluck);ptr.a*=.975;gl.uniform2f(U.m,ptr.x,ptr.y);gl.uniform1f(U.ma,ptr.a);
@@ -1055,7 +1072,7 @@ function frame(ms){
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.useProgram(pr2);gl.bindTexture(gl.TEXTURE_2D,fbo[cur].t);gl.uniform1i(U2.s,0);gl.uniform2f(U2.r,cv.width,cv.height);gl.uniform1f(U2.t,vt);
   if(lensN++%8===0){const b=dial.getBoundingClientRect(),k=cv.width/innerWidth;lens=[(b.left+b.width/2)*k,cv.height-(b.top+b.height/2)*k,b.width*.35*k]}
   gl.uniform1f(U2.ab,S.split);gl.uniform1f(U2.grn,S.grain);gl.uniform1f(U2.lz,S.lens);gl.uniform2f(U2.lc,lens[0],lens[1]);gl.uniform1f(U2.lr,lens[2]);
-  gl.drawArrays(gl.TRIANGLES,0,3);cur=1-cur;requestAnimationFrame(frame);
+  gl.drawArrays(gl.TRIANGLES,0,3);cur=1-cur;if(window.afterFrame)window.afterFrame();requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 
@@ -1113,7 +1130,7 @@ let desc=null;
 function stopDescent(){if(!desc)return;desc=null;$('#bDescent').classList.remove('on');$('#bDescent').textContent='descent'}
 $('#bDescent').onclick=()=>{if(desc)return stopDescent();desc={t0:performance.now(),from:S.beat,to:S.beat>3?2.5:Math.max(.5,S.beat/2),dur:15*60e3};$('#bDescent').classList.add('on')};
 function descentTick(ms){if(!desc)return;const k=clamp((ms-desc.t0)/desc.dur,0,1),b=Math.exp(Math.log(desc.from)+(Math.log(desc.to)-Math.log(desc.from))*k);
-  if(Math.abs(b-S.beat)>=.01){S.beat=+b.toFixed(2);paintDial();applyBeat()}$('#bDescent').textContent='descent '+Math.ceil((1-k)*15)+' min';if(k>=1)stopDescent()}
+  if(Math.abs(b-S.beat)>=.01){S.beat=+b.toFixed(2);paintDial();applyBeat()}$('#bDescent').textContent='descent '+Math.ceil((1-k)*desc.dur/60000)+' min';if(k>=1)stopDescent()}
 /* ---------- tide: build, break, release ---------- */
 function bell(i){const ctx=A.ctx,t=ctx.currentTime,f=degFreq(i),g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.15,t+.01);g.gain.exponentialRampToValueAtTime(.0008,t+6);
   [1,2.76,5.4].forEach((r,k)=>{const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.value=f*r;og.gain.value=1/(k*2+1);o.connect(og).connect(g);o.start(t);o.stop(t+6.2)});g.connect(A.vBus)}
