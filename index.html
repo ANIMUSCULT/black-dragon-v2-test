@@ -770,7 +770,7 @@ const TRIM={"velvet keys":0.71,"honey bells":0.72,"lotus pad":1.1,"liquid glass"
 const VOICES=VOX.map(v=>v.n);
 
 /* ---------- films: the serpent opens; the film button walks through the rest ---------- */
-const FILMS=['gate-serpent','gate-01-red-tide','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist','film-13-slowmoving-art-piece','film-14-character-scene-footage','film-15-darkwave-montage-using','film-16-adventures-hypnotoad-bit','film-17-stay-focused-hypnotist','film-18-documentary-jellylike-pod','film-19-macro-fisheye-lens','film-20-white-unicorn-runs','film-21-white-unicorn-runs','film-22-king-stays-shrouded','film-23-shadow-king-waits','film-24-dragon-woman-hybrid','film-25-dragon-entering-water','film-26-underwater-gothic-cemetery','film-27-slowly-moving-through','film-28-eye-cat-cat','film-29-psychedelic-horror-eclips','film-30-temple-statrs-undulating','film-31-behind-glowing-plants','film-32-footage-camera-pans','film-33-found-footage-monster','film-34-overhead-vertical-camera','film-35-static-horror-clouds','film-36-ultraviolet-ai-overhead','film-37-women-braces-long','film-38-women-braces-long','film-39-beautiful-view-city','film-40-first-person-perspective','film-41-slow-dreamy-mist','film-42-extreme-close-up','film-43-woman-dances-slow','film-44-goth-dark-slow','film-45-everything-inside-gel'];
+const FILMS=['gate-serpent','gate-01-red-tide','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist','film-13-slowmoving-art-piece','film-14-character-scene-footage','film-15-darkwave-montage-using','film-16-adventures-hypnotoad-bit','film-17-stay-focused-hypnotist','film-18-documentary-jellylike-pod','film-19-macro-fisheye-lens','film-20-white-unicorn-runs','film-21-white-unicorn-runs','film-22-king-stays-shrouded','film-23-shadow-king-waits','film-24-dragon-woman-hybrid','film-25-dragon-entering-water','film-26-underwater-gothic-cemetery','film-27-slowly-moving-through','film-28-eye-cat-cat','film-29-psychedelic-horror-eclips','film-30-temple-statrs-undulating','film-31-behind-glowing-plants','film-32-footage-camera-pans','film-33-found-footage-monster','film-34-overhead-vertical-camera','film-35-static-horror-clouds','film-37-women-braces-long','film-38-women-braces-long','film-39-beautiful-view-city','film-40-first-person-perspective','film-41-slow-dreamy-mist','film-42-extreme-close-up','film-43-woman-dances-slow','film-44-goth-dark-slow','film-45-everything-inside-gel'];
 let film=0;
 let filmWatch=null;
 function setFilm(i){film=(i+FILMS.length)%FILMS.length;const v=$('#veil'),url='media/'+FILMS[film]+'.mp4',want=film,go=u=>{v.src=u;v.load();const q=v.play();if(q&&q.catch)q.catch(()=>{})};
@@ -931,6 +931,7 @@ let pluck=0;
 
 /* ---------- keys ---------- */
 const KEYMAP="asdfghjkl;'";/* musical typing: the home row plays; z and x move the octave; c and v play softer and harder */
+const UPMAP='wetyuop';/* the row above plays the same scale one octave higher */
 let kOct=0,kVel=1;const kHeld={},scaleLen=()=>{try{return (TUN[tun][1]||STATES[S.state].scale).length}catch(_){return STATES[S.state].scale.length}};
 const keysEl=$('#keys');
 for(let i=0;i<15;i++){const k=KEYMAP[i]||'',b=document.createElement('button');b.className='key';b.dataset.i=i;b.innerHTML='<kbd>'+k+'</kbd>';
@@ -943,9 +944,10 @@ const up=e=>{const id='p'+e.pointerId;if(keysEl[id]!=null){noteOff(id,keysEl[id]
 keysEl.addEventListener('pointerup',up);keysEl.addEventListener('pointercancel',up);
 addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;const key=e.key.toLowerCase(),i=KEYMAP.indexOf(key),note=m=>{const el=$('#lcd');if(el)el.textContent=m};
   if(i>=0){e.preventDefault();if(kHeld[i]!=null)return;const d=i+kOct*scaleLen();kHeld[i]=d;noteOn('k'+i,d,kVel);return}
+  {const j=UPMAP.indexOf(key);if(j>=0){e.preventDefault();const id='u'+j;if(kHeld[id]!=null)return;const d=j+(kOct+1)*scaleLen();kHeld[id]=d;noteOn('k'+id,d,kVel);return}}
   if(key==='z'||key==='x'){kOct=clamp(kOct+(key==='x'?1:-1),-2,2);note('keys · octave '+(kOct>0?'+':'')+kOct)}
   if(key==='c'||key==='v'){kVel=clamp(+(kVel+(key==='v'?.15:-.15)).toFixed(2),.4,1);note('keys · touch '+Math.round(kVel*100)+'%')}});
-addEventListener('keyup',e=>{const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0&&kHeld[i]!=null){noteOff('k'+i,kHeld[i]);kHeld[i]=null}});
+addEventListener('keyup',e=>{const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0&&kHeld[i]!=null){noteOff('k'+i,kHeld[i]);kHeld[i]=null}const j=UPMAP.indexOf(e.key.toLowerCase()),id='u'+j;if(j>=0&&kHeld[id]!=null){noteOff('k'+id,kHeld[id]);kHeld[id]=null}});
 addEventListener('blur',()=>{for(const i in kHeld)if(kHeld[i]!=null){noteOff('k'+i,kHeld[i]);kHeld[i]=null}});
 function onMidi(e){const [st,n,v]=e.data,c=st&0xf0,i=n-48;if(c===0x90&&v>0)noteOn('m'+n,i,v/127);else if(c===0x80||(c===0x90&&v===0))noteOff('m'+n,i)}
 
@@ -1009,7 +1011,7 @@ addEventListener('keydown',e=>{if(/INPUT/.test(e.target.tagName))return;if(e.key
 $('#bBreath').onclick=()=>{S.breath=!S.breath;$('#bBreath').classList.toggle('on',S.breath);if(A.ctx)A.breathT0=A.ctx.currentTime;applyAll()};
 let hidePanels=false;$('#bHide').onclick=()=>{hidePanels=true;document.body.classList.add('idle')};
 let idleT;const wakeUI=()=>{if(hidePanels){hidePanels=false}document.body.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>A.ctx&&document.body.classList.add('idle'),240000)};
-['pointermove','pointerdown','keydown'].forEach(ev=>addEventListener(ev,e=>{if(ev==='keydown'&&(KEYMAP+'zxcv').includes(e.key.toLowerCase()))return;if(!hidePanels||ev!=='pointermove')wakeUI()}));
+['pointermove','pointerdown','keydown'].forEach(ev=>addEventListener(ev,e=>{if(ev==='keydown'&&(KEYMAP+UPMAP+'zxcv').includes(e.key.toLowerCase()))return;if(!hidePanels||ev!=='pointermove')wakeUI()}));
 
 /* wav */
 function wav24(L,R,sr){const n=L.length,b=new DataView(new ArrayBuffer(44+n*6)),w=(o,s)=>[...s].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));
