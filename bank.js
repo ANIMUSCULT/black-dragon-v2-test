@@ -163,6 +163,10 @@ const BANK=[
 ];
 const BK=Object.fromEntries(BANK.map(b=>[b.id,b]));
 const act={};
+/* from measuring every world sound: these peaked far above the rest, or sat mostly in the piercing range */
+const CALM={'e:underworld:8':.4,'e:gold:13':.4,thunder:.7,'e:blood:9':.7,'e:blood:14':.7,'e:blood:15':.7,womb:.75,'e:heat:10':.6,'e:animal:9':.6,'e:wet:8':.75,'e:underworld:2':.75,'e:nature:13':.65,'e:nature:6':.75,'e:heat:12':.75,'e:wet:2':.75,'e:wet:5':.8,'e:wet:1':.7,'e:freeze:15':.7,'e:freeze:12':.8};
+const EASE=new Set(['e:nature:6','e:nature:13','e:heat:10','e:heat:12','e:heat:7','e:wet:1','e:wet:2','e:wet:5','e:wet:12','e:animal:9','e:animal:13','e:celestial:5','e:celestial:14','e:magnetism:10','e:lust:2','e:gold:14','cicadas']);
+const lyrLvl=id=>(BK[id].lvl||1)*(CALM[id]||1);
 
 /* ---------- layers on and off ---------- */
 function bankInit(){
@@ -174,19 +178,23 @@ function bankInit(){
 }
 function startLayer(id,level){
   const b=BK[id];if(!b||!A.ctx||act[id])return;const ctx=A.ctx,L=new Lyr();L.g=ctx.createGain();L.g.gain.value=0;
-  L.g.connect(b.bus==='tone'?A.tonePan:A.bankBus);if(b.verb)L.g.connect(A.bankVerb);
+  /* measured tones and coloured noise pass untouched; every other world sound gets its top end eased */
+  if(b.bus==='tone')L.g.connect(A.tonePan);
+  else if(b.cat==='coloured noise'){L.g.connect(A.bankBus);if(b.verb)L.g.connect(A.bankVerb)}
+  else{const sh=ctx.createBiquadFilter(),pk=ctx.createBiquadFilter(),hard=EASE.has(id);sh.type='highshelf';sh.frequency.value=hard?4200:5200;sh.gain.value=hard?-9:-3.5;
+    pk.type='peaking';pk.frequency.value=3200;pk.Q.value=1;pk.gain.value=hard?-4:-2.5;L.g.connect(sh).connect(pk);pk.connect(A.bankBus);if(b.verb)pk.connect(A.bankVerb);L.tail=pk}
   try{b.gen(ctx,L.g,L)}catch(e){console.error('layer',id,e);return}
-  L.g.gain.setTargetAtTime(level*(b.lvl||1),ctx.currentTime,.25);act[id]=L;
+  L.g.gain.setTargetAtTime(level*lyrLvl(id),ctx.currentTime,.25);act[id]=L;
 }
 function setLayer(id,level){
-  if(level==null){delete S.layers[id];const L=act[id];if(L){delete act[id];L.g.gain.setTargetAtTime(0,A.ctx.currentTime,.08);setTimeout(()=>{L.stop();L.g.disconnect()},500)}}
-  else{S.layers[id]=level;if(act[id])act[id].g.gain.setTargetAtTime(level*(BK[id].lvl||1),A.ctx.currentTime,.08);else startLayer(id,level)}
+  if(level==null){delete S.layers[id];const L=act[id];if(L){delete act[id];L.g.gain.setTargetAtTime(0,A.ctx.currentTime,.08);setTimeout(()=>{L.stop();L.g.disconnect();if(L.tail)L.tail.disconnect()},500)}}
+  else{S.layers[id]=level;if(act[id])act[id].g.gain.setTargetAtTime(level*lyrLvl(id),A.ctx.currentTime,.08);else startLayer(id,level)}
   paintBank();
 }
 function clearLayers(){Object.keys(S.layers).forEach(id=>setLayer(id,null))}
 function bankApply(){Object.values(act).forEach(L=>L.upd&&L.upd())}
 function bankSync(){Object.keys(act).forEach(id=>{if(!(id in S.layers)){const L=act[id];delete act[id];L.stop();L.g.disconnect()}});
-  Object.entries(S.layers).forEach(([id,v])=>{if(!BK[id]){delete S.layers[id];return}if(act[id])act[id].g.gain.setTargetAtTime(v*(BK[id].lvl||1),A.ctx.currentTime,.1);else startLayer(id,v)});paintBank()}
+  Object.entries(S.layers).forEach(([id,v])=>{if(!BK[id]){delete S.layers[id];return}if(act[id])act[id].g.gain.setTargetAtTime(v*lyrLvl(id),A.ctx.currentTime,.1);else startLayer(id,v)});paintBank()}
 
 /* ---------- proof: every pure tone in the mix, set and measured ---------- */
 function bankProof(){
@@ -308,7 +316,7 @@ function buildBank(){
     +group(BANK,b=>b.cat,b=>`<button class="vb lb" data-id="${b.id}">${b.n}</button>`)+'<button class="vb" id="bClear" style="margin-top:14px">clear the mix</button>';
   el.addEventListener('click',e=>{const b=e.target.closest('.lb'),off=e.target.dataset.off;if(off)return setLayer(off,null);if(e.target.id==='bClear')return clearLayers();
     if(b){const id=b.dataset.id;showInfo(id);setLayer(id,id in S.layers?null:.5)}});
-  el.addEventListener('input',e=>{const id=e.target.dataset.id;if(id){S.layers[id]=+e.target.value;if(act[id])act[id].g.gain.setTargetAtTime(S.layers[id]*(BK[id].lvl||1),A.ctx.currentTime,.05)}});
+  el.addEventListener('input',e=>{const id=e.target.dataset.id;if(id){S.layers[id]=+e.target.value;if(act[id])act[id].g.gain.setTargetAtTime(S.layers[id]*lyrLvl(id),A.ctx.currentTime,.05)}});
   el.addEventListener('pointerover',e=>{const b=e.target.closest('.lb');if(b)showInfo(b.dataset.id)});paintBank();
 }
 function buildPresets(){

@@ -407,6 +407,19 @@ $('#bBlank').onclick=blankAll;
 /* a back step for the films, now that there are many */
 {const b=document.createElement('button');b.className='pill';b.id='bFilmPrev';b.textContent='‹';b.title='Previous visualizer';b.setAttribute('aria-label','Previous visualizer');$('#bFilm').before(b);
   b.onclick=()=>{setFilm(film-1);$('#veil').play().catch(()=>{})};$('#bFilm').title='Next visualizer'}
+/* your own video in the visualizer: played straight from the device, never sent anywhere, gone on refresh */
+{const b=document.createElement('button'),inp=document.createElement('input'),v=$('#veil');let own=null;
+  b.className='pill';b.id='bOwn';b.textContent='your video';b.title='Play a video from your device in the visualizer. It is not uploaded or saved; it is gone when you refresh.';
+  inp.type='file';inp.accept='video/*';inp.hidden=true;document.body.appendChild(inp);$('#bFilm').after(b);
+  b.onclick=()=>inp.click();
+  inp.onchange=()=>{const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+    if(!v.canPlayType(f.type||'video/mp4')&&f.type){say('this device cannot play that kind of video');return}
+    if(own)URL.revokeObjectURL(own);own=URL.createObjectURL(f);clearTimeout(filmWatch);
+    try{v.pause()}catch(_){}v.muted=true;v.loop=true;v.src=own;v.load();const q=v.play();if(q&&q.catch)q.catch(()=>{});
+    $('#bFilm').textContent='visualizer · yours';b.classList.add('on')};
+  const mine=()=>(v.currentSrc||v.src||'').startsWith('blob:');
+  v.addEventListener('playing',()=>{if(mine())say('your video · this session only, not saved');else b.classList.remove('on')});
+  v.addEventListener('error',()=>{if(mine()){say('that video would not play. try an mp4');b.classList.remove('on')}})}
 
 /* on arrival the visualizer button glows until it is first used */
 function hintVis(){const b=$('#bFilm'),p=$('#bFilmPrev'),m=$('#tabs [data-t=more]'),off=()=>{b.classList.remove('nudge');m.classList.remove('nudge');b.removeEventListener('click',off);p.removeEventListener('click',off)};
