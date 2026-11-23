@@ -364,11 +364,13 @@ function monadStop(){if(!MON.held)return;MON.held=false;clearTimeout(MON.tm);$('
   addEventListener('pointerup',up);addEventListener('pointercancel',up)})();
 
 /* ---------- wire up ---------- */
+function bankBoot(){
 buildBank();buildPresets();buildCodex();['vox','bank','presets'].forEach(addSearch);setKamea(0);
 $('#bSilence').onclick=()=>silence();
 $('#bBank').onclick=e=>{e.stopPropagation();openDr('bank')};
 $('#bPresets').onclick=e=>{e.stopPropagation();openDr('presets')};
 $('#bCodex').onclick=e=>{e.stopPropagation();openDr('codex')};
 $('#bVoice').onclick=e=>{e.stopPropagation();openDr('vox')};
-addEventListener('pointerdown',e=>{if(!e.target.closest('.drawer,.rside,#keys,#knobs'))DR.forEach(d=>$('#'+d).hidden=true)});
+addEventListener('pointerdown',e=>{if(e.target.classList.contains('hud')||e.target.closest('#core'))DR.forEach(d=>$('#'+d).hidden=true)});
 addEventListener('keydown',e=>{if(e.key==='Escape')DR.forEach(d=>$('#'+d).hidden=true);if(e.code==='Space'&&!e.repeat&&A.ctx&&!/INPUT|TEXTAREA/.test(e.target.tagName)){e.preventDefault();silence()}});
+}
