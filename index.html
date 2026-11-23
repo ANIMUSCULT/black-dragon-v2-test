@@ -930,18 +930,23 @@ function noteOff(id,i){
 let pluck=0;
 
 /* ---------- keys ---------- */
-const KEYMAP='zxcvbnm,./asdfg';
+const KEYMAP="asdfghjkl;'";/* musical typing: the home row plays; z and x move the octave; c and v play softer and harder */
+let kOct=0,kVel=1;const kHeld={},scaleLen=()=>{try{return (TUN[tun][1]||STATES[S.state].scale).length}catch(_){return STATES[S.state].scale.length}};
 const keysEl=$('#keys');
-KEYMAP.split('').forEach((k,i)=>{const b=document.createElement('button');b.className='key';b.dataset.i=i;b.innerHTML='<kbd>'+k+'</kbd>';
-  const d=(i-7)/7;b.style.height=(100-d*d*26)+'%';keysEl.appendChild(b)});
+for(let i=0;i<15;i++){const k=KEYMAP[i]||'',b=document.createElement('button');b.className='key';b.dataset.i=i;b.innerHTML='<kbd>'+k+'</kbd>';
+  const d=(i-7)/7;b.style.height=(100-d*d*26)+'%';keysEl.appendChild(b)}
 const flash=(i,on)=>{const k=keysEl.children[i];if(k)k.classList.toggle('on',on)};
 keysEl.addEventListener('pointerdown',e=>{const k=e.target.closest('.key');if(!k)return;keysEl.setPointerCapture(e.pointerId);noteOn('p'+e.pointerId,+k.dataset.i);keysEl['p'+e.pointerId]=+k.dataset.i});
 keysEl.addEventListener('pointermove',e=>{const id='p'+e.pointerId;if(keysEl[id]==null)return;const k=document.elementFromPoint(e.clientX,e.clientY);const kk=k&&k.closest&&k.closest('.key');
   if(kk&&+kk.dataset.i!==keysEl[id]){noteOff(id,keysEl[id]);keysEl[id]=+kk.dataset.i;noteOn(id,keysEl[id])}});
 const up=e=>{const id='p'+e.pointerId;if(keysEl[id]!=null){noteOff(id,keysEl[id]);keysEl[id]=null}};
 keysEl.addEventListener('pointerup',up);keysEl.addEventListener('pointercancel',up);
-addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey||/INPUT/.test(e.target.tagName))return;const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0){e.preventDefault();noteOn('k'+i,i)}});
-addEventListener('keyup',e=>{const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0)noteOff('k'+i,i)});
+addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;const key=e.key.toLowerCase(),i=KEYMAP.indexOf(key),note=m=>{const el=$('#lcd');if(el)el.textContent=m};
+  if(i>=0){e.preventDefault();if(kHeld[i]!=null)return;const d=i+kOct*scaleLen();kHeld[i]=d;noteOn('k'+i,d,kVel);return}
+  if(key==='z'||key==='x'){kOct=clamp(kOct+(key==='x'?1:-1),-2,2);note('keys · octave '+(kOct>0?'+':'')+kOct)}
+  if(key==='c'||key==='v'){kVel=clamp(+(kVel+(key==='v'?.15:-.15)).toFixed(2),.4,1);note('keys · touch '+Math.round(kVel*100)+'%')}});
+addEventListener('keyup',e=>{const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0&&kHeld[i]!=null){noteOff('k'+i,kHeld[i]);kHeld[i]=null}});
+addEventListener('blur',()=>{for(const i in kHeld)if(kHeld[i]!=null){noteOff('k'+i,kHeld[i]);kHeld[i]=null}});
 function onMidi(e){const [st,n,v]=e.data,c=st&0xf0,i=n-48;if(c===0x90&&v>0)noteOn('m'+n,i,v/127);else if(c===0x80||(c===0x90&&v===0))noteOff('m'+n,i)}
 
 /* ---------- states UI ---------- */
@@ -1004,7 +1009,7 @@ addEventListener('keydown',e=>{if(/INPUT/.test(e.target.tagName))return;if(e.key
 $('#bBreath').onclick=()=>{S.breath=!S.breath;$('#bBreath').classList.toggle('on',S.breath);if(A.ctx)A.breathT0=A.ctx.currentTime;applyAll()};
 let hidePanels=false;$('#bHide').onclick=()=>{hidePanels=true;document.body.classList.add('idle')};
 let idleT;const wakeUI=()=>{if(hidePanels){hidePanels=false}document.body.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>A.ctx&&document.body.classList.add('idle'),240000)};
-['pointermove','pointerdown','keydown'].forEach(ev=>addEventListener(ev,e=>{if(ev==='keydown'&&KEYMAP.includes(e.key.toLowerCase()))return;if(!hidePanels||ev!=='pointermove')wakeUI()}));
+['pointermove','pointerdown','keydown'].forEach(ev=>addEventListener(ev,e=>{if(ev==='keydown'&&(KEYMAP+'zxcv').includes(e.key.toLowerCase()))return;if(!hidePanels||ev!=='pointermove')wakeUI()}));
 
 /* wav */
 function wav24(L,R,sr){const n=L.length,b=new DataView(new ArrayBuffer(44+n*6)),w=(o,s)=>[...s].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));

@@ -27,7 +27,7 @@ const HBANKS=[
 ];
 let hbank=0;
 const hid=hz=>'h:'+hz;
-function healGen(hz){return (ctx,out,L)=>{const rs=RECIPES[recipe][2];rs.forEach((r,k)=>{if(hz*r>15000)return;const o=ctx.createOscillator(),g=gn(ctx,k?.42/(k+1):1);o.frequency.value=hz*r;o.connect(g).connect(out);o.start();L.src.push(o);
+function healGen(hz){return (ctx,out,L)=>{const rs=RECIPES[recipe][2];rs.forEach((r,k)=>{if(hz*r>15000)return;const o=ctx.createOscillator(),g=gn(ctx,(k?.42/(k+1):1)*(k&&hz*r>900?Math.pow(900/(hz*r),.8):1));o.frequency.value=hz*r;o.connect(g).connect(out);o.start();L.src.push(o);
   if(recipe===3&&k)L.src.push(lfo(ctx,.25+k*.21,.5*g.gain.value,g.gain))})}}
 HBANKS.forEach(b=>{if(!b.beat)b.t.forEach(([hz,nm])=>{const id=hid(hz);if(!BK[id])BK[id]={id,n:`${hz} Hz, ${nm}`,cat:'healing table',tag:b.tag,bus:'tone',hz,lvl:hz<60?.7:hz>1000?.2:.35,gen:healGen(hz),info:b.note}})});
 function healToggle(hz){const b=HBANKS[hbank];
@@ -208,14 +208,14 @@ RITUALS.push(
   how:['Turn to each corner of the room as the screen tells you.','Intone IAŌ three times, then each name of the invocation on its tone.','Slowly. Let every name ring out.'],
   script:'IAŌ IAŌ IAŌ\n'+PISTIS.map(w=>w.toLowerCase()).join(' · '),realm:2,vis:8,spiral:.25,beat:6,
   steps:[{t:'say',big:'Turn to the\nfour corners.',dur:8,hint:'East, south, west, north.'},{t:'word',w:'IAŌ',n:3,dur:3.4,deg:0,hint:'ee-ah-oh'},...PISTIS.map((w,i)=>({t:'word',w,dur:Math.max(2.4,[...w].filter(c=>VOWEL_F[c]).length*.7),deg:i%7,hint:i?'':'The seven vowels.'})),{t:'say',big:'The light\ncomes down.',dur:9,hint:'Stay in the stillness.'}]});
-const MB=n=>{if(!A[n]){A[n]=A.ctx.createGain();A[n].gain.value=MIX[n==='monBus'?'monad':'rites']*2;A[n].connect(A.master)}return A[n]};
+const MB=n=>{if(!A[n]){A[n]=A.ctx.createGain();A[n].gain.value=MIX[n==='monBus'?'monad':'rites']*2;const sh=A.ctx.createBiquadFilter();sh.type='highshelf';sh.frequency.value=4200;sh.gain.value=-4.5;A[n].connect(sh).connect(A.master)}return A[n]};
 function kujiCut(i){const h=i%2===0,k=Math.floor(i/2),ln=document.createElementNS('http://www.w3.org/2000/svg','line'),sc=n=>(n-50)*2.2;
   if(h){const y=sc(30+k*10);ln.setAttribute('x1',sc(26));ln.setAttribute('x2',sc(74));ln.setAttribute('y1',y);ln.setAttribute('y2',y)}else{const x=sc(32+k*12);ln.setAttribute('x1',x);ln.setAttribute('x2',x);ln.setAttribute('y1',sc(24));ln.setAttribute('y2',sc(76))}
   $('#kuji').appendChild(ln)}
 function chant(v,f,dur){const ctx=A.ctx,t=ctx.currentTime,out=ctx.createGain(),fm=VOWEL_F[v]||VOWEL_F.A,pre=ctx.createGain();while(f>260)f/=2;
-  out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.5,t+.08);out.gain.setValueAtTime(.5,t+dur*.75);out.gain.linearRampToValueAtTime(0,t+dur*.98);
+  out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.5,t+Math.min(.3,dur*.2));out.gain.setValueAtTime(.5,t+dur*.75);out.gain.linearRampToValueAtTime(0,t+dur*.98);
   [-7,0,6].forEach(d=>{const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=d;o.connect(pre);o.start(t);o.stop(t+dur)});
-  fm.forEach((ff,k)=>pre.connect(bq(ctx,'bandpass',ff,9)).connect(gn(ctx,[1,.55,.25][k]*2)).connect(out));out.connect(MB('riteBus'))}
+  const soft=bq(ctx,'lowpass',3000,.5);fm.forEach((ff,k)=>pre.connect(bq(ctx,'bandpass',ff,7)).connect(gn(ctx,[1,.5,.16][k]*2)).connect(soft));soft.connect(out);out.connect(MB('riteBus'))}
 function riteStep(r,i){
   if(RUN!==r)return;const st=r.steps[i];if(!st)return stopRun();const n=st.n||1,ctx=A.ctx;let k=0;
   const one=()=>{if(RUN!==r)return;k++;const cnt=n>1?`${k} of ${n}`:'',hint=st.hint||'',t=ctx.currentTime;
@@ -224,12 +224,12 @@ function riteStep(r,i){
     else if(st.t==='v'){hudSet(st.v,hint,cnt);chant(st.v,degFreq(st.deg||0),st.dur*.95);pluck=1}
     else if(st.t==='word'){hudSet(st.w,hint,cnt);const id='R'+i+'_'+k,d=((st.deg||0)%15+15)%15;noteOn(id,d,.8);r.timers.push(setTimeout(()=>noteOff(id,d),st.dur*820))}
     else if(st.t==='breath'){hudSet('Breathe in',hint,cnt);const s=ctx.createBufferSource(),f=bq(ctx,'bandpass',500,1),g=ctx.createGain();s.buffer=NB.pink;f.frequency.linearRampToValueAtTime(1500,t+st.dur*.5);f.frequency.linearRampToValueAtTime(400,t+st.dur);
-      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.9,t+st.dur*.45);g.gain.linearRampToValueAtTime(0,t+st.dur);s.connect(f).connect(g).connect(MB('riteBus'));s.start(t,0,st.dur)}
-    else if(st.t==='hiss'){hudSet('SSSS',hint,cnt);const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=NB.white;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.8,t+.3);g.gain.linearRampToValueAtTime(0,t+st.dur*.9);s.connect(bq(ctx,'highpass',4500)).connect(g).connect(MB('riteBus'));s.start(t,0,st.dur)}
-    else if(st.t==='pop'){hudSet('P',hint,cnt);blip(ctx,MB('riteBus'),t,900,2,.05,3,0);pluck=1.4}
-    else if(st.t==='phat'){hudSet(st.big||'PHAT',hint,cnt);blip(ctx,MB('riteBus'),t,1400,1.2,.14,4,0);ping(ctx,MB('riteBus'),t,110,45,.35,1,0,.004);pluck=1.8}
-    else if(st.t==='cut'){if(st.ci===0)$('#kuji').innerHTML='';hudSet(st.w,hint,cnt);kujiCut(st.ci);blip(ctx,MB('riteBus'),t,2600,3,.09,3,0);const id='R'+i+'_'+k,d=((st.deg||0)%15+15)%15;noteOn(id,d,.9);r.timers.push(setTimeout(()=>noteOff(id,d),st.dur*700));pluck=1.5}
-    else if(st.t==='clap'){hudSet(st.big||'Clap twice.',hint,cnt);[0,.32].forEach(d=>blip(ctx,MB('riteBus'),t+d,1400,1.2,.12,3.4,0));pluck=1.3}
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.6,t+st.dur*.45);g.gain.linearRampToValueAtTime(0,t+st.dur);s.connect(f).connect(g).connect(MB('riteBus'));s.start(t,0,st.dur)}
+    else if(st.t==='hiss'){hudSet('SSSS',hint,cnt);const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=NB.white;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.4,t+.5);g.gain.linearRampToValueAtTime(0,t+st.dur*.9);s.connect(bq(ctx,'highpass',2400)).connect(bq(ctx,'lowpass',6500)).connect(g).connect(MB('riteBus'));s.start(t,0,st.dur)}
+    else if(st.t==='pop'){hudSet('P',hint,cnt);blip(ctx,MB('riteBus'),t,800,2,.06,2,0);pluck=1.4}
+    else if(st.t==='phat'){hudSet(st.big||'PHAT',hint,cnt);blip(ctx,MB('riteBus'),t,1000,1.2,.16,2.4,0);ping(ctx,MB('riteBus'),t,110,45,.35,1,0,.004);pluck=1.8}
+    else if(st.t==='cut'){if(st.ci===0)$('#kuji').innerHTML='';hudSet(st.w,hint,cnt);kujiCut(st.ci);blip(ctx,MB('riteBus'),t,1500,2.5,.12,1.6,0);const id='R'+i+'_'+k,d=((st.deg||0)%15+15)%15;noteOn(id,d,.9);r.timers.push(setTimeout(()=>noteOff(id,d),st.dur*700));pluck=1.5}
+    else if(st.t==='clap'){hudSet(st.big||'Clap twice.',hint,cnt);[0,.32].forEach(d=>blip(ctx,MB('riteBus'),t+d,1050,1.2,.14,2.1,0));pluck=1.3}
     r.timers.push(setTimeout(k<n?one:()=>riteStep(r,i+1),st.dur*1000))};one()}
 function runRite(rt,btn){
   if(!A.ctx)return;if(RUN){const same=RUN.name===rt.name;stopRun(true);if(same)return}
@@ -269,8 +269,8 @@ $('#forge').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='fI
 const STAGES=['monad','dyad','triad','tetrad','decad'];let REV=null;
 function revStart(){
   if(REV||!A.ctx||silenced)return;const ctx=A.ctx,t=ctx.currentTime,g=gn(ctx,0),base=hBase();g.gain.setTargetAtTime(.5,t,.3);g.connect(MB('monBus'));g.connect(A.verb);
-  const nz=loopN(ctx,NB.pink),bp=bq(ctx,'bandpass',200,4);bp.frequency.setValueAtTime(200,t);bp.frequency.exponentialRampToValueAtTime(5200,t+9);nz.connect(bp).connect(gn(ctx,.3)).connect(g);
-  const ris=ctx.createOscillator();ris.type='sawtooth';ris.frequency.setValueAtTime(base/2,t);ris.frequency.exponentialRampToValueAtTime(base*4,t+9);ris.connect(bq(ctx,'lowpass',1800)).connect(gn(ctx,.07)).connect(g);ris.start();
+  const nz=loopN(ctx,NB.pink),bp=bq(ctx,'bandpass',200,4);bp.frequency.setValueAtTime(200,t);bp.frequency.exponentialRampToValueAtTime(2600,t+9);nz.connect(bp).connect(gn(ctx,.22)).connect(g);
+  const ris=ctx.createOscillator();ris.type='sawtooth';ris.frequency.setValueAtTime(base/2,t);ris.frequency.exponentialRampToValueAtTime(base*4,t+9);ris.connect(bq(ctx,'lowpass',1200)).connect(gn(ctx,.07)).connect(g);ris.start();
   REV={g,src:[nz,ris],st:-1,t0:performance.now(),base};$('#monad').classList.add('rev');REV.tm=setInterval(revTick,110);revTick()}
 function revTick(){
   if(!REV)return;const el=(performance.now()-REV.t0)/1000,st=Math.min(4,Math.floor(el/1.8)),R=Math.min(1,el/9),ctx=A.ctx;window.REVV=R;pluck=Math.max(pluck,.35+R);
