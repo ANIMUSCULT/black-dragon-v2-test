@@ -393,7 +393,10 @@ applyMix();document.addEventListener('pointerdown',()=>setTimeout(applyMix,400),
   const place=()=>{const b=$('#dial').getBoundingClientRect();if(!b.width)return;en.style.left=(b.left+b.width/2)+'px';en.style.top=(b.top+b.height/2)+'px';en.style.width=en.style.height=(b.width*.7)+'px'};
   place();addEventListener('resize',place);setTimeout(place,400);setTimeout(place,1500);
   if(!A.ctx){$('#veil').play().catch(()=>{});const order=[1,2,3,0,5,2],t0=performance.now();window.VMODE=order[0];
-    const demo=setInterval(()=>{if(A.ctx){clearInterval(demo);window.VMODE=null;window.REVV=0;return}
+    let lastSwap=performance.now();
+    const demo=setInterval(()=>{if(A.ctx){clearInterval(demo);window.VMODE=null;window.REVV=0;hintVis();return}
+      /* walk through the visualizers too: a new one every four seconds, once the current one is actually playing */
+      const v=$('#veil');if(performance.now()-lastSwap>4000&&v.readyState>=2&&!document.hidden){lastSwap=performance.now();setFilm(film+1)}
       const t=(performance.now()-t0)/1000,ph=(t%7)/7;window.VMODE=order[Math.floor(t/7)%order.length];window.REVV=ph>.8?Math.max(0,1-Math.abs(ph-.9)/.1)*.75:.12+.1*Math.sin(t*.5)},60)}}
 
 /* ================= silence: empty the board so the sound is built up from nothing ================= */
@@ -404,3 +407,7 @@ $('#bBlank').onclick=blankAll;
 /* a back step for the films, now that there are many */
 {const b=document.createElement('button');b.className='pill';b.id='bFilmPrev';b.textContent='‹';b.title='Previous visualizer';b.setAttribute('aria-label','Previous visualizer');$('#bFilm').before(b);
   b.onclick=()=>{setFilm(film-1);$('#veil').play().catch(()=>{})};$('#bFilm').title='Next visualizer'}
+
+/* on arrival the visualizer button glows until it is first used */
+function hintVis(){const b=$('#bFilm'),p=$('#bFilmPrev'),m=$('#tabs [data-t=more]'),off=()=>{b.classList.remove('nudge');m.classList.remove('nudge');b.removeEventListener('click',off);p.removeEventListener('click',off)};
+  b.classList.add('nudge');m.classList.add('nudge');b.addEventListener('click',off);p.addEventListener('click',off);setTimeout(()=>say('press visualizer to change the picture'),1400)}

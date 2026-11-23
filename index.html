@@ -519,6 +519,8 @@ body.idle .hud{transition:opacity 2.5s}
 .gate-foot{justify-content:center;text-align:center;left:0;right:0;font-size:12px}
 @media (max-width:1000px){.gate-in{padding-bottom:13vh}.gate-in .mark{font-size:clamp(40px,13vw,70px)}.gate-foot{bottom:22px;font-size:10px}}
 @media (prefers-reduced-motion:reduce){#enter{animation:none}}
+@keyframes hintglow{0%,100%{box-shadow:inset 0 1px 0 #fff,0 0 10px rgba(255,180,84,.5),0 4px 14px rgba(0,0,0,.5);border-color:rgba(255,255,255,.6)}50%{box-shadow:inset 0 1px 0 #fff,inset 0 0 18px rgba(255,200,120,.9),0 0 34px rgba(255,180,84,1),0 4px 14px rgba(0,0,0,.5);border-color:#fff}}
+#bFilm.nudge,#tabs button.nudge{animation:hintglow 1.6s ease-in-out infinite!important;color:#fff}
 #bFilmPrev{padding:7px 10px!important;font-size:15px!important}#bFilmPrev::before{display:none!important}
 #bBlank{--glow:#9fd8ff;font-weight:700;letter-spacing:.16em}
 @media (max-width:1000px){#bBlank{display:block!important;flex:0 0 auto;min-height:36px}.top .mark{font-size:19px}.top .pill{padding:8px 9px;font-size:9px}}
