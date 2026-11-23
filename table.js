@@ -395,3 +395,12 @@ applyMix();document.addEventListener('pointerdown',()=>setTimeout(applyMix,400),
   if(!A.ctx){$('#veil').play().catch(()=>{});const order=[1,2,3,0,5,2],t0=performance.now();window.VMODE=order[0];
     const demo=setInterval(()=>{if(A.ctx){clearInterval(demo);window.VMODE=null;window.REVV=0;return}
       const t=(performance.now()-t0)/1000,ph=(t%7)/7;window.VMODE=order[Math.floor(t/7)%order.length];window.REVV=ph>.8?Math.max(0,1-Math.abs(ph-.9)/.1)*.75:.12+.1*Math.sin(t*.5)},60)}}
+
+/* ================= silence: empty the board so the sound is built up from nothing ================= */
+function blankAll(){resetAll();Object.assign(S,{tone:0,body:0,air:0,close:0,tide:false});paintKnobs();applyAll();$('#bTide').classList.toggle('on',false);if(typeof paintLive==='function')paintLive();
+  say('silence · the board is empty. add a stone, a tone or a dial, or just play')}
+$('#bBlank').onclick=blankAll;
+
+/* a back step for the films, now that there are many */
+{const b=document.createElement('button');b.className='pill';b.id='bFilmPrev';b.textContent='‹';b.title='Previous film';b.setAttribute('aria-label','Previous film');$('#bFilm').before(b);
+  b.onclick=()=>{setFilm(film-1);$('#veil').play().catch(()=>{})};$('#bFilm').title='Next film'}

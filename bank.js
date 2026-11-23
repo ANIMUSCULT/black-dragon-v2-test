@@ -200,7 +200,7 @@ function bankProof(){
 /* ---------- silence and volume ---------- */
 let silenced=false;
 function silence(on){
-  silenced=on==null?!silenced:on;const b=$('#bSilence');b.classList.toggle('on',silenced);b.textContent=silenced?'sound on':'silence';document.body.classList.toggle('muted',silenced);
+  silenced=on==null?!silenced:on;const b=$('#bSilence');b.classList.toggle('on',silenced);b.textContent=silenced?'sound on':'pause';document.body.classList.toggle('muted',silenced);
   if(!A.ctx)return;const t=A.ctx.currentTime;A.vol.gain.cancelScheduledValues(t);
   if(silenced){A.vol.gain.setValueAtTime(0,t);if(possess)$('#bPossess').click();
     Object.keys(held).forEach(k=>{const h=held[k];h.g.gain.cancelScheduledValues(t);h.g.gain.setValueAtTime(0,t);h.os.forEach(o=>{try{o.stop(t)}catch(_){}});delete held[k]});

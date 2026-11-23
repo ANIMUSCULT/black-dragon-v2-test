@@ -519,6 +519,9 @@ body.idle .hud{transition:opacity 2.5s}
 .gate-foot{justify-content:center;text-align:center;left:0;right:0;font-size:12px}
 @media (max-width:1000px){.gate-in{padding-bottom:13vh}.gate-in .mark{font-size:clamp(40px,13vw,70px)}.gate-foot{bottom:22px;font-size:10px}}
 @media (prefers-reduced-motion:reduce){#enter{animation:none}}
+#bFilmPrev{padding:7px 10px!important;font-size:15px!important}#bFilmPrev::before{display:none!important}
+#bBlank{--glow:#9fd8ff;font-weight:700;letter-spacing:.16em}
+@media (max-width:1000px){#bBlank{display:block!important;flex:0 0 auto;min-height:36px}.top .mark{font-size:19px}.top .pill{padding:8px 9px;font-size:9px}}
 </style>
 </head>
 <body>
@@ -545,7 +548,8 @@ body.idle .hud{transition:opacity 2.5s}
     <div class="mark">Black Dragon<i>II</i></div>
     <div id="lcd" role="status" aria-live="polite"></div>
     <span class="sp"></span>
-    <button class="pill" id="bSilence" title="Cut all sound at once. Space bar does the same.">silence</button>
+    <button class="pill" id="bSilence" title="Pause all sound at once. Press again, or the space bar, to carry on.">pause</button>
+    <button class="pill" id="bBlank" title="Stop everything and empty the board, so you build your sound up from silence">silence</button>
     <button class="pill" id="bReset" title="Stop everything and put the board back to its starting places">reset</button>
     <label id="volBox" title="Volume of everything"><span>volume</span><input type="range" id="vol" min="0" max="1" step=".01" value=".8" aria-label="Volume"></label>
     <button class="pill" id="bFilm" title="Change the film">film</button>
@@ -622,7 +626,7 @@ body.idle .hud{transition:opacity 2.5s}
     <div class="rside"><button class="pill" id="bHeal">healing</button><button class="pill" id="bBody">body</button><button class="pill" id="bTrance">trance</button><button class="pill" id="bRites">rites</button><button class="pill" id="bForge">forge</button><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">voice</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
   </footer>
   <div class="jelly drawer" id="vox" hidden></div><div class="jelly drawer" id="bank" hidden></div><div class="jelly drawer" id="presets" hidden></div><div class="jelly drawer" id="codex" hidden></div><div class="jelly drawer" id="heal" hidden></div><div class="jelly drawer" id="body" hidden></div><div class="jelly drawer" id="trance" hidden></div><div class="jelly drawer" id="rites" hidden></div><div class="jelly drawer" id="forge" hidden></div>
-  <p class="hint">Play the bottom two rows of your keyboard, a MIDI keyboard, or touch the keys. Every note is in tune with the state. Space bar is silence.</p>
+  <p class="hint">Play the bottom two rows of your keyboard, a MIDI keyboard, or touch the keys. Every note is in tune with the state. Space bar is pause.</p>
 </main>
 
 <script>
@@ -753,7 +757,7 @@ const TRIM={"bowed strings":1.16,"choir":1.09,"crystal bowl":0.88,"glass armonic
 const VOICES=VOX.map(v=>v.n);
 
 /* ---------- films: the serpent opens; the film button walks through the rest ---------- */
-const FILMS=['gate-serpent','gate-01-red-tide','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist'];
+const FILMS=['gate-serpent','gate-01-red-tide','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist','film-13-slowmoving-art-piece','film-14-character-scene-footage','film-15-darkwave-montage-using','film-16-adventures-hypnotoad-bit','film-17-stay-focused-hypnotist','film-18-documentary-jellylike-pod','film-19-macro-fisheye-lens','film-20-white-unicorn-runs','film-21-white-unicorn-runs','film-22-king-stays-shrouded','film-23-shadow-king-waits','film-24-dragon-woman-hybrid','film-25-dragon-entering-water','film-26-underwater-gothic-cemetery','film-27-slowly-moving-through','film-28-eye-cat-cat','film-29-psychedelic-horror-eclips','film-30-temple-statrs-undulating','film-31-behind-glowing-plants','film-32-footage-camera-pans','film-33-found-footage-monster','film-34-overhead-vertical-camera','film-35-static-horror-clouds','film-36-ultraviolet-ai-overhead','film-37-women-braces-long','film-38-women-braces-long','film-39-beautiful-view-city','film-40-first-person-perspective','film-41-slow-dreamy-mist','film-42-extreme-close-up','film-43-woman-dances-slow','film-44-goth-dark-slow','film-45-everything-inside-gel'];
 let film=0;
 function setFilm(i){film=(i+FILMS.length)%FILMS.length;$('#veil').src='media/'+FILMS[film]+'.mp4';const b=$('#bFilm');if(b)b.textContent='film '+(film+1)+' of '+FILMS.length}
 function nextFilm(){setFilm(film+1)}

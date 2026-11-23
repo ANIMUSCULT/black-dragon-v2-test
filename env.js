@@ -254,7 +254,7 @@ $('#pads').addEventListener('wheel',e=>{const b=e.target.closest('.pad');if(!b)r
  const f2=paintBank;paintBank=()=>{f2();paintPads()};
  const f3=setState;setState=(i,k)=>{f3(i,k);const s=STATES[S.state];say(`${s.name.toLowerCase()} · ${s.beat} hz · ${s.sub}`)};
  const f4=applyPreset;applyPreset=i=>{const p=PRESETS[i];if(p[5])setEnv(p[5],false);else if(ENV)setEnv(null);f4(i);paintPads();say('preset · '+p[0].toLowerCase())};
- const f5=silence;silence=on=>{f5(on);say(silenced?'silence. press again, or the space bar, for sound':'sound on')};
+ const f5=silence;silence=on=>{f5(on);say(silenced?'paused. press again, or the space bar, to carry on':'sound on')};
  const f6=setFilm;setFilm=i=>{f6(i);say(`film ${film+1} of ${FILMS.length}`)};
  const f7=setKamea;setKamea=i=>{f7(i);const [nm,n]=KAMEA[MON.i];$('#monP').textContent=nm.toLowerCase();$('#monN').textContent=n*(n*n+1)/2;
    say(`monad · ${nm.toLowerCase()} · ${n} by ${n} · every line adds to ${n*(n*n+1)/2}`);
