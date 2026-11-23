@@ -552,7 +552,7 @@ body.idle .hud{transition:opacity 2.5s}
     <button class="pill" id="bBlank" title="Stop everything and empty the board, so you build your sound up from silence">silence</button>
     <button class="pill" id="bReset" title="Stop everything and put the board back to its starting places">reset</button>
     <label id="volBox" title="Volume of everything"><span>volume</span><input type="range" id="vol" min="0" max="1" step=".01" value=".8" aria-label="Volume"></label>
-    <button class="pill" id="bFilm" title="Change the film">film</button>
+    <button class="pill" id="bFilm" title="Next visualizer">visualizer</button>
     <button class="pill" id="bPossess" title="The machine plays itself. Touch a key to steer it.">possess</button>
     <button class="pill" id="bDescent" title="Fifteen minutes, sinking slowly to the bottom">descent</button>
     <button class="pill on" id="bTide" title="A slow swell that builds and breaks about once a minute">tide</button>
@@ -759,7 +759,12 @@ const VOICES=VOX.map(v=>v.n);
 /* ---------- films: the serpent opens; the film button walks through the rest ---------- */
 const FILMS=['gate-serpent','gate-01-red-tide','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist','film-13-slowmoving-art-piece','film-14-character-scene-footage','film-15-darkwave-montage-using','film-16-adventures-hypnotoad-bit','film-17-stay-focused-hypnotist','film-18-documentary-jellylike-pod','film-19-macro-fisheye-lens','film-20-white-unicorn-runs','film-21-white-unicorn-runs','film-22-king-stays-shrouded','film-23-shadow-king-waits','film-24-dragon-woman-hybrid','film-25-dragon-entering-water','film-26-underwater-gothic-cemetery','film-27-slowly-moving-through','film-28-eye-cat-cat','film-29-psychedelic-horror-eclips','film-30-temple-statrs-undulating','film-31-behind-glowing-plants','film-32-footage-camera-pans','film-33-found-footage-monster','film-34-overhead-vertical-camera','film-35-static-horror-clouds','film-36-ultraviolet-ai-overhead','film-37-women-braces-long','film-38-women-braces-long','film-39-beautiful-view-city','film-40-first-person-perspective','film-41-slow-dreamy-mist','film-42-extreme-close-up','film-43-woman-dances-slow','film-44-goth-dark-slow','film-45-everything-inside-gel'];
 let film=0;
-function setFilm(i){film=(i+FILMS.length)%FILMS.length;$('#veil').src='media/'+FILMS[film]+'.mp4';const b=$('#bFilm');if(b)b.textContent='film '+(film+1)+' of '+FILMS.length}
+let filmWatch=null;
+function setFilm(i){film=(i+FILMS.length)%FILMS.length;const v=$('#veil'),url='media/'+FILMS[film]+'.mp4',want=film,go=u=>{v.src=u;v.load();const q=v.play();if(q&&q.catch)q.catch(()=>{})};
+  clearTimeout(filmWatch);try{v.pause();v.removeAttribute('src');v.load()}catch(_){}v.preload='auto';go(url);
+  const b=$('#bFilm');if(b)b.textContent='visualizer '+(film+1)+' of '+FILMS.length;
+  /* if it has not started in six seconds, ask again past any stuck request */
+  filmWatch=setTimeout(()=>{if(film===want&&v.readyState<2)go(url+'?r='+Date.now())},6000)}
 function nextFilm(){setFilm(film+1)}
 $('#gateVid').src='media/gate-serpent.mp4';setFilm(0);
 $('#bFilm').onclick=()=>{nextFilm();$('#veil').play().catch(()=>{})};

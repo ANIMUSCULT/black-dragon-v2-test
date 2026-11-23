@@ -402,5 +402,5 @@ function blankAll(){resetAll();Object.assign(S,{tone:0,body:0,air:0,close:0,tide
 $('#bBlank').onclick=blankAll;
 
 /* a back step for the films, now that there are many */
-{const b=document.createElement('button');b.className='pill';b.id='bFilmPrev';b.textContent='‹';b.title='Previous film';b.setAttribute('aria-label','Previous film');$('#bFilm').before(b);
-  b.onclick=()=>{setFilm(film-1);$('#veil').play().catch(()=>{})};$('#bFilm').title='Next film'}
+{const b=document.createElement('button');b.className='pill';b.id='bFilmPrev';b.textContent='‹';b.title='Previous visualizer';b.setAttribute('aria-label','Previous visualizer');$('#bFilm').before(b);
+  b.onclick=()=>{setFilm(film-1);$('#veil').play().catch(()=>{})};$('#bFilm').title='Next visualizer'}
