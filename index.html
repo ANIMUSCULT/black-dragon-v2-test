@@ -514,9 +514,9 @@ const TRIM={"bowed strings":1.16,"choir":1.09,"crystal bowl":0.88,"glass armonic
 const VOICES=VOX.map(v=>v.n);
 
 /* ---------- films: the serpent opens; the film button walks through the rest ---------- */
-const FILMS=['gate-serpent','gate-01-red-tide','gate-02-black-pyramid','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil'];
+const FILMS=['gate-serpent','gate-01-red-tide','gate-02-black-pyramid','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil','film-08-liminal','film-09-orca','film-10-scorpion','film-11-goddess','film-12-cultist'];
 let film=0;
-function setFilm(i){film=(i+FILMS.length)%FILMS.length;$('#veil').src='media/'+FILMS[film]+'.mp4'}
+function setFilm(i){film=(i+FILMS.length)%FILMS.length;$('#veil').src='media/'+FILMS[film]+'.mp4';const b=$('#bFilm');if(b)b.textContent='film '+(film+1)+' of '+FILMS.length}
 function nextFilm(){setFilm(film+1)}
 $('#gateVid').src='media/gate-serpent.mp4';setFilm(0);
 $('#bFilm').onclick=()=>{nextFilm();$('#veil').play().catch(()=>{})};
