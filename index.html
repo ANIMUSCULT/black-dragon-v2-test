@@ -671,31 +671,42 @@ const S={vol:.8,echo:.5,att:.5,rel:.5,layers:{},env:'',speed:.4,twist:0,mirrors:
 Object.defineProperty(S,'car',{enumerable:false,get(){return clamp(Math.log(S.fc/40)/Math.log(15),0,1)},set(v){const f=40*Math.pow(15,clamp(v,0,1));if(Math.abs(f-S.fc)/S.fc>.004)S.fc=+f.toFixed(1)}});
 /* ---------- the voices. Each one is a recipe; the engine below builds it per note ---------- */
 const VOX=[
+ /* nectar: built for pleasure. Soft fronts, slow blooms, nothing above a murmur in the top end */
+ {n:'velvet keys',fam:'nectar',osc:[['sine',1,-4,.6],['sine',1,4,.6],['triangle',2,0,.1]],fm:[1,.45,1.2],parts:[[3,.06,.9]],lp:[5,.6,1.6,.5],trem:[3.4,.07],a:.012,d:3.2,s:.22,peak:.4,r:2.4},
+ {n:'honey bells',fam:'nectar',osc:[['sine',1,0,.5]],parts:[[1,.8,7],[2,.3,4.5],[3,.1,2.6],[4.2,.03,1.2]],beat:.5,a:.014,d:4,s:.12,peak:.36,r:3.4},
+ {n:'lotus pad',fam:'nectar',osc:[['triangle',1,0,.8],['sine',2,0,.2]],uni:3,spread:13,lp:[2.2,.9,2.4,2.6],sub:.2,trem:[.23,.1],a:1.4,peak:.42,r:4.5},
+ {n:'liquid glass',fam:'nectar',osc:[['sine',1,-5,.6],['sine',1,5,.6],['sine',2,3,.16],['sine',3,-2,.05]],noise:[[2,10,.35,-1]],vib:[.35,.004,.2],trem:[.5,.08],a:.5,peak:.32,r:4},
+ {n:'opium choir',fam:'nectar',osc:[['sawtooth',1,0,.7],['triangle',1,0,.5]],uni:4,spread:15,sub:.25,form:['oo','oh',5],lp:[6,.6],vib:[4.6,.004,1.2],a:1.3,peak:.55,r:4.2},
+ {n:'slow bloom',fam:'nectar',osc:[['sawtooth',1,0,.8],['sawtooth',1.5,0,.14]],uni:3,spread:18,lp:[1.2,1.6,5,3.2],sub:.3,a:.9,peak:.42,r:4.5},
+ {n:'amber strings',fam:'nectar',osc:[['sawtooth',1,0,1]],uni:4,spread:16,lp:[3.2,.7,.6,1.6],sub:.18,vib:[4.9,.003,1],trem:[.33,.06],a:.7,peak:.42,r:3.4},
+ {n:'moon harp',fam:'nectar',osc:[['triangle',1,0,.9],['sine',2,0,.35],['sine',3,0,.08]],lp:[4.5,.6,2.4,.5],parts:[[1,.4,5]],beat:.35,a:.008,d:2.6,s:.04,peak:.42,r:2.6},
+ {n:'dream organ',fam:'nectar',osc:[['sine',.5,0,.5],['sine',1,0,.8],['sine',1.5,0,.18],['sine',2,0,.3],['sine',3,0,.08]],trem:[5.6,.1],vib:[5.6,.003,.4],a:.14,peak:.3,r:2.2},
+ {n:'afterglow',fam:'nectar',oct:1,osc:[['sine',1,-6,.6],['sine',1,6,.6],['sine',.5,0,.4]],parts:[[2,.2,3],[3,.06,1.6]],trem:[.3,.1],a:.9,peak:.3,r:5},
  /* glass and metal */
  {n:'glass armonica',fam:'glass and metal',osc:[['sine',1,-3,.6],['sine',1,3,.6],['sine',2.005,0,.1],['sine',3.01,0,.035]],noise:[[2,16,1.1,-.5]],trem:[4.2,.05],a:.55,peak:.28,r:2.8},
  {n:'crystal bowl',fam:'glass and metal',osc:[['sine',1,0,.8],['sine',2,2,.12]],parts:[[3,.05,5]],trem:[.7,.06],a:1.2,peak:.3,r:4},
- {n:'singing bowl',fam:'glass and metal',parts:[[1,1,7],[2.71,.5,4.5],[5.2,.26,2.8],[8.4,.12,1.6]],beat:.6,noise:[[-2400,.7,1.5,.03]],a:.004,peak:.34,r:1.6},
- {n:'tingsha',fam:'glass and metal',oct:2,parts:[[1,1,5],[1.006,.9,5],[2.76,.3,2],[5.1,.15,1]],a:.002,peak:.2,r:1},
- {n:'temple bell',fam:'glass and metal',osc:[['sine',1,0,.9]],fm:[3.5,2.2,2.5],parts:[[.5,.4,6]],a:.003,d:2.2,s:0,peak:.3,r:1.5},
- {n:'gong',fam:'glass and metal',oct:-1,parts:[[1,1,9],[1.48,.7,8],[2.03,.6,7],[2.74,.5,6],[3.41,.4,5],[4.62,.3,4],[5.9,.2,3]],beat:.9,noise:[[-900,.5,1.2,.4]],a:.02,peak:.26,r:3},
- {n:'music box',fam:'glass and metal',oct:1,parts:[[1,1,2.2],[4,.25,1],[8.2,.08,.5]],a:.002,peak:.3,r:.8},
- {n:'kalimba',fam:'glass and metal',parts:[[1,1,1.6],[5.6,.2,.25],[2,.12,.9]],noise:[[-3000,1,.8,.02]],a:.002,peak:.36,r:.6},
- {n:'handpan',fam:'glass and metal',parts:[[1,1,3],[2,.55,2.2],[3,.35,1.6],[4.98,.1,.8]],beat:.4,noise:[[-1500,.8,1,.03]],a:.003,peak:.34,r:1.2},
- {n:'marimba',fam:'glass and metal',parts:[[1,1,1.1],[3.9,.3,.35],[9.2,.08,.15]],noise:[[-800,1,.8,.02]],a:.002,peak:.4,r:.5},
+ {n:'singing bowl',fam:'glass and metal',parts:[[1,1,8],[2.71,.42,5],[5.2,.14,2.6],[8.4,.04,1.2]],beat:.6,noise:[[-1400,.7,.6,.04]],a:.004,peak:.34,r:1.6},
+ {n:'tingsha',fam:'glass and metal',oct:1,parts:[[1,1,6],[1.006,.9,6],[2.76,.16,1.8],[5.1,.04,.6]],a:.006,peak:.2,r:1.6},
+ {n:'temple bell',fam:'glass and metal',osc:[['sine',1,0,.9]],fm:[3.5,1,1.4],parts:[[.5,.5,7],[2,.12,3]],a:.006,d:2.6,s:0,peak:.3,r:1.5},
+ {n:'gong',fam:'glass and metal',oct:-1,parts:[[1,1,9],[1.48,.7,8],[2.03,.6,7],[2.74,.5,6],[3.41,.4,5],[4.62,.3,4],[5.9,.2,3]],beat:.9,noise:[[-700,.5,.7,.5]],a:.03,peak:.26,r:3.5},
+ {n:'music box',fam:'glass and metal',oct:1,parts:[[1,1,2.6],[2,.2,1.6],[4,.12,.8],[8.2,.015,.3]],a:.005,peak:.3,r:.8},
+ {n:'kalimba',fam:'glass and metal',parts:[[1,1,1.9],[5.6,.08,.22],[2,.16,1.1]],noise:[[-1700,1,.35,.025]],a:.004,peak:.36,r:.6},
+ {n:'handpan',fam:'glass and metal',parts:[[1,1,3.4],[2,.55,2.4],[3,.28,1.6],[4.98,.05,.7]],beat:.4,noise:[[-1100,.8,.45,.035]],a:.005,peak:.34,r:1.2},
+ {n:'marimba',fam:'glass and metal',parts:[[1,1,1.3],[3.9,.22,.35],[9.2,.02,.12]],noise:[[-700,1,.4,.025]],a:.004,peak:.4,r:.5},
  /* voices */
  {n:'choir',fam:'voices',osc:[['sawtooth',1,0,1]],uni:3,spread:17,sub:.22,form:['ah','oo',2.2],vib:[5.1,.006,.7],a:.7,peak:.5,r:2.6},
- {n:'sirens',fam:'voices',oct:1,osc:[['sawtooth',1,0,1]],uni:2,spread:10,form:['ee','ah',3],noise:[[4,2,.25,-.5]],vib:[5.6,.008,.5],a:.9,peak:.45,r:3},
+ {n:'sirens',fam:'voices',oct:1,osc:[['sawtooth',1,0,1]],uni:2,spread:10,form:['oo','ah',3],noise:[[4,2,.12,-.5]],vib:[5.2,.006,.6],a:.9,peak:.45,r:3},
  {n:'monks',fam:'voices',oct:-1,osc:[['sawtooth',1,0,1]],uni:3,spread:9,form:['oo','oh',4],vib:[4.4,.004,1],a:1.1,peak:.6,r:3},
- {n:'throat singer',fam:'voices',oct:-1,osc:[['sawtooth',1,0,1]],lp:[10,14,.5,3],sub:.3,a:.5,peak:.3,r:2},
+ {n:'throat singer',fam:'voices',oct:-1,osc:[['sawtooth',1,0,1]],lp:[9,8,.5,3],sub:.35,a:.5,peak:.3,r:2},
  {n:'whisper',fam:'voices',noise:[[1,30,6,-1],[2,30,3,-1]],form:['ah','ee',3],a:.4,peak:.5,r:1.5},
  {n:'hum',fam:'voices',osc:[['triangle',1,0,1]],uni:2,spread:8,form:['mm',null],vib:[4.8,.004,.8],a:.5,peak:.7,r:2},
  /* strings */
- {n:'tanpura',fam:'strings',oct:-1,osc:[['sawtooth',1,0,.8],['sawtooth',2,4,.3]],lp:[14,6,.25,1.8],a:.01,d:3,s:.25,peak:.3,r:3},
+ {n:'tanpura',fam:'strings',oct:-1,osc:[['sawtooth',1,0,.8],['sawtooth',2,4,.3]],lp:[11,4,.3,1.8],a:.01,d:3,s:.25,peak:.3,r:3},
  {n:'bowed strings',fam:'strings',osc:[['sawtooth',1,0,1]],uni:4,spread:22,lp:[5,.7,.5,1.2],vib:[5.2,.004,.8],a:.8,peak:.42,r:2.4},
  {n:'cello',fam:'strings',oct:-1,osc:[['sawtooth',1,0,1]],lp:[5,2,1,.5],form:['oh',null],vib:[5.4,.006,.5],a:.25,peak:.8,r:1.2},
  {n:'harp',fam:'strings',osc:[['triangle',1,0,1],['sine',2,0,.3]],lp:[6,.7,3,.25],a:.004,d:1.4,s:0,peak:.4,r:1.2},
- {n:'koto',fam:'strings',osc:[['sawtooth',1,0,.8]],lp:[4,3,6,.12],noise:[[-3500,1,.6,.02]],a:.003,d:1,s:0,peak:.36,r:.9},
- {n:'sitar',fam:'strings',osc:[['sawtooth',1,0,.7],['square',2.005,0,.15]],lp:[9,9,2.5,.9],a:.004,d:2.4,s:.05,peak:.26,r:1.6},
+ {n:'koto',fam:'strings',osc:[['sawtooth',1,0,.8]],lp:[4,1.5,3.2,.15],noise:[[-2000,1,.28,.025]],a:.005,d:1,s:0,peak:.36,r:.9},
+ {n:'sitar',fam:'strings',osc:[['sawtooth',1,0,.7],['square',2.005,0,.08]],lp:[6.5,4.5,1.8,.9],a:.006,d:2.4,s:.05,peak:.26,r:1.6},
  /* breath and reed */
  {n:'flute',fam:'breath and reed',oct:1,osc:[['sine',1,0,.9],['sine',2,0,.12]],noise:[[1,3,.5,-.3]],vib:[4.8,.005,.5],a:.12,peak:.34,r:.7},
  {n:'shakuhachi',fam:'breath and reed',osc:[['sine',1,0,.8],['triangle',2,0,.1]],noise:[[1.5,1.5,1.2,-.25]],vib:[4.2,.009,.7],a:.2,peak:.34,r:.9},
@@ -707,55 +718,55 @@ const VOX=[
  {n:'theremin',fam:'electric',osc:[['sine',1,0,.9],['triangle',1,0,.1]],vib:[5.8,.012,.25],a:.2,peak:.3,r:.8},
  {n:'analog pad',fam:'electric',osc:[['sawtooth',1,0,1]],uni:5,spread:28,lp:[3.5,.8,.4,2],sub:.25,a:1.1,peak:.4,r:3},
  {n:'glass pad',fam:'electric',oct:1,osc:[['sine',1,0,.7],['sine',2,5,.25],['sine',3,-5,.1]],uni:2,spread:9,trem:[.4,.08],a:1.6,peak:.26,r:4},
- {n:'electric piano',fam:'electric',osc:[['sine',1,0,.9]],fm:[1,1.4,.9],parts:[[14,.06,.12]],a:.004,d:1.6,s:.12,peak:.34,r:.9},
- {n:'hollow',fam:'electric',osc:[['square',1,0,.6]],lp:[4,2,.6,.8],vib:[5,.004,.9],a:.1,peak:.26,r:1},
+ {n:'electric piano',fam:'electric',osc:[['sine',1,0,.9]],fm:[1,.9,.9],parts:[[7,.035,.12]],a:.006,d:1.6,s:.12,peak:.34,r:.9},
+ {n:'hollow',fam:'electric',osc:[['square',1,0,.6]],lp:[4,1.1,.6,.8],vib:[5,.004,.9],a:.1,peak:.26,r:1},
  {n:'deep sub',fam:'electric',oct:-2,osc:[['sine',1,0,1],['triangle',2,0,.15]],a:.06,peak:.5,r:1},
  {n:'dark drone',fam:'electric',oct:-1,osc:[['sawtooth',1,0,.7],['sawtooth',1.498,0,.35],['sawtooth',.5,0,.5]],uni:2,spread:12,lp:[2.5,3,.5,3],a:1.8,peak:.36,r:4},
  {n:'wind',fam:'electric',noise:[[1,22,7,-2],[2,18,2.5,-2],[.5,12,3,-2]],trem:[.3,.1],a:1.2,peak:.5,r:2.5},
  /* plucked and keys */
- {n:'harpsichord',fam:'plucked and keys',osc:[['sawtooth',1,0,.7],['square',2,0,.15]],lp:[9,2,3,.12],noise:[[-4000,1,.5,.012]],a:.002,d:.9,s:0,peak:.3,r:.5},
- {n:'clavichord',fam:'plucked and keys',osc:[['square',1,0,.6],['sawtooth',1,5,.2]],lp:[5,1.5,3,.1],a:.003,d:.6,s:.05,peak:.3,r:.4},
- {n:'dulcimer',fam:'plucked and keys',parts:[[1,1,2.6],[2,.5,1.8],[3,.3,1.2],[4,.18,.8],[5,.1,.5]],beat:.5,noise:[[-2500,1,.9,.015]],a:.002,peak:.3,r:1},
- {n:'santur',fam:'plucked and keys',oct:1,parts:[[1,1,2],[2,.6,1.4],[3,.35,.9],[4.02,.2,.6]],beat:1.1,noise:[[-5000,1,.8,.01]],a:.002,peak:.28,r:.9},
+ {n:'harpsichord',fam:'plucked and keys',osc:[['sawtooth',1,0,.7],['square',2,0,.07]],lp:[5.5,1,2.2,.14],noise:[[-2200,1,.2,.015]],a:.004,d:.9,s:0,peak:.3,r:.5},
+ {n:'clavichord',fam:'plucked and keys',osc:[['square',1,0,.6],['sawtooth',1,5,.2]],lp:[4.5,1,2,.12],a:.005,d:.6,s:.05,peak:.3,r:.4},
+ {n:'dulcimer',fam:'plucked and keys',parts:[[1,1,2.6],[2,.5,1.8],[3,.3,1.2],[4,.18,.8],[5,.1,.5]],beat:.5,noise:[[-1600,1,.35,.02]],a:.004,peak:.3,r:1},
+ {n:'santur',fam:'plucked and keys',parts:[[1,1,2.4],[2,.55,1.6],[3,.28,1],[4.02,.12,.6]],beat:.9,noise:[[-2400,1,.3,.015]],a:.004,peak:.28,r:.9},
  {n:'oud',fam:'plucked and keys',oct:-1,osc:[['triangle',1,0,.8],['sawtooth',1,0,.35]],lp:[5,1.5,4,.2],noise:[[-1800,1,.9,.02]],a:.003,d:1.1,s:0,peak:.4,r:.7},
  {n:'lute',fam:'plucked and keys',osc:[['triangle',1,0,.8],['sawtooth',2,0,.15]],lp:[6,1,3.5,.18],noise:[[-2600,1,.7,.015]],a:.003,d:1,s:0,peak:.4,r:.7},
  {n:'nylon guitar',fam:'plucked and keys',osc:[['triangle',1,0,.9],['sine',2,0,.3],['sawtooth',1,0,.12]],lp:[4.5,.8,3,.25],noise:[[-2000,1,.6,.015]],a:.003,d:1.5,s:0,peak:.42,r:.9},
  {n:'felt piano',fam:'plucked and keys',osc:[['sine',1,0,.8],['triangle',1,3,.25]],fm:[1,.5,.4],parts:[[2,.3,1.2],[3,.12,.7]],lp:[5,.7],noise:[[-900,1,.9,.03]],a:.006,d:2.2,s:.05,peak:.4,r:1},
  /* more glass and metal */
- {n:'glockenspiel',fam:'glass and metal',oct:2,parts:[[1,1,2.4],[2.76,.35,1],[5.4,.15,.5]],a:.002,peak:.22,r:.8},
- {n:'vibraphone',fam:'glass and metal',parts:[[1,1,4.5],[4,.25,2],[10,.05,.6]],trem:[5,.12],a:.003,peak:.34,r:1.6},
- {n:'church bell',fam:'glass and metal',oct:-1,parts:[[.5,.5,9],[1,1,7],[1.2,.55,5],[1.5,.3,4],[2,.5,3.5],[2.67,.18,2.4],[3,.14,2]],noise:[[-1200,.6,1.2,.05]],a:.004,peak:.3,r:3},
- {n:'crotales',fam:'glass and metal',oct:2,parts:[[1,1,7],[2.9,.2,3],[5.6,.08,1.5]],beat:.3,a:.002,peak:.18,r:2},
- {n:'steel pan',fam:'glass and metal',osc:[['sine',1,0,.8]],fm:[2,1.6,.5],parts:[[2,.4,1.4],[3,.2,.8]],a:.003,d:1.3,s:0,peak:.32,r:.7},
+ {n:'glockenspiel',fam:'glass and metal',oct:1,parts:[[1,1,3],[2.76,.2,1],[5.4,.04,.35]],a:.005,peak:.24,r:1.2},
+ {n:'vibraphone',fam:'glass and metal',parts:[[1,1,5],[4,.18,2],[10,.012,.4]],trem:[4.6,.12],a:.006,peak:.34,r:1.6},
+ {n:'church bell',fam:'glass and metal',oct:-1,parts:[[.5,.5,9],[1,1,7],[1.2,.55,5],[1.5,.3,4],[2,.5,3.5],[2.67,.18,2.4],[3,.14,2]],noise:[[-800,.6,.55,.06]],a:.008,peak:.3,r:3.5},
+ {n:'crotales',fam:'glass and metal',oct:1,parts:[[1,1,8],[2.9,.12,3],[5.6,.025,1.2]],beat:.3,a:.006,peak:.2,r:2.6},
+ {n:'steel pan',fam:'glass and metal',osc:[['sine',1,0,.8]],fm:[2,.9,.5],parts:[[2,.4,1.6],[3,.15,.8]],a:.005,d:1.3,s:0,peak:.32,r:.7},
  /* more breath and reed */
  {n:'bansuri',fam:'breath and reed',oct:1,osc:[['sine',1,0,.9],['triangle',2,0,.08]],noise:[[1,2,.8,-.3],[3,1,.2,-.4]],vib:[5,.008,.35],a:.09,peak:.32,r:.6},
  {n:'ney',fam:'breath and reed',osc:[['sine',1,0,.7],['sine',3,0,.06]],noise:[[1,1.2,1.6,-.4],[2,1.5,.6,-.4]],vib:[4.4,.007,.6],a:.16,peak:.32,r:.8},
  {n:'ocarina',fam:'breath and reed',oct:1,osc:[['sine',1,0,1],['triangle',1,0,.08]],noise:[[1,4,.2,-.2]],a:.05,peak:.3,r:.4},
  {n:'pan pipes',fam:'breath and reed',oct:1,osc:[['sine',1,0,.9],['sine',3,0,.07]],noise:[[1,2,2.2,.12],[2,1,.3,-.4]],a:.03,peak:.32,r:.5},
  {n:'conch',fam:'breath and reed',oct:-1,osc:[['sawtooth',1,0,1]],lp:[3,2,.5,.8],form:['oh',null],vib:[3.2,.004,1],a:.5,peak:.9,r:1.4},
- {n:'shofar',fam:'breath and reed',oct:-1,osc:[['sawtooth',1,0,.9],['square',1,6,.2]],lp:[4,4,.45,.5],a:.18,peak:.3,r:.7},
- {n:'bagpipe',fam:'breath and reed',osc:[['sawtooth',1,0,.6],['square',1,0,.4]],lp:[10,1.5],sub:.45,a:.12,peak:.2,r:.5},
+ {n:'shofar',fam:'breath and reed',oct:-1,osc:[['sawtooth',1,0,.9],['square',1,6,.2]],lp:[3.6,2.2,.5,.5],a:.2,peak:.3,r:.7},
+ {n:'bagpipe',fam:'breath and reed',osc:[['sawtooth',1,0,.6],['square',1,0,.4]],lp:[5,1],sub:.45,a:.12,peak:.2,r:.5},
  /* more voices */
  {n:'bass choir',fam:'voices',oct:-1,osc:[['sawtooth',1,0,1]],uni:4,spread:14,form:['oh','ah',3],vib:[4.6,.005,.9],a:.9,peak:.6,r:2.8},
  {n:'boy choir',fam:'voices',oct:1,osc:[['triangle',1,0,.7],['sawtooth',1,0,.4]],uni:3,spread:11,form:['oo','ah',2.5],vib:[5.4,.005,.6],a:.6,peak:.6,r:2.4},
- {n:'banshee',fam:'voices',oct:1,osc:[['sawtooth',1,0,1]],uni:2,spread:20,form:['ee','ah',1.2],vib:[6.4,.02,.3],a:.5,peak:.45,r:2.2},
+ {n:'banshee',fam:'voices',oct:1,osc:[['sawtooth',1,0,1]],uni:2,spread:14,form:['ee','ah',.9],vib:[6,.012,.4],a:.5,peak:.45,r:2.2},
  /* more electric */
  {n:'ondes martenot',fam:'electric',osc:[['sine',1,0,.8],['triangle',1,0,.25]],lp:[6,.7],vib:[5.5,.009,.3],a:.15,peak:.3,r:.9},
  {n:'tape strings',fam:'electric',osc:[['sawtooth',1,0,1]],uni:3,spread:18,lp:[4,.8],trem:[.8,.06],vib:[.6,.003,0],a:.35,peak:.36,r:1.4},
- {n:'supersaw',fam:'electric',osc:[['sawtooth',1,0,1]],uni:7,spread:42,lp:[8,.8,.5,.6],sub:.2,a:.05,peak:.3,r:1},
- {n:'pulse lead',fam:'electric',osc:[['square',1,0,.7]],lp:[6,4,2.2,.2],vib:[5.6,.005,.5],a:.01,peak:.24,r:.5},
- {n:'fm glass',fam:'electric',osc:[['sine',1,0,.9]],fm:[3.01,1.2,3],a:.01,d:3,s:.2,peak:.3,r:1.6},
+ {n:'supersaw',fam:'electric',osc:[['sawtooth',1,0,1]],uni:7,spread:30,lp:[4.5,.8,.6,.8],sub:.25,a:.09,peak:.3,r:1},
+ {n:'pulse lead',fam:'electric',osc:[['square',1,0,.7]],lp:[4.2,1.8,1.7,.25],vib:[5.4,.005,.5],a:.025,peak:.24,r:.5},
+ {n:'fm glass',fam:'electric',osc:[['sine',1,0,.9]],fm:[3.01,.6,2.4],a:.015,d:3,s:.2,peak:.3,r:1.6},
  {n:'sub organ',fam:'electric',oct:-1,osc:[['sine',1,0,.9],['sine',2,0,.5],['sine',3,0,.2]],a:.04,peak:.34,r:.8},
  /* the dark */
- {n:'infernal brass',fam:'the dark',oct:-1,osc:[['sawtooth',1,0,1]],uni:4,spread:16,lp:[2.2,4,2.6,.5],a:.22,peak:.36,r:1.2},
- {n:'bees',fam:'the dark',osc:[['sawtooth',1,-20,.6],['sawtooth',1,20,.6]],lp:[3.5,1],trem:[27,.14],a:.3,peak:.26,r:1},
+ {n:'infernal brass',fam:'the dark',oct:-1,osc:[['sawtooth',1,0,1]],uni:4,spread:16,lp:[2.2,2,2,.6],a:.25,peak:.36,r:1.2},
+ {n:'bees',fam:'the dark',osc:[['sawtooth',1,-20,.6],['sawtooth',1,20,.6]],lp:[3.5,1],trem:[27,.08],a:.3,peak:.26,r:1},
  {n:'abyss choir',fam:'the dark',oct:-2,osc:[['sawtooth',1,0,1]],uni:4,spread:12,form:['oo','oh',5],sub:.3,a:1.4,peak:.7,r:3.5},
  {n:'bowed metal',fam:'the dark',osc:[['sine',1,0,.8],['sine',1.51,0,.4],['sine',2.33,0,.3],['sine',3.7,0,.15]],trem:[.9,.08],noise:[[1,14,1.2,-1]],a:1.5,peak:.26,r:3.5}
 ];
-const FAMS=['glass and metal','plucked and keys','strings','breath and reed','voices','electric','the dark'];
+const FAMS=['nectar','glass and metal','plucked and keys','strings','breath and reed','voices','electric','the dark'];
 VOX.sort((a,b)=>FAMS.indexOf(a.fam)-FAMS.indexOf(b.fam));
 /* loudness trims, from measuring each voice */
-const TRIM={"bowed strings":1.16,"choir":1.09,"crystal bowl":0.88,"glass armonica":0.7,"gong":0.55,"handpan":0.65,"hum":1.8,"kalimba":0.93,"marimba":1.05,"monks":1.3,"music box":1.47,"singing bowl":0.59,"sirens":1.02,"tanpura":1.48,"temple bell":1.07,"throat singer":1.12,"tingsha":1.17,"whisper":1.8,"analog pad":1.3,"cathedral organ":1.1,"cello":0.57,"dark drone":1.3,"deep sub":0.59,"didgeridoo":1.06,"duduk":0.82,"electric piano":1.18,"flute":0.62,"glass pad":1.3,"harmonium":1.96,"harp":0.66,"hollow":1.44,"koto":1.02,"shakuhachi":0.7,"sitar":2.18,"theremin":0.96,"wind":2.2,"church bell":0.55,"clavichord":1.5,"crotales":1.4,"dulcimer":0.75,"felt piano":0.45,"glockenspiel":1.8,"harpsichord":1.4,"lute":0.8,"nylon guitar":0.55,"oud":0.65,"santur":0.95,"steel pan":1.5,"vibraphone":1.1,"bagpipe":1.5,"bansuri":0.6,"conch":0.55,"ney":0.85,"ocarina":0.6,"pan pipes":0.6,"shofar":0.87,"abyss choir":2.0,"banshee":0.83,"bass choir":0.93,"bees":1.5,"bowed metal":1.3,"boy choir":0.62,"fm glass":1.25,"infernal brass":1.35,"pulse lead":1.35,"sub organ":0.8,"supersaw":1.45};VOX.forEach(v=>v.trim=TRIM[v.n]||1);
+const TRIM={"velvet keys":0.71,"honey bells":0.72,"lotus pad":1.1,"liquid glass":0.62,"opium choir":0.75,"slow bloom":1,"amber strings":1,"moon harp":0.6,"dream organ":0.71,"afterglow":1,"glass armonica":0.7,"crystal bowl":0.88,"singing bowl":0.57,"tingsha":1.45,"temple bell":0.89,"gong":0.56,"music box":1.8,"kalimba":0.98,"handpan":0.73,"marimba":1.09,"glockenspiel":2.0,"vibraphone":1.15,"church bell":0.42,"crotales":1.7,"steel pan":1.33,"harpsichord":1.56,"clavichord":1.88,"dulcimer":0.95,"santur":1.14,"oud":0.47,"lute":0.74,"nylon guitar":0.5,"felt piano":0.46,"tanpura":1.16,"bowed strings":1.16,"cello":0.49,"harp":0.88,"koto":1,"sitar":2.28,"flute":0.64,"shakuhachi":0.56,"duduk":0.68,"didgeridoo":1.06,"harmonium":1.96,"cathedral organ":0.87,"bansuri":0.68,"ney":0.67,"ocarina":0.62,"pan pipes":0.68,"conch":0.55,"shofar":1.07,"bagpipe":1.37,"choir":1.09,"sirens":1.02,"monks":1.3,"throat singer":1.12,"whisper":1.8,"hum":1.5,"bass choir":0.93,"boy choir":0.62,"banshee":0.83,"theremin":0.93,"analog pad":1.3,"glass pad":1.3,"electric piano":0.98,"hollow":1.32,"deep sub":0.38,"dark drone":1.3,"wind":2.2,"ondes martenot":0.88,"tape strings":1,"supersaw":1.98,"pulse lead":1.26,"fm glass":1,"sub organ":0.59,"infernal brass":1.45,"bees":1.5,"abyss choir":2,"bowed metal":1.3};VOX.forEach(v=>v.trim=TRIM[v.n]||1);
 const VOICES=VOX.map(v=>v.n);
 
 /* ---------- films: the serpent opens; the film button walks through the rest ---------- */
@@ -792,7 +803,7 @@ function initAudio(){
   /* echo for the played voice: two delays that feed each other across the head */
   A.echoIn=ctx.createGain();A.echoIn.gain.value=.28;
   const dl=ctx.createDelay(2),dr=ctx.createDelay(2),fl=ctx.createGain(),fr=ctx.createGain(),pl=ctx.createStereoPanner(),prr=ctx.createStereoPanner(),elp=ctx.createBiquadFilter();
-  dl.delayTime.value=.41;dr.delayTime.value=.57;fl.gain.value=fr.gain.value=.36;pl.pan.value=-.75;prr.pan.value=.75;elp.type='lowpass';elp.frequency.value=2600;
+  dl.delayTime.value=.41;dr.delayTime.value=.57;fl.gain.value=fr.gain.value=.42;A.eL=dl;A.eR=dr;pl.pan.value=-.75;prr.pan.value=.75;elp.type='lowpass';elp.frequency.value=1900;
   A.echoIn.connect(elp).connect(dl);dl.connect(fl).connect(dr);dr.connect(fr).connect(dl);dl.connect(pl);dr.connect(prr);
   for(const n of [pl,prr]){n.connect(A.master);n.connect(A.verb)}
   /* beat engine: two tones, routed three ways */
@@ -826,7 +837,16 @@ function initAudio(){
   A.whG=ctx.createGain();A.whG.gain.value=0;A.whP=ctx.createStereoPanner();wn.connect(w1).connect(A.whG);wn.connect(w2).connect(A.whG);A.whG.connect(A.whP).connect(A.close);wn.start(0,2);
   const pl2=ctx.createOscillator(),plg=ctx.createGain();pl2.frequency.value=.06;plg.gain.value=.92;pl2.connect(plg).connect(A.whP.pan);pl2.start();A.closeT0=ctx.currentTime;
   /* voice bus */
-  A.vBus=ctx.createGain();A.vBus.gain.value=.5;A.vBus.connect(A.master);A.vBus.connect(A.verb);A.vBus.connect(A.echoIn);
+  A.vBus=ctx.createGain();A.vBus.gain.value=.5;
+  {const sh=ctx.createBiquadFilter(),pk=ctx.createBiquadFilter(),warm=ctx.createBiquadFilter(),sw=ctx.createGain(),o=ctx.createGain();
+   sh.type='highshelf';sh.frequency.value=3800;sh.gain.value=-5;pk.type='peaking';pk.frequency.value=2900;pk.Q.value=1.1;pk.gain.value=-2.5;warm.type='lowshelf';warm.frequency.value=240;warm.gain.value=2;
+   A.vBus.connect(sh).connect(pk).connect(warm).connect(sw).connect(o);A.vOut=o;A.vSway=sw;
+   /* the keys breathe in time with the state: a gentle swell at the beat rate */
+   A.kLfo=ctx.createOscillator();A.kLfoG=ctx.createGain();A.kLfo.frequency.value=S.beat;A.kLfoG.gain.value=0;A.kLfo.connect(A.kLfoG).connect(sw.gain);A.kLfo.start();
+   o.connect(A.master);o.connect(A.verb);o.connect(A.echoIn);
+   /* chorus: two slowly wandering copies, one in each ear */
+   const cm=ctx.createGain();cm.gain.value=MOBILE?.3:.42;o.connect(cm);
+   [[.013,.11,.0032,-.85],[.021,.17,.0041,.85]].forEach(([d0,rt,dp,pan])=>{const d=ctx.createDelay(.06),l=ctx.createOscillator(),lg=ctx.createGain(),pp=ctx.createStereoPanner();d.delayTime.value=d0;l.frequency.value=rt;lg.gain.value=dp;l.connect(lg).connect(d.delayTime);l.start();pp.pan.value=pan;cm.connect(d).connect(pp);pp.connect(A.master);pp.connect(A.verb)})}
   /* recorder */
   const src="class R extends AudioWorkletProcessor{constructor(){super();this.on=false;this.port.onmessage=e=>this.on=e.data}process(i){if(this.on&&i[0].length)this.port.postMessage([i[0][0].slice(),(i[0][1]||i[0][0]).slice()]);return true}}registerProcessor('rec',R)";
   ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'text/javascript'}))).then(()=>{
@@ -837,11 +857,13 @@ function initAudio(){
 const at=(p,v,t=.08)=>p&&p.setTargetAtTime(v,A.ctx.currentTime,t);
 function applyBeat(){
   if(!A.ctx)return;const m=S.mode,f=S.fc,b=S.beat;
-  at(A.oA.frequency,f,.05);at(A.oB.frequency,f+b,.05);at(A.lfo.frequency,b,.05);A.lfoLP.frequency.value=Math.max(12,b*3);
+  at(A.oA.frequency,f,.05);at(A.oB.frequency,f+b,.05);at(A.lfo.frequency,b,.05);A.lfo.type=b<12?'sine':'square';A.lfoLP.frequency.value=b<12?200:Math.max(12,b*3);
   at(A.pA.pan,m==='binaural'?-1:0);at(A.pB.pan,m==='binaural'?1:0);
   at(A.gA.gain,m==='isochronic'?.9:.5);at(A.gB.gain,m==='isochronic'?0:.5);
   at(A.lfoG.gain,m==='isochronic'?.5:0);at(A.iso.gain,m==='isochronic'?.5:1);
   A.pad.forEach(p=>at(p.o.frequency,f*p.r,.7));
+  /* echoes fall on the pulse: the nearest whole number of beats to four tenths of a second, then half as long again */
+  if(A.eL){const k=Math.max(1,Math.round(.42*b)),d=Math.min(1.2,k/b);at(A.eL.delayTime,d,.4);at(A.eR.delayTime,d*1.5,.4);at(A.kLfo.frequency,b,.05);at(A.kLfoG.gain,b<14?.13:.03,.4)}
 }
 function applyAll(){
   applyBeat();if(!A.ctx)return;const s=STATES[S.state];
@@ -855,11 +877,11 @@ const nz=(t,dur,off)=>{const n=A.ctx.createBufferSource();n.buffer=A.nbuf;n.star
 let drumNext=0,drumN=0;
 function drumTick(){
   if(!A.ctx||!STATES[S.state].drum)return;const ctx=A.ctx;if(drumNext<ctx.currentTime)drumNext=ctx.currentTime+.05;
-  while(drumNext<ctx.currentTime+.14){const t=drumNext,acc=drumN%4===0?1:(drumN%2?.55:.72),v=S.tone*acc*(.9+Math.random()*.2),bus=ctx.createGain();bus.gain.value=v;bus.connect(A.master);bus.connect(A.verb);
-    for(const [f0,f1,l,dec] of [[104,66,.62,.24],[166,118,.2,.1]]){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+.11);
-      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(l,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+dec);o.connect(g).connect(bus);o.start(t);o.stop(t+dec+.02)}
-    const sl=nz(t,.06),sf=ctx.createBiquadFilter(),sg=ctx.createGain();sf.type='bandpass';sf.frequency.value=1500;sf.Q.value=.8;sg.gain.setValueAtTime(1.6,t);sg.gain.exponentialRampToValueAtTime(.001,t+.045);sl.connect(sf).connect(sg).connect(bus);
-    const th=t+.5/S.beat,rt=nz(th,.05),rf=ctx.createBiquadFilter(),rg=ctx.createGain();rf.type='highpass';rf.frequency.value=6500;rg.gain.setValueAtTime(.9,th);rg.gain.exponentialRampToValueAtTime(.001,th+.035);rt.connect(rf).connect(rg).connect(bus);
+  while(drumNext<ctx.currentTime+.14){const t=drumNext,acc=drumN%4===0?1:(drumN%2?.5:.7),v=S.tone*acc*.62*(.9+Math.random()*.2),bus=ctx.createGain();bus.gain.value=v;bus.connect(A.master);bus.connect(A.verb);
+    for(const [f0,f1,l,dec] of [[92,62,.62,.34],[138,104,.12,.16]]){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+.11);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(l,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+dec);o.connect(g).connect(bus);o.start(t);o.stop(t+dec+.02)}
+    const sl=nz(t,.06),sf=ctx.createBiquadFilter(),sg=ctx.createGain();sf.type='lowpass';sf.frequency.value=650;sf.Q.value=.5;sg.gain.setValueAtTime(.55,t);sg.gain.exponentialRampToValueAtTime(.001,t+.05);sl.connect(sf).connect(sg).connect(bus);
+    const th=t+.5/S.beat,rt=nz(th,.05),rf=ctx.createBiquadFilter(),rg=ctx.createGain();rf.type='bandpass';rf.frequency.value=4200;rf.Q.value=1.2;rg.gain.setValueAtTime(0,th);rg.gain.linearRampToValueAtTime(.16,th+.012);rg.gain.exponentialRampToValueAtTime(.001,th+.07);rt.connect(rf).connect(rg).connect(bus);
     drumNext+=1/S.beat;drumN++}
 }
 /* close layer: whisper swells like syllables; taps and crinkles follow it from ear to ear */
@@ -883,7 +905,9 @@ function noteOn(id,i,vel=1){
   if(V.form){const F={ah:[730,1090,2440],oo:[300,870,2240],ee:[270,2290,3010],oh:[570,840,2410],mm:[250,1200,2100]},[v1,v2,tm]=V.form,mix=ctx.createGain();
     F[v1].forEach((fr,k)=>{const b=ctx.createBiquadFilter(),bg=ctx.createGain();b.type='bandpass';b.Q.value=9;bg.gain.value=[1,.5,.25][k]*3;b.frequency.setValueAtTime(fr,t);
       if(v2)b.frequency.setTargetAtTime(F[v2][k],t+.6,tm||2);chain.connect(b).connect(bg).connect(mix)});chain=mix}
+  {const silk=ctx.createBiquadFilter();silk.type='lowpass';silk.Q.value=.5;silk.frequency.value=clamp(f*5,2400,5200);chain.connect(silk);chain=silk}
   chain.connect(g);g.connect(out).connect(A.vBus);
+  if(!MOBILE){const dr=ctx.createOscillator(),dg=ctx.createGain();dr.frequency.value=.07+Math.random()*.16;dg.gain.value=.22;dr.connect(dg).connect(out.pan);dr.start(t,0);os.push(dr)}
   const mk=(fr,type,lvl,det)=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type=type;o.frequency.value=fr;o.detune.value=det||0;og.gain.value=lvl;o.connect(og).connect(pre);o.start(t);os.push(o);return o},tonal=[];
   (V.osc||[]).forEach(([w,r,det,l])=>{const u=MOBILE?Math.min(2,V.uni||1):(V.uni||1);for(let k=0;k<u;k++)tonal.push(mk(f*r,w,l/u*(u>1?1.6:1),(det||0)+(u>1?(k/(u-1)-.5)*(V.spread||14):0)))});
   if(V.sub)mk(f*.5,'sine',V.sub);
@@ -895,7 +919,7 @@ function noteOn(id,i,vel=1){
     ng.gain.setValueAtTime(l,t);if(dec>0)ng.gain.exponentialRampToValueAtTime(.0005,t+dec);else if(dec<0)ng.gain.setTargetAtTime(l*.3,t+.2,-dec);n.connect(b).connect(ng).connect(pre);n.start(t,Math.random()*5);os.push(n)});
   if(V.vib){const [rt,dp,dl]=V.vib,vb=ctx.createOscillator(),vg=ctx.createGain();vb.frequency.value=rt;vg.gain.setValueAtTime(0,t);vg.gain.setTargetAtTime(f*dp,t+(dl||0),.4);vb.connect(vg);tonal.forEach(o=>vg.connect(o.frequency));vb.start(t);os.push(vb)}
   if(V.trem){const tr=ctx.createOscillator(),tg=ctx.createGain();tr.frequency.value=V.trem[0]+Math.random()*.6;tg.gain.value=V.trem[1]*vel;tr.connect(tg).connect(g.gain);tr.start(t);os.push(tr)}
-  const a=(V.a||.01)*Math.pow(2,(S.att-.5)*4),peak=(V.peak||.3)*(V.trim||1)*vel;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);
+  const a=Math.max(.005,(V.a||.01)*Math.pow(2,(S.att-.5)*4)),peak=(V.peak||.3)*(V.trim||1)*vel*Math.min(1,Math.pow(520/f,.55));g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);
   if(V.d)g.gain.setTargetAtTime(peak*(V.s||0),t+a,V.d);
   held[id]={g,os,rel:(V.r||1.5)*Math.pow(2,(S.rel-.5)*4),i};flash(i,true);pluck=1;
 }
