@@ -236,13 +236,59 @@ body.idle .hud{opacity:.07}
 #gate::after{background:linear-gradient(180deg,rgba(0,0,0,.3),transparent 22%,transparent 80%,rgba(0,0,0,.45))}
 .gate-in{padding:22px 28px;text-align:left}
 .gate-in .mark{font-size:34px}
-.gate-in p{display:none}
+.gate-in p{display:block;margin-top:8px;font-size:10px;letter-spacing:.2em;line-height:1.7;max-width:46ch;text-transform:uppercase;opacity:.9}
 #enter{position:fixed;left:auto;right:28px;bottom:22px;transform:none;width:auto;height:auto;margin:0;background:none;backdrop-filter:none;box-shadow:none;border-radius:0}
 #enter #ring{display:none}
 #enter span{position:static;transform:none;font-size:11px;letter-spacing:.34em;text-shadow:0 0 12px #000}
 .gate-foot{justify-content:flex-start;font-size:12px;opacity:.8}
 #dial #bHz{font-weight:400;font-style:normal}
 #dial #bandN{font-family:var(--serif);font-style:italic;font-weight:600;font-size:34px}
+
+/* voice browser and the longer state list */
+#vox{position:fixed;right:22px;bottom:158px;width:min(600px,94vw);max-height:62vh;overflow:auto;z-index:9;padding:18px 20px 20px}
+#vox h4{font-family:var(--serif);font-style:italic;font-weight:600;font-size:19px;margin:14px 0 7px}
+#vox .vh{font-size:12.5px;opacity:.7}
+.vg{display:flex;flex-wrap:wrap;gap:6px}
+.vb{font-family:var(--tech);font-size:9px;letter-spacing:.08em;padding:8px 11px;border-radius:4px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.03)}
+.vb:hover{border-color:rgba(255,255,255,.6)}.vb.on{background:#ececec;color:#000;border-color:#fff}
+#states{max-height:calc(100vh - 250px);overflow:auto;gap:1px}
+.st{padding:5px 8px}.st b{font-size:20px}.st em{font-size:10.5px}
+#bVoice{min-width:170px}
+
+/* bank, presets, codex, silence */
+.drawer{position:fixed;right:22px;bottom:158px;width:min(640px,94vw);max-height:64vh;overflow:auto;z-index:9;padding:18px 20px 20px}
+.drawer h4{font-family:var(--serif);font-style:italic;font-weight:600;font-size:19px;margin:16px 0 7px}
+.drawer h3{font-family:var(--serif);font-style:italic;font-weight:600;font-size:28px;margin-bottom:8px}
+.drawer .vh{font-size:12.5px;opacity:.7}
+#codex p{font-size:13.5px;line-height:1.55;margin:0 0 9px;max-width:62ch}
+#codex .tag,.binfo .tag{margin:0 4px 0 0;vertical-align:1px}
+.binfo{font-size:13px;line-height:1.5;min-height:62px;margin:10px 0 2px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:5px}
+#mix{margin:10px 0 4px}
+#mix label{display:grid;grid-template-columns:150px 1fr 26px;gap:10px;align-items:center;font-size:12.5px;padding:3px 0}
+#mix input{width:100%;accent-color:var(--amber)}
+#mix button{border:1px solid rgba(255,255,255,.25);border-radius:4px;line-height:1;height:22px}
+.rside{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:290px}
+.rside .pill{padding:9px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bHide{grid-column:1/-1}#bVoice{min-width:0}
+#bSilence{border-color:var(--amber);color:var(--amber)}
+#bSilence.on{background:var(--amber);color:#000;border-color:var(--amber)}
+#bSilence::before{display:none}
+body.muted #field{filter:brightness(.45) saturate(.6)}
+#tonesOut{font-size:11.5px;margin-top:8px;font-variant-numeric:tabular-nums}
+#tonesOut dt{font-family:var(--tech);font-size:9px;letter-spacing:.14em;opacity:.7;margin-bottom:3px}
+#tonesOut div{display:flex;justify-content:space-between;padding:1px 0}#tonesOut b{color:var(--amber);font-weight:500}
+#spec{height:70px}
+#note{min-height:0}
+
+.q{width:100%;margin:0 0 10px;padding:9px 12px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.4);color:inherit;font:inherit;font-size:13px}
+.q:focus{outline:2px solid var(--amber);outline-offset:1px}
+.top small{max-width:300px;line-height:1.6;letter-spacing:.18em;font-size:8px;text-transform:uppercase}
+#monadT{cursor:pointer}
+.top .mark,.top .pill{white-space:nowrap}
+.top .pill{padding:9px 11px}
+.top{gap:10px}
+.top small{max-width:240px;font-size:7.5px}
+@media (max-width:1500px){.top small{display:none}}
 </style>
 </head>
 <body>
@@ -254,7 +300,7 @@ body.idle .hud{opacity:.07}
   <video id="gateVid" muted loop playsinline autoplay></video>
   <div class="gate-in">
     <h1 class="mark">Black Dragon<i>II</i></h1>
-    <p>trance instrument</p>
+    <p>Greetings beloved: an unfinished experience: a work in progress...just like you</p>
     <button id="enter" aria-label="Enter"><svg id="ring" viewBox="-118 -118 236 236" aria-hidden="true"><defs><path id="rp" d="M0,-100 A100,100 0 1 1 -0.1,-100"/></defs><circle r="112" fill="none" stroke="#fff" stroke-opacity=".35"/><circle r="88" fill="none" stroke="#fff" stroke-opacity=".35"/><text><textPath href="#rp">as above so below · α ε η ι ο υ ω · solve et coagula · α ε η ι ο υ ω ·</textPath></text></svg><span>enter</span></button>
   </div>
   <div class="gate-foot">
@@ -267,8 +313,9 @@ body.idle .hud{opacity:.07}
   <header class="top">
     <svg class="blade" viewBox="0 0 1000 54" preserveAspectRatio="none" aria-hidden="true"><path d="M0,30 C140,30 190,6 330,8 C520,10 600,44 780,44 C880,44 940,34 1000,20 L1000,24 C940,40 880,50 780,50 C600,50 520,16 330,14 C190,12 140,36 0,34 Z" fill="url(#gChrome)"/></svg>
     <div class="mark">Black Dragon<i>II</i></div>
-    <small>vision build · not final</small>
+    <small>Greetings beloved: an unfinished experience: a work in progress...just like you</small>
     <span class="sp"></span>
+    <button class="pill" id="bSilence" title="Cut all sound at once. Space bar does the same.">silence</button>
     <button class="pill" id="bFilm" title="Change the film">film</button>
     <button class="pill" id="bPossess" title="The machine plays itself. Touch a key to steer it.">possess</button>
     <button class="pill" id="bDescent" title="Fifteen minutes, sinking slowly to the bottom">descent</button>
@@ -308,18 +355,21 @@ body.idle .hud{opacity:.07}
       <text text-anchor="middle" y="38" font-size="10" letter-spacing="3">hertz</text>
       <text id="bandN" text-anchor="middle" y="-48">Theta</text>
       <text id="bandD" text-anchor="middle" y="66" font-size="9" opacity=".7" letter-spacing="1">drowsy, dreamlike</text>
+      <g id="monadG" opacity=".35"><polyline id="seal" fill="none" stroke="#ffb454" stroke-width="1.2" stroke-linejoin="round"/><circle id="sealDot" r="4" fill="#ffb454" opacity="0"/></g>
+      <text id="monadT" text-anchor="middle" y="104" font-size="8" letter-spacing="2" opacity=".85">saturn · 3×3 · 15</text>
       <g id="handle"><circle r="13" fill="url(#gChrome)" stroke="#000"/><circle r="5" fill="var(--b)"/></g>
     </svg>
   </section>
 
   <div class="shell" id="shellR"><aside class="jelly" id="proof">
     <h2>Proof</h2>
-    <p>Read from the sound itself, not from the settings.</p>
+    <p>Measured on the live tone channel, not read from the settings.</p>
     <dl class="read">
       <dt id="lL">left ear</dt><dd id="mL">–</dd><span>Hz</span>
       <dt id="lR">right ear</dt><dd id="mR">–</dd><span>Hz</span>
       <dt id="lD">difference</dt><dd id="mD">–</dd><span>Hz</span>
     </dl>
+    <dl id="tonesOut"></dl>
     <canvas id="spec" width="560" height="184"></canvas>
     <div class="seg" id="modes">
       <button data-m="binaural">binaural</button><button data-m="monaural">monaural</button><button data-m="isochronic">isochronic</button>
@@ -333,9 +383,10 @@ body.idle .hud{opacity:.07}
     <div class="jelly" id="jawp"></div>
     <div class="jelly knobs" id="knobs"></div>
     <div id="keys"></div>
-    <div class="rside"><button class="pill" id="bVoice">voice: glass</button><button class="pill" id="bHide">hide panels</button></div>
+    <div class="rside"><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">voice</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
   </footer>
-  <p class="hint">Play the bottom row of your keyboard, a MIDI keyboard, or touch the keys. Every note is in tune with the state.</p>
+  <div class="jelly drawer" id="vox" hidden></div><div class="jelly drawer" id="bank" hidden></div><div class="jelly drawer" id="presets" hidden></div><div class="jelly drawer" id="codex" hidden></div>
+  <p class="hint">Play the bottom two rows of your keyboard, a MIDI keyboard, or touch the keys. Every note is in tune with the state. Space bar is silence.</p>
 </main>
 
 <script>
@@ -346,22 +397,121 @@ const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const STATES=[
  {id:'abyss',name:'Abyss',sub:'sleep',beat:2,fc:108,mode:'binaural',vis:4,airLP:520,scale:[1,9/8,6/5,3/2,8/5],cols:['#2a1a8f','#0b2a6b','#2ff3d2'],tag:'studied',
   note:'Delta, 0.5 to 4 Hz, is the rhythm of deep sleep. Evidence that beats alone deepen sleep is weak. The strong result is pink noise timed to slow waves (Ngo, 2013).'},
+ {id:'slumber',name:'Slumber',sub:'pink noise, slow wave',beat:.8,fc:80,mode:'isochronic',vis:4,airLP:900,scale:[1,9/8,5/4,3/2,5/3],cols:['#1a2a6f','#0a1238','#8fa8ff'],tag:'studied',
+  note:'Slow waves in deep sleep run near 0.8 a second. Pink noise timed to them deepened sleep and doubled word recall (Ngo, 2013). That needed brain sensors. This is the same sound without the timing; turn the air dial up.'},
  {id:'hypnagogia',name:'Hypnagogia',sub:'the edge of dreaming',beat:6,fc:136.1,mode:'binaural',vis:1,scale:[1,9/8,5/4,45/32,3/2,27/16,15/8],cols:['#8a4bff','#e0153f','#2ff3d2'],tag:'studied',
   note:'Theta, 4 to 8 Hz. Of 14 brainwave studies, 5 found the brain follows a binaural beat and 8 did not (Ingendoh, 2023). The beat itself is real and measured here.'},
+ {id:'gateway',name:'Gateway',sub:'the Monroe tapes',beat:4,fc:100,mode:'binaural',vis:0,scale:[1,9/8,5/4,3/2,5/3],cols:['#3a6adf','#101a4a','#9fd0ff'],tag:'tradition',
+  note:'In 1983 a US Army report assessed the Monroe Institute tapes, which used theta-range binaural beats like this one. The report is real and was declassified in 2003. It is an assessment, not proof.'},
  {id:'journey',name:'Journey',sub:'the shaman drum',beat:4.5,fc:90,mode:'isochronic',drum:true,vis:0,scale:[1,6/5,4/3,3/2,9/5],cols:['#f4b942','#e0153f','#5a0a2a'],tag:'studied',
   note:'Drumming at 4 to 4.5 beats a second is the journey tempo across shamanic traditions. Stronger brain tracking of it went with deeper altered states. Give it 15 minutes.'},
+ {id:'earth',name:'Earth',sub:'7.83, the Schumann tone',beat:7.83,fc:126.2,mode:'binaural',vis:3,scale:[1,9/8,5/4,3/2,5/3],cols:['#2f8f5a','#0a2a1a','#b8ffd0'],tag:'tradition',
+  note:'7.83 Hz is the measured resonance of the space between the ground and the upper atmosphere. That it tunes the mind is tradition. The number itself is physics, and it is exact here.'},
+ {id:'seance',name:'Séance',sub:'Mesmer and the glass',beat:7.5,fc:146.8,mode:'monaural',vis:1,scale:[1,9/8,6/5,3/2,8/5],cols:['#8a6adf','#1a1038','#e0d0ff'],tag:'tradition',
+  note:'Mesmer closed his sessions at the glass armonica while his patients sat around the baquet. The instrument was later feared to drive listeners mad. Choose the glass armonica and play slowly.'},
  {id:'stillness',name:'Stillness',sub:'calm, eyes soft',beat:10,fc:200,mode:'binaural',vis:3,scale:[1,9/8,5/4,3/2,5/3],cols:['#1c6bd8','#0a2a5a','#2ff3d2'],tag:'studied',
   note:'Alpha, 8 to 12 Hz, the resting rhythm. Pair it with the breath pacer: six breaths a minute is the best supported way to calm the body.'},
  {id:'focus',name:'Focus',sub:'gamma 40',beat:40,fc:240,mode:'isochronic',vis:2,scale:[1,9/8,4/3,3/2,16/9],cols:['#8a4bff','#14204a','#2ff3d2'],tag:'studied',
   note:'40 Hz. MIT trials found the brain follows 40 Hz sound and light, down into deep regions. In 2026 it sped reaction times in adults with ADHD symptoms. Early science.'},
  {id:'desire',name:'Desire',sub:'slow heat',beat:1.1,fc:96,mode:'monaural',vis:3,scale:[1,16/15,5/4,3/2,8/5],cols:['#e0153f','#ff5a2a','#6a0a3a'],tag:'tradition',
   note:'No frequency has been shown to cause desire. This is what does move people: a low voice-range tone and a slow pulse at a resting heartbeat, 66 a minute.'},
+ {id:'chamber',name:'Chamber',sub:'the stone room',beat:3,fc:111,mode:'monaural',vis:5,airLP:700,scale:[1,9/8,6/5,3/2,9/5],cols:['#8f7a5a','#1a140a','#ffe0b0'],tag:'tradition',
+  note:'Stone chambers such as the Hypogeum in Malta ring between about 70 and 114 Hz, the range of a low male voice. The claim that 110 Hz shifts the brain rests on one small study. Try the monks.'},
+ {id:'solfeggio',name:'Solfeggio',sub:'528, by tradition',beat:8,fc:528,mode:'binaural',vis:2,scale:[1,9/8,5/4,3/2,5/3],cols:['#dfb23a','#2a1a05','#fff0b0'],tag:'tradition',
+  note:'528 Hz is called the love tone or the repair tone. The set was assembled in the 1970s and no study shows it repairs anything. It is here as tradition, tuned exactly.'},
  {id:'dread',name:'Dread',sub:'the ghost tone',beat:19,fc:76,mode:'monaural',vis:5,airLP:320,ghost:19,scale:[1,16/15,6/5,45/32,3/2],cols:['#a8102a','#2a0a2f','#ff3355'],tag:'studied',
   note:'Near 19 Hz sits under hearing. In a 2003 concert, 17 Hz raised reports of unease by 22 percent. Small speakers cannot make it; use headphones or a subwoofer.'}
 ];
 const BANDS=[[4,'Delta','deep sleep'],[8,'Theta','drowsy, dreamlike'],[13,'Alpha','calm, awake'],[30,'Beta','alert'],[99,'Gamma','sharp focus']];
-const S={state:1,beat:6,fc:136.1,mode:'binaural',tone:.55,body:.5,air:.25,close:.3,space:.6,vision:.6,veil:.5,trails:.35,voice:0,breath:false,tide:true};
-const VOICES=['glass','choir','bell'];
+const S={vol:.8,layers:{},state:1,beat:6,fc:136.1,mode:'binaural',tone:.55,body:.5,air:0,close:0,space:.6,vision:.6,veil:.5,trails:.35,voice:0,breath:false,tide:true};
+/* ---------- the voices. Each one is a recipe; the engine below builds it per note ---------- */
+const VOX=[
+ /* glass and metal */
+ {n:'glass armonica',fam:'glass and metal',osc:[['sine',1,-3,.6],['sine',1,3,.6],['sine',2.005,0,.1],['sine',3.01,0,.035]],noise:[[2,16,1.1,-.5]],trem:[4.2,.05],a:.55,peak:.28,r:2.8},
+ {n:'crystal bowl',fam:'glass and metal',osc:[['sine',1,0,.8],['sine',2,2,.12]],parts:[[3,.05,5]],trem:[.7,.06],a:1.2,peak:.3,r:4},
+ {n:'singing bowl',fam:'glass and metal',parts:[[1,1,7],[2.71,.5,4.5],[5.2,.26,2.8],[8.4,.12,1.6]],beat:.6,noise:[[-2400,.7,1.5,.03]],a:.004,peak:.34,r:1.6},
+ {n:'tingsha',fam:'glass and metal',oct:2,parts:[[1,1,5],[1.006,.9,5],[2.76,.3,2],[5.1,.15,1]],a:.002,peak:.2,r:1},
+ {n:'temple bell',fam:'glass and metal',osc:[['sine',1,0,.9]],fm:[3.5,2.2,2.5],parts:[[.5,.4,6]],a:.003,d:2.2,s:0,peak:.3,r:1.5},
+ {n:'gong',fam:'glass and metal',oct:-1,parts:[[1,1,9],[1.48,.7,8],[2.03,.6,7],[2.74,.5,6],[3.41,.4,5],[4.62,.3,4],[5.9,.2,3]],beat:.9,noise:[[-900,.5,1.2,.4]],a:.02,peak:.26,r:3},
+ {n:'music box',fam:'glass and metal',oct:1,parts:[[1,1,2.2],[4,.25,1],[8.2,.08,.5]],a:.002,peak:.3,r:.8},
+ {n:'kalimba',fam:'glass and metal',parts:[[1,1,1.6],[5.6,.2,.25],[2,.12,.9]],noise:[[-3000,1,.8,.02]],a:.002,peak:.36,r:.6},
+ {n:'handpan',fam:'glass and metal',parts:[[1,1,3],[2,.55,2.2],[3,.35,1.6],[4.98,.1,.8]],beat:.4,noise:[[-1500,.8,1,.03]],a:.003,peak:.34,r:1.2},
+ {n:'marimba',fam:'glass and metal',parts:[[1,1,1.1],[3.9,.3,.35],[9.2,.08,.15]],noise:[[-800,1,.8,.02]],a:.002,peak:.4,r:.5},
+ /* voices */
+ {n:'choir',fam:'voices',osc:[['sawtooth',1,0,1]],uni:3,spread:17,sub:.22,form:['ah','oo',2.2],vib:[5.1,.006,.7],a:.7,peak:.5,r:2.6},
+ {n:'sirens',fam:'voices',oct:1,osc:[['sawtooth',1,0,1]],uni:2,spread:10,form:['ee','ah',3],noise:[[4,2,.25,-.5]],vib:[5.6,.008,.5],a:.9,peak:.45,r:3},
+ {n:'monks',fam:'voices',oct:-1,osc:[['sawtooth',1,0,1]],uni:3,spread:9,form:['oo','oh',4],vib:[4.4,.004,1],a:1.1,peak:.6,r:3},
+ {n:'throat singer',fam:'voices',oct:-1,osc:[['sawtooth',1,0,1]],lp:[10,14,.5,3],sub:.3,a:.5,peak:.3,r:2},
+ {n:'whisper',fam:'voices',noise:[[1,30,6,-1],[2,30,3,-1]],form:['ah','ee',3],a:.4,peak:.5,r:1.5},
+ {n:'hum',fam:'voices',osc:[['triangle',1,0,1]],uni:2,spread:8,form:['mm',null],vib:[4.8,.004,.8],a:.5,peak:.7,r:2},
+ /* strings */
+ {n:'tanpura',fam:'strings',oct:-1,osc:[['sawtooth',1,0,.8],['sawtooth',2,4,.3]],lp:[14,6,.25,1.8],a:.01,d:3,s:.25,peak:.3,r:3},
+ {n:'bowed strings',fam:'strings',osc:[['sawtooth',1,0,1]],uni:4,spread:22,lp:[5,.7,.5,1.2],vib:[5.2,.004,.8],a:.8,peak:.42,r:2.4},
+ {n:'cello',fam:'strings',oct:-1,osc:[['sawtooth',1,0,1]],lp:[5,2,1,.5],form:['oh',null],vib:[5.4,.006,.5],a:.25,peak:.8,r:1.2},
+ {n:'harp',fam:'strings',osc:[['triangle',1,0,1],['sine',2,0,.3]],lp:[6,.7,3,.25],a:.004,d:1.4,s:0,peak:.4,r:1.2},
+ {n:'koto',fam:'strings',osc:[['sawtooth',1,0,.8]],lp:[4,3,6,.12],noise:[[-3500,1,.6,.02]],a:.003,d:1,s:0,peak:.36,r:.9},
+ {n:'sitar',fam:'strings',osc:[['sawtooth',1,0,.7],['square',2.005,0,.15]],lp:[9,9,2.5,.9],a:.004,d:2.4,s:.05,peak:.26,r:1.6},
+ /* breath and reed */
+ {n:'flute',fam:'breath and reed',oct:1,osc:[['sine',1,0,.9],['sine',2,0,.12]],noise:[[1,3,.5,-.3]],vib:[4.8,.005,.5],a:.12,peak:.34,r:.7},
+ {n:'shakuhachi',fam:'breath and reed',osc:[['sine',1,0,.8],['triangle',2,0,.1]],noise:[[1.5,1.5,1.2,-.25]],vib:[4.2,.009,.7],a:.2,peak:.34,r:.9},
+ {n:'duduk',fam:'breath and reed',osc:[['square',1,0,.6],['sawtooth',1,3,.25]],lp:[3.2,1.5],noise:[[2,2,.15,-.4]],vib:[5,.007,.5],a:.18,peak:.3,r:.8},
+ {n:'didgeridoo',fam:'breath and reed',oct:-2,osc:[['sawtooth',1,0,1]],form:['oo','ee',5],sub:.3,trem:[2.2,.08],a:.3,peak:.6,r:1.5},
+ {n:'harmonium',fam:'breath and reed',osc:[['sawtooth',1,-4,.5],['square',1,4,.3],['sawtooth',2,0,.2]],lp:[6,.7],trem:[5.5,.03],a:.2,peak:.26,r:.9},
+ {n:'cathedral organ',fam:'breath and reed',osc:[['sine',.5,0,.6],['sine',1,0,.8],['sine',2,0,.5],['sine',3,0,.3],['sine',4,0,.25],['sine',8,0,.1]],a:.08,peak:.24,r:1.2},
+ /* electric */
+ {n:'theremin',fam:'electric',osc:[['sine',1,0,.9],['triangle',1,0,.1]],vib:[5.8,.012,.25],a:.2,peak:.3,r:.8},
+ {n:'analog pad',fam:'electric',osc:[['sawtooth',1,0,1]],uni:5,spread:28,lp:[3.5,.8,.4,2],sub:.25,a:1.1,peak:.4,r:3},
+ {n:'glass pad',fam:'electric',oct:1,osc:[['sine',1,0,.7],['sine',2,5,.25],['sine',3,-5,.1]],uni:2,spread:9,trem:[.4,.08],a:1.6,peak:.26,r:4},
+ {n:'electric piano',fam:'electric',osc:[['sine',1,0,.9]],fm:[1,1.4,.9],parts:[[14,.06,.12]],a:.004,d:1.6,s:.12,peak:.34,r:.9},
+ {n:'hollow',fam:'electric',osc:[['square',1,0,.6]],lp:[4,2,.6,.8],vib:[5,.004,.9],a:.1,peak:.26,r:1},
+ {n:'deep sub',fam:'electric',oct:-2,osc:[['sine',1,0,1],['triangle',2,0,.15]],a:.06,peak:.5,r:1},
+ {n:'dark drone',fam:'electric',oct:-1,osc:[['sawtooth',1,0,.7],['sawtooth',1.498,0,.35],['sawtooth',.5,0,.5]],uni:2,spread:12,lp:[2.5,3,.5,3],a:1.8,peak:.36,r:4},
+ {n:'wind',fam:'electric',noise:[[1,22,7,-2],[2,18,2.5,-2],[.5,12,3,-2]],trem:[.3,.1],a:1.2,peak:.5,r:2.5},
+ /* plucked and keys */
+ {n:'harpsichord',fam:'plucked and keys',osc:[['sawtooth',1,0,.7],['square',2,0,.15]],lp:[9,2,3,.12],noise:[[-4000,1,.5,.012]],a:.002,d:.9,s:0,peak:.3,r:.5},
+ {n:'clavichord',fam:'plucked and keys',osc:[['square',1,0,.6],['sawtooth',1,5,.2]],lp:[5,1.5,3,.1],a:.003,d:.6,s:.05,peak:.3,r:.4},
+ {n:'dulcimer',fam:'plucked and keys',parts:[[1,1,2.6],[2,.5,1.8],[3,.3,1.2],[4,.18,.8],[5,.1,.5]],beat:.5,noise:[[-2500,1,.9,.015]],a:.002,peak:.3,r:1},
+ {n:'santur',fam:'plucked and keys',oct:1,parts:[[1,1,2],[2,.6,1.4],[3,.35,.9],[4.02,.2,.6]],beat:1.1,noise:[[-5000,1,.8,.01]],a:.002,peak:.28,r:.9},
+ {n:'oud',fam:'plucked and keys',oct:-1,osc:[['triangle',1,0,.8],['sawtooth',1,0,.35]],lp:[5,1.5,4,.2],noise:[[-1800,1,.9,.02]],a:.003,d:1.1,s:0,peak:.4,r:.7},
+ {n:'lute',fam:'plucked and keys',osc:[['triangle',1,0,.8],['sawtooth',2,0,.15]],lp:[6,1,3.5,.18],noise:[[-2600,1,.7,.015]],a:.003,d:1,s:0,peak:.4,r:.7},
+ {n:'nylon guitar',fam:'plucked and keys',osc:[['triangle',1,0,.9],['sine',2,0,.3],['sawtooth',1,0,.12]],lp:[4.5,.8,3,.25],noise:[[-2000,1,.6,.015]],a:.003,d:1.5,s:0,peak:.42,r:.9},
+ {n:'felt piano',fam:'plucked and keys',osc:[['sine',1,0,.8],['triangle',1,3,.25]],fm:[1,.5,.4],parts:[[2,.3,1.2],[3,.12,.7]],lp:[5,.7],noise:[[-900,1,.9,.03]],a:.006,d:2.2,s:.05,peak:.4,r:1},
+ /* more glass and metal */
+ {n:'glockenspiel',fam:'glass and metal',oct:2,parts:[[1,1,2.4],[2.76,.35,1],[5.4,.15,.5]],a:.002,peak:.22,r:.8},
+ {n:'vibraphone',fam:'glass and metal',parts:[[1,1,4.5],[4,.25,2],[10,.05,.6]],trem:[5,.12],a:.003,peak:.34,r:1.6},
+ {n:'church bell',fam:'glass and metal',oct:-1,parts:[[.5,.5,9],[1,1,7],[1.2,.55,5],[1.5,.3,4],[2,.5,3.5],[2.67,.18,2.4],[3,.14,2]],noise:[[-1200,.6,1.2,.05]],a:.004,peak:.3,r:3},
+ {n:'crotales',fam:'glass and metal',oct:2,parts:[[1,1,7],[2.9,.2,3],[5.6,.08,1.5]],beat:.3,a:.002,peak:.18,r:2},
+ {n:'steel pan',fam:'glass and metal',osc:[['sine',1,0,.8]],fm:[2,1.6,.5],parts:[[2,.4,1.4],[3,.2,.8]],a:.003,d:1.3,s:0,peak:.32,r:.7},
+ /* more breath and reed */
+ {n:'bansuri',fam:'breath and reed',oct:1,osc:[['sine',1,0,.9],['triangle',2,0,.08]],noise:[[1,2,.8,-.3],[3,1,.2,-.4]],vib:[5,.008,.35],a:.09,peak:.32,r:.6},
+ {n:'ney',fam:'breath and reed',osc:[['sine',1,0,.7],['sine',3,0,.06]],noise:[[1,1.2,1.6,-.4],[2,1.5,.6,-.4]],vib:[4.4,.007,.6],a:.16,peak:.32,r:.8},
+ {n:'ocarina',fam:'breath and reed',oct:1,osc:[['sine',1,0,1],['triangle',1,0,.08]],noise:[[1,4,.2,-.2]],a:.05,peak:.3,r:.4},
+ {n:'pan pipes',fam:'breath and reed',oct:1,osc:[['sine',1,0,.9],['sine',3,0,.07]],noise:[[1,2,2.2,.12],[2,1,.3,-.4]],a:.03,peak:.32,r:.5},
+ {n:'conch',fam:'breath and reed',oct:-1,osc:[['sawtooth',1,0,1]],lp:[3,2,.5,.8],form:['oh',null],vib:[3.2,.004,1],a:.5,peak:.9,r:1.4},
+ {n:'shofar',fam:'breath and reed',oct:-1,osc:[['sawtooth',1,0,.9],['square',1,6,.2]],lp:[4,4,.45,.5],a:.18,peak:.3,r:.7},
+ {n:'bagpipe',fam:'breath and reed',osc:[['sawtooth',1,0,.6],['square',1,0,.4]],lp:[10,1.5],sub:.45,a:.12,peak:.2,r:.5},
+ /* more voices */
+ {n:'bass choir',fam:'voices',oct:-1,osc:[['sawtooth',1,0,1]],uni:4,spread:14,form:['oh','ah',3],vib:[4.6,.005,.9],a:.9,peak:.6,r:2.8},
+ {n:'boy choir',fam:'voices',oct:1,osc:[['triangle',1,0,.7],['sawtooth',1,0,.4]],uni:3,spread:11,form:['oo','ah',2.5],vib:[5.4,.005,.6],a:.6,peak:.6,r:2.4},
+ {n:'banshee',fam:'voices',oct:1,osc:[['sawtooth',1,0,1]],uni:2,spread:20,form:['ee','ah',1.2],vib:[6.4,.02,.3],a:.5,peak:.45,r:2.2},
+ /* more electric */
+ {n:'ondes martenot',fam:'electric',osc:[['sine',1,0,.8],['triangle',1,0,.25]],lp:[6,.7],vib:[5.5,.009,.3],a:.15,peak:.3,r:.9},
+ {n:'tape strings',fam:'electric',osc:[['sawtooth',1,0,1]],uni:3,spread:18,lp:[4,.8],trem:[.8,.06],vib:[.6,.003,0],a:.35,peak:.36,r:1.4},
+ {n:'supersaw',fam:'electric',osc:[['sawtooth',1,0,1]],uni:7,spread:42,lp:[8,.8,.5,.6],sub:.2,a:.05,peak:.3,r:1},
+ {n:'pulse lead',fam:'electric',osc:[['square',1,0,.7]],lp:[6,4,2.2,.2],vib:[5.6,.005,.5],a:.01,peak:.24,r:.5},
+ {n:'fm glass',fam:'electric',osc:[['sine',1,0,.9]],fm:[3.01,1.2,3],a:.01,d:3,s:.2,peak:.3,r:1.6},
+ {n:'sub organ',fam:'electric',oct:-1,osc:[['sine',1,0,.9],['sine',2,0,.5],['sine',3,0,.2]],a:.04,peak:.34,r:.8},
+ /* the dark */
+ {n:'infernal brass',fam:'the dark',oct:-1,osc:[['sawtooth',1,0,1]],uni:4,spread:16,lp:[2.2,4,2.6,.5],a:.22,peak:.36,r:1.2},
+ {n:'bees',fam:'the dark',osc:[['sawtooth',1,-20,.6],['sawtooth',1,20,.6]],lp:[3.5,1],trem:[27,.14],a:.3,peak:.26,r:1},
+ {n:'abyss choir',fam:'the dark',oct:-2,osc:[['sawtooth',1,0,1]],uni:4,spread:12,form:['oo','oh',5],sub:.3,a:1.4,peak:.7,r:3.5},
+ {n:'bowed metal',fam:'the dark',osc:[['sine',1,0,.8],['sine',1.51,0,.4],['sine',2.33,0,.3],['sine',3.7,0,.15]],trem:[.9,.08],noise:[[1,14,1.2,-1]],a:1.5,peak:.26,r:3.5}
+];
+const FAMS=['glass and metal','plucked and keys','strings','breath and reed','voices','electric','the dark'];
+VOX.sort((a,b)=>FAMS.indexOf(a.fam)-FAMS.indexOf(b.fam));
+/* loudness trims, from measuring each voice */
+const TRIM={"bowed strings":1.16,"choir":1.09,"crystal bowl":0.88,"glass armonica":0.7,"gong":0.55,"handpan":0.65,"hum":1.8,"kalimba":0.93,"marimba":1.05,"monks":1.3,"music box":1.47,"singing bowl":0.59,"sirens":1.02,"tanpura":1.48,"temple bell":1.07,"throat singer":1.12,"tingsha":1.17,"whisper":1.8,"analog pad":1.3,"cathedral organ":1.1,"cello":0.57,"dark drone":1.3,"deep sub":0.59,"didgeridoo":1.06,"duduk":0.82,"electric piano":1.18,"flute":0.62,"glass pad":1.3,"harmonium":1.96,"harp":0.66,"hollow":1.44,"koto":1.02,"shakuhachi":0.7,"sitar":2.18,"theremin":0.96,"wind":2.2,"church bell":0.55,"clavichord":1.5,"crotales":1.4,"dulcimer":0.75,"felt piano":0.45,"glockenspiel":1.8,"harpsichord":1.4,"lute":0.8,"nylon guitar":0.55,"oud":0.65,"santur":0.95,"steel pan":1.5,"vibraphone":1.1,"bagpipe":1.5,"bansuri":0.6,"conch":0.55,"ney":0.85,"ocarina":0.6,"pan pipes":0.6,"shofar":0.87,"abyss choir":2.0,"banshee":0.83,"bass choir":0.93,"bees":1.5,"bowed metal":1.3,"boy choir":0.62,"fm glass":1.25,"infernal brass":1.35,"pulse lead":1.35,"sub organ":0.8,"supersaw":1.45};VOX.forEach(v=>v.trim=TRIM[v.n]||1);
+const VOICES=VOX.map(v=>v.n);
 
 /* ---------- films: the serpent opens; the film button walks through the rest ---------- */
 const FILMS=['gate-serpent','gate-01-red-tide','gate-02-black-pyramid','gate-03-smoke-demon','gate-04-red-sky','gate-05-red-cloud','gate-07-green-veil'];
@@ -377,8 +527,9 @@ function initAudio(){
   const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'}),sr=ctx.sampleRate;
   A.master=ctx.createGain();A.master.gain.value=0;A.master.gain.linearRampToValueAtTime(.8,ctx.currentTime+2.5);
   const lim=ctx.createDynamicsCompressor();lim.threshold.value=-6;lim.ratio.value=12;lim.attack.value=.003;lim.release.value=.2;
-  A.master.connect(lim).connect(ctx.destination);
-  const split=ctx.createChannelSplitter(2);lim.connect(split);
+  A.vol=ctx.createGain();A.vol.gain.value=S.vol;A.master.connect(lim).connect(A.vol).connect(ctx.destination);
+  A.toneBus=ctx.createGain();A.toneBus.connect(A.master);const split=ctx.createChannelSplitter(2);A.toneBus.connect(split);
+  A.anM=ctx.createAnalyser();A.anM.fftSize=32768;A.anM.smoothingTimeConstant=.6;lim.connect(A.anM);A.bufM=new Float32Array(A.anM.frequencyBinCount);
   A.anL=ctx.createAnalyser();A.anR=ctx.createAnalyser();
   for(const [an,ch] of [[A.anL,0],[A.anR,1]]){an.fftSize=32768;an.smoothingTimeConstant=.6;split.connect(an,ch)}
   A.bufL=new Float32Array(A.anL.frequencyBinCount);A.bufR=new Float32Array(A.anR.frequencyBinCount);
@@ -397,7 +548,7 @@ function initAudio(){
   /* beat engine: two tones, routed three ways */
   A.oA=ctx.createOscillator();A.oB=ctx.createOscillator();A.gA=ctx.createGain();A.gB=ctx.createGain();
   A.pA=ctx.createStereoPanner();A.pB=ctx.createStereoPanner();A.iso=ctx.createGain();A.tone=ctx.createGain();
-  A.oA.connect(A.gA).connect(A.pA).connect(A.iso);A.oB.connect(A.gB).connect(A.pB).connect(A.iso);A.iso.connect(A.tone).connect(A.master);
+  A.oA.connect(A.gA).connect(A.pA).connect(A.iso);A.oB.connect(A.gB).connect(A.pB).connect(A.iso);A.iso.connect(A.tone).connect(A.toneBus);
   A.lfo=ctx.createOscillator();A.lfo.type='square';A.lfoLP=ctx.createBiquadFilter();A.lfoLP.type='lowpass';A.lfoG=ctx.createGain();A.lfoG.gain.value=0;
   A.lfo.connect(A.lfoLP).connect(A.lfoG).connect(A.iso.gain);
   A.oA.start();A.oB.start();A.lfo.start();
@@ -430,7 +581,7 @@ function initAudio(){
   const src="class R extends AudioWorkletProcessor{constructor(){super();this.on=false;this.port.onmessage=e=>this.on=e.data}process(i){if(this.on&&i[0].length)this.port.postMessage([i[0][0].slice(),(i[0][1]||i[0][0]).slice()]);return true}}registerProcessor('rec',R)";
   ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'text/javascript'}))).then(()=>{
     A.rec=new AudioWorkletNode(ctx,'rec');lim.connect(A.rec);A.rec.port.onmessage=e=>{recL.push(e.data[0]);recR.push(e.data[1])}}).catch(()=>{$('#bRec').hidden=true});
-  applyAll();setInterval(drumTick,40);setInterval(closeTick,70);
+  bankInit();applyAll();setInterval(drumTick,40);setInterval(closeTick,70);
   if(navigator.requestMIDIAccess)navigator.requestMIDIAccess().then(m=>{const hook=()=>m.inputs.forEach(i=>i.onmidimessage=onMidi);hook();m.onstatechange=hook}).catch(()=>{});
 }
 const at=(p,v,t=.08)=>p&&p.setTargetAtTime(v,A.ctx.currentTime,t);
@@ -447,6 +598,7 @@ function applyAll(){
   at(A.tone.gain,S.tone*.5);at(A.body.gain,S.body*.5);at(A.air.gain,S.air*.6);at(A.wet.gain,S.space*.7);at(A.close.gain,S.close*.9,.3);
   at(A.airLP.frequency,s.airLP||6000,.8);at(A.sub.frequency,s.ghost||19,.2);at(A.subG.gain,s.ghost?S.tone*.5:0,.6);
   at(A.brG.gain,S.breath?S.body*.28:0,.5);
+  if(!silenced)at(A.vol.gain,S.vol,.05);bankApply();
 }
 const nz=(t,dur,off)=>{const n=A.ctx.createBufferSource();n.buffer=A.nbuf;n.start(t,off==null?Math.random()*5:off,dur);return n};
 /* frame drum on the audio clock: skin, slap, and a rattle on the off beat */
@@ -473,29 +625,28 @@ function closeTick(){
 const held={};
 function degFreq(i){const sc=STATES[S.state].scale,n=sc.length;let base=S.fc*2;while(base<150)base*=2;while(base>330)base/=2;return base*sc[((i%n)+n)%n]*Math.pow(2,Math.floor(i/n))}
 function noteOn(id,i,vel=1){
-  if(!A.ctx||held[id])return;const ctx=A.ctx,t=ctx.currentTime,f=degFreq(i),v=VOICES[S.voice],g=ctx.createGain(),out=ctx.createStereoPanner(),os=[];
-  out.pan.value=clamp((i-7)/9,-.8,.8);g.connect(out).connect(A.vBus);
-  const osc=(fr,type,lvl,det,dest)=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type=type;o.frequency.value=fr;o.detune.value=det||0;og.gain.value=lvl;o.connect(og).connect(dest||g);o.start(t);os.push(o);return o};
-  let a,peak,rel;
-  if(v==='glass'){            /* glass armonica: a wet finger on a turning bowl */
-    osc(f,'sine',.6,-3);osc(f,'sine',.6,3);osc(f*2.005,'sine',.1);osc(f*3.01,'sine',.035);osc(f*4.2,'sine',.012);
-    const n=ctx.createBufferSource(),bp=ctx.createBiquadFilter(),ng=ctx.createGain();n.buffer=A.nbuf;n.loop=true;bp.type='bandpass';bp.frequency.value=f*2;bp.Q.value=16;
-    ng.gain.setValueAtTime(1.1,t);ng.gain.setTargetAtTime(.3,t+.3,.5);n.connect(bp).connect(ng).connect(g);n.start(t,Math.random()*5);os.push(n);
-    const tr=ctx.createOscillator(),tg=ctx.createGain();tr.frequency.value=4.2+Math.random();tg.gain.value=.05*vel;tr.connect(tg).connect(g.gain);tr.start(t);os.push(tr);
-    a=.55;peak=.28*vel;rel=2.8}
-  else if(v==='choir'){       /* choir: three voices through a throat that drifts from ah to oo */
-    const pre=ctx.createGain(),vo=[-9,0,8].map(d=>osc(f,'sawtooth',.33,d,pre));osc(f*.5,'sine',.22);
-    [[730,300,1],[1090,870,.5],[2440,2240,.22]].forEach(([ah,oo,l])=>{const b=ctx.createBiquadFilter(),bg=ctx.createGain();b.type='bandpass';b.Q.value=8;bg.gain.value=l;
-      b.frequency.setValueAtTime(ah,t);b.frequency.setTargetAtTime(oo,t+.8,2.2);pre.connect(b).connect(bg).connect(g)});
-    const vib=ctx.createOscillator(),vg=ctx.createGain();vib.frequency.value=5.1;vg.gain.setValueAtTime(0,t);vg.gain.setTargetAtTime(f*.006,t+.7,.6);vib.connect(vg);vo.forEach(o=>vg.connect(o.frequency));vib.start(t);os.push(vib);
-    a=.7;peak=1.5*vel;rel=2.6}
-  else{                       /* singing bowl: each partial is a close pair that beats as it rings */
-    [[1,1,7],[2.71,.5,4.5],[5.2,.26,2.8],[8.4,.12,1.6]].forEach(([r,l,dec])=>{for(const b of [0,.6+r*.15]){const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.value=f*r+b;
-      og.gain.setValueAtTime(l*.5,t);og.gain.exponentialRampToValueAtTime(.0005,t+dec);o.connect(og).connect(g);o.start(t);os.push(o)}});
-    const st=nz(t,.05),sf=ctx.createBiquadFilter(),sg=ctx.createGain();sf.type='lowpass';sf.frequency.value=2400;sg.gain.setValueAtTime(2,t);sg.gain.exponentialRampToValueAtTime(.001,t+.03);st.connect(sf).connect(sg).connect(g);
-    a=.004;peak=.34*vel;rel=1.6}
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);
-  held[id]={g,os,rel};flash(i,true);pluck=1;
+  if(!A.ctx||held[id])return;const ctx=A.ctx,t=ctx.currentTime,V=VOX[S.voice]||VOX[0],f=degFreq(i)*Math.pow(2,V.oct||0),g=ctx.createGain(),out=ctx.createStereoPanner(),os=[],pre=ctx.createGain();
+  out.pan.value=clamp((i-7)/9,-.8,.8);let chain=pre;
+  if(V.lp){const [m,q,env,et]=V.lp,lp=ctx.createBiquadFilter(),base=Math.min(16000,f*m);lp.type='lowpass';lp.Q.value=q||.7;
+    if(env){lp.frequency.setValueAtTime(Math.min(18000,base*env),t);lp.frequency.setTargetAtTime(base,t,et||.3)}else lp.frequency.value=base;chain.connect(lp);chain=lp}
+  if(V.form){const F={ah:[730,1090,2440],oo:[300,870,2240],ee:[270,2290,3010],oh:[570,840,2410],mm:[250,1200,2100]},[v1,v2,tm]=V.form,mix=ctx.createGain();
+    F[v1].forEach((fr,k)=>{const b=ctx.createBiquadFilter(),bg=ctx.createGain();b.type='bandpass';b.Q.value=9;bg.gain.value=[1,.5,.25][k]*3;b.frequency.setValueAtTime(fr,t);
+      if(v2)b.frequency.setTargetAtTime(F[v2][k],t+.6,tm||2);chain.connect(b).connect(bg).connect(mix)});chain=mix}
+  chain.connect(g);g.connect(out).connect(A.vBus);
+  const mk=(fr,type,lvl,det)=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type=type;o.frequency.value=fr;o.detune.value=det||0;og.gain.value=lvl;o.connect(og).connect(pre);o.start(t);os.push(o);return o},tonal=[];
+  (V.osc||[]).forEach(([w,r,det,l])=>{const u=V.uni||1;for(let k=0;k<u;k++)tonal.push(mk(f*r,w,l/u*(u>1?1.6:1),(det||0)+(u>1?(k/(u-1)-.5)*(V.spread||14):0)))});
+  if(V.sub)mk(f*.5,'sine',V.sub);
+  if(V.fm){const [mr,idx,dec]=V.fm,mo=ctx.createOscillator(),mg=ctx.createGain();mo.frequency.value=f*mr;mg.gain.setValueAtTime(f*idx,t);if(dec)mg.gain.exponentialRampToValueAtTime(f*idx*.02+.01,t+dec);
+    mo.connect(mg);tonal.forEach(o=>mg.connect(o.frequency));mo.start(t);os.push(mo)}
+  (V.parts||[]).forEach(([r,l,dec])=>{for(const b of (V.beat?[0,V.beat*(1+r*.2)]:[0])){const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.value=f*r+b;
+    og.gain.setValueAtTime(l*(V.beat?.5:1),t);og.gain.exponentialRampToValueAtTime(.0004,t+dec);o.connect(og).connect(pre);o.start(t);os.push(o)}});
+  (V.noise||[]).forEach(([c,q,l,dec])=>{const n=ctx.createBufferSource(),b=ctx.createBiquadFilter(),ng=ctx.createGain();n.buffer=A.nbuf;n.loop=true;b.type='bandpass';b.frequency.value=c>0?Math.min(15000,f*c):-c;b.Q.value=q;
+    ng.gain.setValueAtTime(l,t);if(dec>0)ng.gain.exponentialRampToValueAtTime(.0005,t+dec);else if(dec<0)ng.gain.setTargetAtTime(l*.3,t+.2,-dec);n.connect(b).connect(ng).connect(pre);n.start(t,Math.random()*5);os.push(n)});
+  if(V.vib){const [rt,dp,dl]=V.vib,vb=ctx.createOscillator(),vg=ctx.createGain();vb.frequency.value=rt;vg.gain.setValueAtTime(0,t);vg.gain.setTargetAtTime(f*dp,t+(dl||0),.4);vb.connect(vg);tonal.forEach(o=>vg.connect(o.frequency));vb.start(t);os.push(vb)}
+  if(V.trem){const tr=ctx.createOscillator(),tg=ctx.createGain();tr.frequency.value=V.trem[0]+Math.random()*.6;tg.gain.value=V.trem[1]*vel;tr.connect(tg).connect(g.gain);tr.start(t);os.push(tr)}
+  const a=V.a||.01,peak=(V.peak||.3)*(V.trim||1)*vel;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+a);
+  if(V.d)g.gain.setTargetAtTime(peak*(V.s||0),t+a,V.d);
+  held[id]={g,os,rel:V.r||1.5};flash(i,true);pluck=1;
 }
 function noteOff(id,i){
   const h=held[id];if(!h)return;delete held[id];const t=A.ctx.currentTime;
@@ -514,7 +665,7 @@ keysEl.addEventListener('pointermove',e=>{const id='p'+e.pointerId;if(keysEl[id]
   if(kk&&+kk.dataset.i!==keysEl[id]){noteOff(id,keysEl[id]);keysEl[id]=+kk.dataset.i;noteOn(id,keysEl[id])}});
 const up=e=>{const id='p'+e.pointerId;if(keysEl[id]!=null){noteOff(id,keysEl[id]);keysEl[id]=null}};
 keysEl.addEventListener('pointerup',up);keysEl.addEventListener('pointercancel',up);
-addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0){e.preventDefault();noteOn('k'+i,i)}});
+addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey||/INPUT/.test(e.target.tagName))return;const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0){e.preventDefault();noteOn('k'+i,i)}});
 addEventListener('keyup',e=>{const i=KEYMAP.indexOf(e.key.toLowerCase());if(i>=0)noteOff('k'+i,i)});
 function onMidi(e){const [st,n,v]=e.data,c=st&0xf0,i=n-48;if(c===0x90&&v>0)noteOn('m'+n,i,v/127);else if(c===0x80||(c===0x90&&v===0))noteOff('m'+n,i)}
 
@@ -558,7 +709,7 @@ dial.addEventListener('pointermove',e=>dragging&&dialAt(e));dial.addEventListene
 dial.addEventListener('keydown',e=>{const k={ArrowUp:1.03,ArrowRight:1.03,ArrowDown:1/1.03,ArrowLeft:1/1.03}[e.key];if(k){e.preventDefault();S.beat=+clamp(S.beat*k,.5,40).toFixed(2);paintDial();applyBeat()}});
 
 /* ---------- knobs ---------- */
-const KN=[['tone','tone'],['body','body'],['air','air'],['close','close'],['space','space'],['vision','vision'],['trails','trails'],['veil','film']];
+const KN=[['vol','volume'],['tone','tone'],['body','body'],['air','air'],['close','close'],['space','space'],['vision','vision'],['trails','trails'],['veil','film']];
 const knobEls={};
 KN.forEach(([k,l])=>{const d=document.createElement('div');d.className='knob';d.tabIndex=0;d.innerHTML=`<i></i><span>${l}</span>`;$('#knobs').appendChild(d);knobEls[k]=d;
   const set=v=>{S[k]=clamp(v,0,1);d.style.setProperty('--v',S[k]);applyAll();$('#veil').style.opacity=S.veil};
@@ -569,7 +720,12 @@ KN.forEach(([k,l])=>{const d=document.createElement('div');d.className='knob';d.
 function paintKnobs(){KN.forEach(([k])=>knobEls[k]._set(S[k]))}
 
 /* ---------- buttons ---------- */
-$('#bVoice').onclick=()=>{S.voice=(S.voice+1)%VOICES.length;$('#bVoice').textContent='voice: '+VOICES[S.voice]};
+function setVoice(i){S.voice=(i+VOX.length)%VOX.length;$('#bVoice').textContent='voice: '+VOICES[S.voice];$$('.vb').forEach((b,j)=>b.classList.toggle('on',j===S.voice))}
+function buildVox(){const el=$('#vox');let fam='',h='';VOX.forEach((v,i)=>{if(v.fam!==fam){if(fam)h+='</div>';fam=v.fam;h+=`<h4>${fam}</h4><div class="vg">`}h+=`<button class="vb" data-i="${i}">${v.n}</button>`});
+  el.innerHTML='<p class="vh">'+VOX.length+' voices. Pick one, then play. The [ and ] keys step through them.</p>'+h+'</div>';el.onclick=e=>{const b=e.target.closest('.vb');if(b)setVoice(+b.dataset.i)};setVoice(S.voice)}
+$('#bVoice').onclick=e=>{e.stopPropagation();$('#vox').hidden=!$('#vox').hidden};
+addEventListener('pointerdown',e=>{if(!$('#vox').hidden&&!e.target.closest('#vox,#bVoice,#keys'))$('#vox').hidden=true});
+addEventListener('keydown',e=>{if(/INPUT/.test(e.target.tagName))return;if(e.key==='[')setVoice(S.voice-1);if(e.key===']')setVoice(S.voice+1);if(e.key==='Escape')$('#vox').hidden=true});
 $('#bBreath').onclick=()=>{S.breath=!S.breath;$('#bBreath').classList.toggle('on',S.breath);if(A.ctx)A.breathT0=A.ctx.currentTime;applyAll()};
 let hidePanels=false;$('#bHide').onclick=()=>{hidePanels=true;document.body.classList.add('idle')};
 let idleT;const wakeUI=()=>{if(hidePanels){hidePanels=false}document.body.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>A.ctx&&document.body.classList.add('idle'),14000)};
@@ -590,11 +746,11 @@ $('#bTone').onclick=()=>{const sr=48000,n=sr*30,L=new Float32Array(n),R=new Floa
     if(S.mode==='binaural'){L[i]=a*env;R[i]=c*env}else if(S.mode==='monaural'){L[i]=R[i]=(a+c)*.5*env}else{const g=.5+.5*Math.tanh(4*Math.sin(w*b*i));L[i]=R[i]=a*g*env}}
   save(wav24(L,R,sr),`black-dragon-test-${S.mode}-${f}hz-${b}hz.wav`)};
 /* session file */
-$('#bSave').onclick=()=>save(new Blob([JSON.stringify({black_dragon:2,saved:new Date().toISOString(),state:STATES[S.state].id,...S},null,1)],{type:'application/json'}),'black-dragon-'+stamp()+'.dragon');
+$('#bSave').onclick=()=>save(new Blob([JSON.stringify({black_dragon:2,saved:new Date().toISOString(),state:STATES[S.state].id,voiceName:VOICES[S.voice],...S},null,1)],{type:'application/json'}),'black-dragon-'+stamp()+'.dragon');
 $('#bLoad').onclick=()=>$('#fLoad').click();
 function loadFile(f){f.text().then(t=>{const d=JSON.parse(t);if(d.black_dragon!==2)throw 0;const i=STATES.findIndex(s=>s.id===d.state);
-  for(const k of Object.keys(S))if(k in d&&typeof d[k]===typeof S[k])S[k]=d[k];S.beat=clamp(S.beat,.5,40);
-  setState(i<0?0:i,true);paintKnobs();$('#bVoice').textContent='voice: '+VOICES[S.voice];$('#bBreath').classList.toggle('on',S.breath);$('#bTide').classList.toggle('on',S.tide)}).catch(()=>{$('#note').textContent='That file is not a Black Dragon session. Choose a .dragon file saved from this instrument.'})}
+  for(const k of Object.keys(S))if(k in d&&typeof d[k]===typeof S[k])S[k]=d[k];if(!S.layers||typeof S.layers!=='object')S.layers={};if(d.voiceName&&VOICES.includes(d.voiceName))S.voice=VOICES.indexOf(d.voiceName);S.voice=clamp(S.voice|0,0,VOX.length-1);S.beat=clamp(S.beat,.5,40);
+  setState(i<0?0:i,true);paintKnobs();if(A.ctx)bankSync();else paintBank();setVoice(S.voice);$('#bBreath').classList.toggle('on',S.breath);$('#bTide').classList.toggle('on',S.tide)}).catch(()=>{$('#note').textContent='That file is not a Black Dragon session. Choose a .dragon file saved from this instrument.'})}
 $('#fLoad').onchange=e=>e.target.files[0]&&loadFile(e.target.files[0]);
 addEventListener('dragover',e=>e.preventDefault());addEventListener('drop',e=>{e.preventDefault();e.dataTransfer.files[0]&&loadFile(e.dataTransfer.files[0])});
 
@@ -604,8 +760,8 @@ function peak(buf,f0,span){const hz=A.ctx.sampleRate/A.anL.fftSize,a=Math.max(1,
   const y0=buf[m-1],y1=buf[m],y2=buf[m+1],d=(y0-y2)/(2*(y0-2*y1+y2)||1);return y1<-90?null:(m+clamp(d,-.5,.5))*hz}
 let proofN=0;
 function proof(){
-  if(!A.ctx)return;A.anL.getFloatFrequencyData(A.bufL);A.anR.getFloatFrequencyData(A.bufR);
-  if(performance.now()-proofN>220){proofN=performance.now();
+  if(!A.ctx)return;A.anL.getFloatFrequencyData(A.bufL);A.anR.getFloatFrequencyData(A.bufR);A.anM.getFloatFrequencyData(A.bufM);
+  if(performance.now()-proofN>220){proofN=performance.now();bankProof();
     const lab=(a,b,c)=>{$('#lL').textContent=a;$('#lR').textContent=b;$('#lD').textContent=c},f=v=>v?v.toFixed(1):'–';
     if(S.mode==='binaural'){const l=peak(A.bufL,S.fc,S.beat/2+1.5),r=peak(A.bufR,S.fc+S.beat,S.beat/2+1.5);lab('left ear','right ear','difference');
       $('#mL').textContent=f(l);$('#mR').textContent=f(r);$('#mD').textContent=l&&r?(r-l).toFixed(1):'–'}
@@ -616,7 +772,7 @@ function proof(){
   }
   const W=spec.width,H=spec.height,hz=A.ctx.sampleRate/A.anL.fftSize,f1=20,f2=1200;sx.clearRect(0,0,W,H);
   const cs=getComputedStyle(document.documentElement),draw=(buf,col)=>{sx.beginPath();for(let x=0;x<W;x++){const f=f1*Math.pow(f2/f1,x/W),v=buf[Math.round(f/hz)],y=H-clamp((v+100)/80,0,1)*H;x?sx.lineTo(x,y):sx.moveTo(x,y)}sx.strokeStyle=col;sx.lineWidth=2;sx.stroke()};
-  draw(A.bufL,'rgba(255,255,255,.8)');draw(A.bufR,'#ffb454');
+  draw(A.bufM,'rgba(255,255,255,.55)');draw(A.bufL,'#ffb454');
   sx.fillStyle='rgba(255,255,255,.55)';sx.font='16px "Chakra Petch"';for(const f of [50,100,200,500,1000]){const x=Math.log(f/f1)/Math.log(f2/f1)*W;sx.fillRect(x,H-8,1,8);sx.fillText(f,x+4,H-6)}
 }
 
@@ -671,7 +827,7 @@ const td=new Uint8Array(256);let lvl=0,vt=0,lastT=0;
 function frame(ms){
   const dt=Math.min(.05,(ms-lastT)/1000);lastT=ms;const s=STATES[S.state];
   let breath=0;
-  if(A.ctx){const an=A.anL;an.getByteTimeDomainData(td);let e=0;for(let i=0;i<256;i++){const v=(td[i]-128)/128;e+=v*v}lvl+=(Math.min(1,Math.sqrt(e/256)*3)-lvl)*.08;
+  if(A.ctx){const an=A.anM;an.getByteTimeDomainData(td);let e=0;for(let i=0;i<256;i++){const v=(td[i]-128)/128;e+=v*v}lvl+=(Math.min(1,Math.sqrt(e/256)*3)-lvl)*.08;
     if(S.breath){const ph=((A.ctx.currentTime-A.breathT0)*.1)%1;breath=.5-.5*Math.cos(ph*2*Math.PI);$('#breathRing').setAttribute('r',70+breath*62);$('#breathRing').setAttribute('opacity',.35+breath*.5)}
     else $('#breathRing').setAttribute('opacity',0);
     proof()}
@@ -752,9 +908,10 @@ $('#bTide').onclick=()=>{S.tide=!S.tide;$('#bTide').classList.toggle('on',S.tide
 setTimeout(()=>{tide();setInterval(tide,52000)},20000);
 
 /* ---------- start ---------- */
-setState(1);paintKnobs();
+setState(STATES.findIndex(x=>x.id==='hypnagogia'));paintKnobs();buildVox();
 $('#gate').onclick=()=>{if(A.ctx)return;initAudio();$('#gate').classList.add('gone');$('#veil').play().catch(()=>{});setTimeout(()=>$('#gateVid').pause(),1800);wakeUI()};
 window.__bd={S,A,STATES,setState};
 </script>
+<script src="bank.js"></script>
 </body>
 </html>
