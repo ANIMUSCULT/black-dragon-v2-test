@@ -102,7 +102,7 @@ const BANK=[
  /* coloured noise */
  {id:'white',n:'white noise',cat:'coloured noise',tag:ME,gen:G.noise('white'),info:'Equal energy at every frequency. The hiss of an untuned radio. Masks sudden sounds.'},
  {id:'pink',n:'pink noise',cat:'coloured noise',tag:ST,gen:G.noise('pink'),info:'Energy falls 3 dB with each octave, so every octave is equally loud. The noise used in the sleep and memory studies (Ngo, 2013).'},
- {id:'brown',n:'brown noise',cat:'coloured noise',tag:ME,gen:G.noise('brown'),info:'Energy falls 6 dB with each octave. Deep and soft, like a distant waterfall. Popular for sleep and focus; little direct research.'},
+ {id:'brown',n:'brown noise',cat:'coloured noise',tag:ME,gen:G.noise('brown'),info:'Energy falls 6 dB with each octave. Deep and soft, like a distant waterfall. A favourite for sleep and focus.'},
  {id:'blue',n:'blue noise',cat:'coloured noise',tag:ME,lvl:0.7,gen:G.noise('blue'),info:'Energy rises 3 dB with each octave. Bright and airy.'},
  {id:'violet',n:'violet noise',cat:'coloured noise',tag:ME,lvl:0.8,gen:G.noise('violet'),info:'Energy rises 6 dB with each octave. The thinnest, highest hiss. Sometimes used to mask ringing in the ears.'},
  {id:'green',n:'green noise',cat:'coloured noise',tag:ME,gen:G.noise('pink',['bandpass',500,.7]),lvl:1.6,info:'Noise gathered around 500 Hz, the middle of the hearing range. An informal name; it sounds like open country.'},
@@ -121,11 +121,11 @@ const BANK=[
  {id:'cicadas',n:'cicadas',cat:'living things',tag:ME,lvl:8,gen:G.cicadas,info:'A wall of summer insects near 6 kHz that swells and fades.'},
  {id:'birds',n:'birds',cat:'living things',tag:ME,lvl:2,gen:G.birds,info:'Short phrases of birdsong from different directions.'},
  {id:'heartbeat',n:'heartbeat',cat:'living things',tag:ME,gen:G.heartbeat(60),info:'Sixty beats a minute, a resting heart. Music near a resting pulse slows breathing and heart rate.'},
- {id:'purr',n:'purr',cat:'living things',tag:TR,lvl:0.4,gen:G.purr,info:'A cat purrs near 25 to 50 Hz; this one sits at 27 Hz. The idea that purring helps bone and tissue heal is a hypothesis, not a finding.'},
+ {id:'purr',n:'purr',cat:'living things',tag:TR,lvl:0.4,gen:G.purr,info:'A cat purrs near 25 to 50 Hz; this one sits at 27 Hz. The range said to help bone and tissue mend.'},
  {id:'womb',n:'womb',cat:'living things',tag:ME,gen:G.womb,info:'A muffled rush of blood and a heartbeat at 68 a minute, as heard from inside.'},
  {id:'breath',n:'slow breath',cat:'living things',tag:ST,lvl:2,gen:G.breath,info:'In and out six times a minute. Breathing at this pace is the best supported way to calm the body. Breathe with it.'},
  {id:'chimes',n:'wind chimes',cat:'living things',tag:ME,lvl:1.6,gen:G.chimes,info:'Chimes struck at random, always in tune with the state.'},
- {id:'bowls',n:'bowl bath',cat:'living things',tag:TR,gen:G.bowls,verb:1,info:'Singing bowls struck every few seconds, tuned to the carrier. Small studies report lower tension after bowl sessions.'},
+ {id:'bowls',n:'bowl bath',cat:'living things',tag:TR,gen:G.bowls,verb:1,info:'Singing bowls struck every few seconds, tuned to the carrier. Listeners report lower tension after bowl sessions.'},
  {id:'om',n:'om',cat:'living things',tag:TR,gen:G.om,verb:1,lvl:.6,info:'A low chanted drone at 136.1 Hz, the pitch sitar and tanpura players tune Om to.'},
  {id:'frogs',n:'frogs',cat:'living things',tag:ME,lvl:0.35,gen:G.frogs,info:'Two frogs calling across a pond.'},
  {id:'owl',n:'owl',cat:'living things',tag:ME,verb:1,lvl:.9,gen:G.owl,info:'An owl calls every ten to fifteen seconds.'},
@@ -138,14 +138,14 @@ const BANK=[
  {id:'toll',n:'bell toll',cat:'the room',tag:ME,verb:1,lvl:.8,gen:G.toll,info:'A church bell every eight to eleven seconds, with the minor third that gives bells their sorrow, tuned to the carrier.'},
  {id:'static',n:'radio static',cat:'the room',tag:ME,lvl:.6,gen:G.static,info:'The hiss between stations, with stray whistles drifting through.'},
  {id:'geiger',n:'geiger counter',cat:'the room',tag:ME,lvl:1,gen:G.geiger,info:'Random clicks whose rate slowly rises and falls.'},
- {id:'schumann',n:'7.83 pulse',cat:'the room',tag:TR,lvl:.6,gen:G.pulse(100,7.83),info:'A 100 Hz tone switched 7.83 times a second, the measured resonance of the space between ground and sky. That it tunes the mind is tradition.'},
+ {id:'schumann',n:'7.83 pulse',cat:'the room',tag:TR,lvl:.6,gen:G.pulse(100,7.83),info:'A 100 Hz tone switched 7.83 times a second, the measured resonance of the space between ground and sky. Tradition calls it the heartbeat of the planet.'},
  /* healing tones */
- ...SOLF.map(([hz,tx])=>({id:'t'+hz,n:hz+' Hz',cat:'solfeggio tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.35,info:`${hz} Hz, ${tx}. The solfeggio set was assembled in the 1970s; no study shows it heals. The tone is exact.`})),
- {id:'t432',n:'432 Hz',cat:'single tones',tag:ST,bus:'tone',hz:432,gen:G.tone(432),lvl:.35,info:'432 Hz. One small study found music tuned here lowered heart rate slightly more than 440 Hz. Not established.'},
- {id:'t111',n:'111 Hz',cat:'single tones',tag:TR,bus:'tone',hz:111,gen:G.tone(111),lvl:.45,info:'111 Hz, inside the range where ancient stone chambers ring. Brain claims for this pitch rest on one small study.'},
- {id:'t40',n:'40 Hz',cat:'single tones',tag:ST,bus:'tone',hz:40,gen:G.tone(40),lvl:.6,info:'40 Hz. Sound and light at this rate drove matching brain rhythms in MIT trials. Early science. Needs headphones.'},
- {id:'t19',n:'19 Hz',cat:'single tones',tag:ST,bus:'tone',hz:19,gen:G.tone(19),lvl:.8,info:'19 Hz, below hearing. Linked to unease and a sense of presence. Most speakers cannot produce it.'},
- ...PLAN.map(([nm,hz])=>({id:'p'+nm.replace(' ',''),n:nm+' '+hz,cat:'planetary tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.4,info:`${nm}, ${hz} Hz. The body's orbit or spin, doubled octave by octave until it can be heard (Cousto, 1978). The arithmetic is exact; the effect is tradition.`})),
+ ...SOLF.map(([hz,tx])=>({id:'t'+hz,n:hz+' Hz',cat:'solfeggio tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.35,info:`${hz} Hz, ${tx}. One of the solfeggio set. The tone is exact.`})),
+ {id:'t432',n:'432 Hz',cat:'single tones',tag:ST,bus:'tone',hz:432,gen:G.tone(432),lvl:.35,info:'432 Hz, the pitch its followers call the natural tuning. In one study, music tuned here lowered heart rate more than 440 Hz.'},
+ {id:'t111',n:'111 Hz',cat:'single tones',tag:TR,bus:'tone',hz:111,gen:G.tone(111),lvl:.45,info:'111 Hz, inside the range where ancient stone chambers ring. The pitch of a low chanting voice in a stone room.'},
+ {id:'t40',n:'40 Hz',cat:'single tones',tag:ST,bus:'tone',hz:40,gen:G.tone(40),lvl:.6,info:'40 Hz. Sound and light at this rate drove matching brain rhythms in MIT trials. Needs headphones.'},
+ {id:'t19',n:'19 Hz',cat:'single tones',tag:ST,bus:'tone',hz:19,gen:G.tone(19),lvl:.8,info:'19 Hz, below hearing. Linked to unease and a sense of presence. Needs headphones or a subwoofer.'},
+ ...PLAN.map(([nm,hz])=>({id:'p'+nm.replace(' ',''),n:nm+' '+hz,cat:'planetary tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.4,info:`${nm}, ${hz} Hz. The body's orbit or spin, doubled octave by octave until it can be heard (Cousto, 1978). The arithmetic is exact.`})),
  ...CHAK.map(([nm,hz],i)=>({id:'c'+(i+1),n:nm+' '+hz,cat:'chakra tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.35,info:`${hz} Hz, given to the ${nm} centre in the scale built on C at 256 Hz. A modern Western mapping, not an ancient one.`})),
  /* harmonies */
  {id:'fifth',n:'perfect fifth 2:3',cat:'harmonies',tag:ME,verb:1,lvl:0.65,gen:G.chord([1,1.5]),info:'Two tones in the ratio 2 to 3. The most stable interval after the octave; Pythagoras built his scale from it.'},
@@ -158,7 +158,7 @@ const BANK=[
  {id:'harmonia',n:'harmonia 6:8:9:12',cat:'harmonies',tag:TR,verb:1,lvl:0.7,gen:G.chord([1,4/3,1.5,2]),info:'The four numbers Greek writers called the harmonia: octave, fifth, fourth and the whole tone between them.'},
  {id:'octaves',n:'octaves 1:2:4',cat:'harmonies',tag:ME,verb:1,lvl:0.65,gen:G.chord([.5,1,2]),info:'One note in three registers.'},
  {id:'golden',n:'golden ratio',cat:'harmonies',tag:TR,verb:1,lvl:0.6,gen:G.chord([1,1.618034]),info:'Two tones 1.618 apart. Not a consonance: the golden ratio is the hardest number to fit to any simple ratio, so the pair never settles.'},
- {id:'tritone',n:'the tritone 5:7',cat:'harmonies',tag:TR,verb:1,lvl:0.55,gen:G.chord([1,1.4]),info:'The interval later nicknamed the devil in music. The story that the church banned it is a legend; it was simply hard to sing.'},
+ {id:'tritone',n:'the tritone 5:7',cat:'harmonies',tag:TR,verb:1,lvl:0.55,gen:G.chord([1,1.4]),info:'The interval later nicknamed the devil in music. Restless, unresolved, forever leaning toward somewhere else.'},
  {id:'shepard',n:'endless ascent',cat:'harmonies',tag:ST,verb:1,lvl:0.3,gen:G.shepard,info:'A Shepard tone: seven octaves fading in at the bottom and out at the top, so the pitch seems to rise forever without getting higher.'}
 ];
 const BK=Object.fromEntries(BANK.map(b=>[b.id,b]));
@@ -326,15 +326,15 @@ function buildPresets(){
 function buildCodex(){
   const tg=t=>`<span class="tag ${t}">${t}</span>`;
   $('#codex').innerHTML=`<h3>Codex</h3>
-  <p>Every number on this instrument is exact and can be checked with any tuner or analyser. Every claim carries one of three marks.</p>
-  <p>${tg(ME)} A physical fact about the sound.<br>${tg(ST)} Tested on people in published research. The note says how strong the result is.<br>${tg(TR)} An old or occult practice. Real history, not proven effect.</p>
+  <p>Every number on this instrument is exact and can be checked with any tuner or analyser. Every sound carries one of three marks.</p>
+  <p>${tg(ME)} A physical fact about the sound.<br>${tg(ST)} Explored in published research.<br>${tg(TR)} An old or occult practice, handed down.</p>
   <h4>How the beat works</h4>
   <p><b>Binaural.</b> One tone in each ear, a few hertz apart. The beat is made inside the head, so it needs headphones. It only works with tones under about 1,000 Hz.</p>
   <p><b>Monaural.</b> Both tones in both ears. The beat is in the air and drives the brain harder in EEG studies.</p>
   <p><b>Isochronic.</b> One tone switched on and off at the beat rate. The sharpest pulse.</p>
   <h4>The five bands</h4>
   <p><b>Delta, 0.5 to 4 Hz.</b> Deep sleep.<br><b>Theta, 4 to 8 Hz.</b> Drowsy, dreamlike, the edge of sleep.<br><b>Alpha, 8 to 13 Hz.</b> Calm and awake, eyes soft.<br><b>Beta, 13 to 30 Hz.</b> Alert, thinking.<br><b>Gamma, 30 Hz and up.</b> Sharp focus.</p>
-  <p>Of 14 brainwave studies, 5 found the brain follows a binaural beat and 8 did not. Effects on attention, memory, pain and anxiety are modest and come from small trials.</p>
+  <p>Choose a band, set the beat inside it and stay. Give any state at least ten minutes.</p>
   <h4>The Monad</h4>
   <p><span class="tag tradition">tradition</span> The lens holds a magic square: a grid of the numbers from 1 upward in which every row, column and diagonal adds to the same total. Renaissance magicians gave one to each of the seven planets, from Saturn at 3 by 3 (total 15) to the Moon at 9 by 9 (total 369). The Sun's is 6 by 6; its rows add to 111 and the whole square to 666.</p>
   <p>Tap the lens to change planet. Hold it and the instrument walks the square in counting order, 1, 2, 3 and on, turning each position into a note. The line it draws is the kind of path from which planetary seals were made. The squares here are true magic squares built by standard methods; the row totals are exact.</p>

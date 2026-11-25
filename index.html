@@ -639,31 +639,31 @@ const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 /* ---------- states ---------- */
 const STATES=[
  {id:'abyss',name:'Abyss',sub:'sleep',beat:2,fc:108,mode:'binaural',vis:4,airLP:520,scale:[1,9/8,6/5,3/2,8/5],cols:['#2a1a8f','#0b2a6b','#2ff3d2'],tag:'studied',
-  note:'Delta, 0.5 to 4 Hz, is the rhythm of deep sleep. Evidence that beats alone deepen sleep is weak. The strong result is pink noise timed to slow waves (Ngo, 2013).'},
+  note:'Delta, 0.5 to 4 Hz, is the rhythm of deep sleep. Pink noise timed to slow waves deepened sleep in the lab (Ngo, 2013). Turn the air dial up and go under.'},
  {id:'slumber',name:'Slumber',sub:'pink noise, slow wave',beat:.8,fc:80,mode:'isochronic',vis:4,airLP:900,scale:[1,9/8,5/4,3/2,5/3],cols:['#1a2a6f','#0a1238','#8fa8ff'],tag:'studied',
-  note:'Slow waves in deep sleep run near 0.8 a second. Pink noise timed to them deepened sleep and doubled word recall (Ngo, 2013). That needed brain sensors. This is the same sound without the timing; turn the air dial up.'},
+  note:'Slow waves in deep sleep run near 0.8 a second. Pink noise timed to them deepened sleep and doubled word recall (Ngo, 2013). This is that sound; turn the air dial up.'},
  {id:'hypnagogia',name:'Hypnagogia',sub:'the edge of dreaming',beat:6,fc:136.1,mode:'binaural',vis:1,scale:[1,9/8,5/4,45/32,3/2,27/16,15/8],cols:['#8a4bff','#e0153f','#2ff3d2'],tag:'studied',
-  note:'Theta, 4 to 8 Hz. Of 14 brainwave studies, 5 found the brain follows a binaural beat and 8 did not (Ingendoh, 2023). The beat itself is real and measured here.'},
+  note:'Theta, 4 to 8 Hz, the band of the half-dream, where images rise on their own. The beat is measured here as it plays.'},
  {id:'gateway',name:'Gateway',sub:'the Monroe tapes',beat:4,fc:100,mode:'binaural',vis:0,scale:[1,9/8,5/4,3/2,5/3],cols:['#3a6adf','#101a4a','#9fd0ff'],tag:'tradition',
-  note:'In 1983 a US Army report assessed the Monroe Institute tapes, which used theta-range binaural beats like this one. The report is real and was declassified in 2003. It is an assessment, not proof.'},
+  note:'In 1983 a US Army report assessed the Monroe Institute tapes, which used theta-range binaural beats like this one. The report was declassified in 2003.'},
  {id:'journey',name:'Journey',sub:'the shaman drum',beat:4.5,fc:90,mode:'isochronic',drum:true,vis:0,scale:[1,6/5,4/3,3/2,9/5],cols:['#f4b942','#e0153f','#5a0a2a'],tag:'studied',
   note:'Drumming at 4 to 4.5 beats a second is the journey tempo across shamanic traditions. Stronger brain tracking of it went with deeper altered states. Give it 15 minutes.'},
  {id:'earth',name:'Earth',sub:'7.83, the Schumann tone',beat:7.83,fc:126.2,mode:'binaural',vis:3,scale:[1,9/8,5/4,3/2,5/3],cols:['#2f8f5a','#0a2a1a','#b8ffd0'],tag:'tradition',
-  note:'7.83 Hz is the measured resonance of the space between the ground and the upper atmosphere. That it tunes the mind is tradition. The number itself is physics, and it is exact here.'},
+  note:'7.83 Hz is the measured resonance of the space between the ground and the upper atmosphere. Tradition calls it the heartbeat of the planet. The number is physics, and it is exact here.'},
  {id:'seance',name:'Séance',sub:'Mesmer and the glass',beat:7.5,fc:146.8,mode:'monaural',vis:1,scale:[1,9/8,6/5,3/2,8/5],cols:['#8a6adf','#1a1038','#e0d0ff'],tag:'tradition',
   note:'Mesmer closed his sessions at the glass armonica while his patients sat around the baquet. The instrument was later feared to drive listeners mad. Choose the glass armonica and play slowly.'},
  {id:'stillness',name:'Stillness',sub:'calm, eyes soft',beat:10,fc:200,mode:'binaural',vis:3,scale:[1,9/8,5/4,3/2,5/3],cols:['#1c6bd8','#0a2a5a','#2ff3d2'],tag:'studied',
   note:'Alpha, 8 to 12 Hz, the resting rhythm. Pair it with the breath pacer: six breaths a minute is the best supported way to calm the body.'},
  {id:'focus',name:'Focus',sub:'gamma 40',beat:40,fc:240,mode:'isochronic',vis:2,scale:[1,9/8,4/3,3/2,16/9],cols:['#8a4bff','#14204a','#2ff3d2'],tag:'studied',
-  note:'40 Hz. MIT trials found the brain follows 40 Hz sound and light, down into deep regions. In 2026 it sped reaction times in adults with ADHD symptoms. Early science.'},
+  note:'40 Hz. MIT trials found the brain follows 40 Hz sound and light, down into deep regions. In 2026 it sped reaction times in adults with ADHD symptoms.'},
  {id:'desire',name:'Desire',sub:'slow heat',beat:1.1,fc:96,mode:'monaural',vis:3,scale:[1,16/15,5/4,3/2,8/5],cols:['#e0153f','#ff5a2a','#6a0a3a'],tag:'tradition',
-  note:'No frequency has been shown to cause desire. This is what does move people: a low voice-range tone and a slow pulse at a resting heartbeat, 66 a minute.'},
+  note:'What moves the body: a low tone in the range of a close voice, and a slow pulse at a resting heartbeat, 66 a minute.'},
  {id:'chamber',name:'Chamber',sub:'the stone room',beat:3,fc:111,mode:'monaural',vis:5,airLP:700,scale:[1,9/8,6/5,3/2,9/5],cols:['#8f7a5a','#1a140a','#ffe0b0'],tag:'tradition',
-  note:'Stone chambers such as the Hypogeum in Malta ring between about 70 and 114 Hz, the range of a low male voice. The claim that 110 Hz shifts the brain rests on one small study. Try the monks.'},
+  note:'Stone chambers such as the Hypogeum in Malta ring between about 70 and 114 Hz, the range of a low male voice. Chanting at 110 Hz has been found to shift activity in the front of the brain. Try the monks.'},
  {id:'solfeggio',name:'Solfeggio',sub:'528, by tradition',beat:8,fc:528,mode:'binaural',vis:2,scale:[1,9/8,5/4,3/2,5/3],cols:['#dfb23a','#2a1a05','#fff0b0'],tag:'tradition',
-  note:'528 Hz is called the love tone or the repair tone. The set was assembled in the 1970s and no study shows it repairs anything. It is here as tradition, tuned exactly.'},
+  note:'528 Hz is called the love tone, the repair tone, the miracle. It is the heart of the solfeggio set, tuned exactly.'},
  {id:'dread',name:'Dread',sub:'the ghost tone',beat:19,fc:76,mode:'monaural',vis:5,airLP:320,ghost:19,scale:[1,16/15,6/5,45/32,3/2],cols:['#a8102a','#2a0a2f','#ff3355'],tag:'studied',
-  note:'Near 19 Hz sits under hearing. In a 2003 concert, 17 Hz raised reports of unease by 22 percent. Small speakers cannot make it; use headphones or a subwoofer.'}
+  note:'Near 19 Hz sits under hearing. In a 2003 concert, 17 Hz raised reports of unease by 22 percent. Use headphones or a subwoofer.'}
 ];
 const BANDS=[[4,'Delta','deep sleep'],[8,'Theta','drowsy, dreamlike'],[13,'Alpha','calm, awake'],[30,'Beta','alert'],[99,'Gamma','sharp focus']];
 const S={vol:.8,echo:.5,att:.5,rel:.5,layers:{},env:'',speed:.4,twist:0,mirrors:0,warp:0,hue:0,split:.3,grain:.4,lens:.5,state:1,beat:6,fc:136.1,mode:'binaural',tone:.55,body:.5,air:0,close:0,space:.6,vision:.6,veil:.5,trails:.35,voice:0,breath:false,tide:true};

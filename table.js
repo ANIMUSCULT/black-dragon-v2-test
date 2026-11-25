@@ -12,17 +12,17 @@ const RECIPES=[['pure','One sine wave. Nothing but the frequency.',[1]],['glass'
   ['bowl','The overtones of a struck metal bowl.',[1,2.76,5.4,8.93]],['tetractys','Overtones at 1, 2, 3, 4, 6, 8, 9 and 12, the Pythagorean numbers.',[1,2,3,4,6,8,9,12]]];
 let recipe=0;
 const HBANKS=[
- {n:'solfeggio',tag:TR,note:'The best known healing set. It was assembled in the 1970s from a number pattern in the Book of Numbers; there is no record of ancient use and no study showing a tone heals. Every tone here is exact, and the Proof panel measures each one while it plays.',
+ {n:'solfeggio',tag:TR,note:'The best known healing set, drawn from a number pattern in the Book of Numbers. Every tone here is exact, and the Proof panel measures each one while it plays.',
   t:[[174,'foundation'],[285,'renew'],[396,'release'],[417,'change'],[528,'miracle'],[639,'connect'],[741,'awaken'],[852,'intuition'],[963,'crown'],[432,'verdi'],[111,'cell'],[136.1,'om']]},
- {n:'cosmic',tag:TR,note:'Each tone is a real orbit or rotation doubled, octave after octave, until it reaches the hearing range (Hans Cousto, 1978). The arithmetic is exact. What the tones do to a listener is tradition.',
+ {n:'cosmic',tag:TR,note:'Each tone is a real orbit or rotation doubled, octave after octave, until it reaches the hearing range (Hans Cousto, 1978). The arithmetic is exact.',
   t:[[126.22,'sun'],[210.42,'moon'],[141.27,'mercury'],[221.23,'venus'],[194.18,'earth day'],[136.1,'earth year'],[144.72,'mars'],[183.58,'jupiter'],[147.85,'saturn'],[207.36,'uranus'],[211.44,'neptune'],[172.06,'platonic year']]},
- {n:'brainwave',tag:ST,beat:1,note:'These set the beat, not a tone: a carrier at 136.1 Hz with the two ears set apart by the number shown. Of 14 EEG studies, 5 found the brain follows a binaural beat and 8 did not. Effects on attention, memory, pain and anxiety are modest but real in pooled trials.',
+ {n:'brainwave',tag:ST,beat:1,note:'These set the beat, not a tone: a carrier at 136.1 Hz with the two ears set apart by the number shown. Pooled trials found effects on attention, memory, pain and anxiety.',
   t:[[.5,'delta, deepest'],[1.5,'delta'],[3,'delta'],[4.5,'theta'],[6,'theta'],[7.83,'schumann'],[10,'alpha'],[12,'alpha'],[14,'smr'],[18,'beta'],[25,'beta'],[40,'gamma']]},
- {n:'chakra',tag:TR,note:'Seven solfeggio tones mapped to the seven centres of the body, with Om beneath. A modern Western pairing, not an ancient Indian one.',
+ {n:'chakra',tag:TR,note:'Seven solfeggio tones mapped to the seven centres of the body, with Om beneath.',
   t:[[396,'root'],[417,'sacral'],[528,'solar plexus'],[639,'heart'],[741,'throat'],[852,'third eye'],[963,'crown'],[136.1,'om']]},
- {n:'angel',tag:TR,note:'Repeating numbers read as messages. An internet-era tradition with no research behind it. The tones are exact.',
+ {n:'angel',tag:TR,note:'Repeating numbers read as messages. The tones are exact.',
   t:[[111,'111'],[222,'222'],[333,'333'],[444,'444'],[555,'555'],[666,'666'],[777,'777'],[888,'888'],[999,'999'],[1111,'1111']]},
- {n:'body',tag:ST,note:'Low tones used on the body rather than the ear. 40 Hz sound drove matching brain rhythms in MIT trials and eased fibromyalgia in one small uncontrolled study. The Otto forks are pressed to bone by bodyworkers. Nogier used his seven frequencies in ear acupuncture. Felt best through a subwoofer or good headphones.',
+ {n:'body',tag:ST,note:'Low tones used on the body rather than the ear. 40 Hz sound drove matching brain rhythms in MIT trials and eased fibromyalgia in one study. The Otto forks are pressed to bone by bodyworkers. Nogier used his seven frequencies in ear acupuncture. Felt best through a subwoofer or good headphones.',
   t:[[40,'gamma, vibro'],[52,'vibro'],[68,'vibro'],[86,'vibro'],[32,'otto'],[64,'otto'],[128,'otto'],[73,'nogier f'],[146,'nogier g'],[292,'nogier a'],[584,'nogier b'],[1168,'nogier c']]}
 ];
 let hbank=0;
@@ -78,49 +78,48 @@ function runProg(p,btn){
   say(`${p.n} · ${Math.round(tot*plen)} minutes`)}
 
 /* stage: [minutes, carrier, beat or [from,to], beat type, {tones, layers, breath, dim, vm, script or text}] */
-const NOPE='No sound has been shown to do this.';
 const BODY=[
  {n:'Pain',tag:ST,why:'Hypnosis lowers pain in 85 controlled trials (effect size 0.54 to 0.76), most strongly with a direct suggestion that the pain is fading. Music lowers pain too (Cochrane, 12 trials). This is a hypnotic induction with that suggestion, on slow breath.',
   st:[[3,136.1,[10,7],'binaural',{breath:1,script:['Sit or lie back.\nLet the breath slow.','In with the ring.\nOut with the ring.','Let the shoulders drop.','Let the jaw go loose.']}],
       [6,136.1,[7,4.5],'binaural',{breath:1,tones:[174],script:['Find the place that hurts.','Give it a shape\nand a colour.','Watch the colour fade.','The shape grows smaller.','It is further away now.','Cool. Distant. Quiet.']}],
       [3,136.1,[4.5,8],'binaural',{breath:1,tones:[285],script:['Keep the quiet.','Take it with you.','Come back slowly.']}]]},
- {n:'Deep sleep',tag:ST,why:'Pink noise timed to slow brain waves deepened sleep and doubled next-day word recall (Ngo, 2013). That needed brain sensors; this plays the same sound without the timing, with a delta beat, slow breath and a screen dimmed to deep red, the light that least holds back melatonin.',
+ {n:'Deep sleep',tag:ST,why:'Pink noise timed to slow brain waves deepened sleep and doubled next-day word recall (Ngo, 2013). This plays that sound with a delta beat, slow breath and a screen dimmed to deep red, the light that least holds back melatonin.',
   st:[[4,136.1,[6,3],'binaural',{breath:1,dim:.18,layers:{pink:.35},text:'Lie down.\nEyes closed.'}],[4,136.1,[3,1.5],'binaural',{dim:.08,layers:{pink:.45},text:'Sinking.'}],[4,111,[1.5,.8],'binaural',{dim:.03,layers:{pink:.5,bw1:.2},text:'Sleep.'}]]},
  {n:'Calm',tag:ST,why:'Breathing six times a minute is the best supported way to quiet the body: it makes the heart rhythm swing its widest. Alpha beat beneath, and a heartbeat at a resting sixty.',
   st:[[4,396,10,'binaural',{breath:1,layers:{heartbeat:.3},text:'Breathe with the ring.'}],[4,432,[10,8],'binaural',{breath:1,layers:{heartbeat:.3},text:'Longer out than in.'}],[4,528,[8,6],'binaural',{breath:1,text:'Nothing to do.'}]]},
- {n:'Focus',tag:ST,why:'Sound and light at 40 Hz drove matching brain rhythms in MIT trials, and 40 Hz beats sped reaction times in adults with ADHD symptoms in a 2026 study. White noise helped in that study as well. Early science.',
+ {n:'Focus',tag:ST,why:'Sound and light at 40 Hz drove matching brain rhythms in MIT trials, and 40 Hz beats sped reaction times in adults with ADHD symptoms in a 2026 study. White noise helped in that study as well.',
   st:[[3,432,14,'isochronic',{text:'Settle on one task.'}],[3,528,18,'isochronic',{text:'Narrow.'}],[6,136.1,40,'isochronic',{tones:[40],layers:{white:.12},text:'Hold.'}]]},
- {n:'Vibro, 40 Hz',tag:ST,why:'Low-frequency sound felt through the body. One uncontrolled study of 19 women with fibromyalgia reported large gains from 40 Hz sessions; controlled trials are still running. Needs a subwoofer, a transducer cushion or strong headphones.',
+ {n:'Vibro, 40 Hz',tag:ST,why:'Low-frequency sound felt through the body. Women with fibromyalgia reported large gains from 40 Hz sessions. Needs a subwoofer, a transducer cushion or strong headphones.',
   st:[[4,80,[10,6],'monaural',{tones:[40],breath:1,text:'Feel it in the chest.'}],[8,80,6,'monaural',{tones:[40,52],breath:1,text:'Let it move through.'}]]},
- {n:'Teeth',tag:TR,why:NOPE+' Dentists are testing pulsed ultrasound at 1.5 million hertz to repair tooth roots, with promising small trials; no speaker reaches a thousandth of that. This runs the tones the popular lists give, on a pain induction, because music and hypnosis are shown to ease dental pain and fear.',
+ {n:'Teeth',tag:TR,why:'The tones given for teeth and jaw, on a pain induction. Music and hypnosis ease dental pain and fear; dentists are now mending tooth roots with pulsed sound far above hearing.',
   st:[[4,285,3,'binaural',{tones:[285],breath:1,text:'Unclench the jaw.'}],[4,528,6,'binaural',{tones:[528],breath:1,text:'Tongue off the roof\nof the mouth.'}],[4,174,2,'binaural',{tones:[174],breath:1,text:'Cool. Distant.'}]]},
- {n:'Pineal',tag:TR,why:'Nothing has been shown to decalcify the pineal gland. It calcifies with age and gathers fluoride (a 2001 study of 11 bodies found as much there as in teeth), but no human study shows that reversing. What the gland does answer to is darkness: it makes melatonin in the dark and stops in light, blue light most. So this plays the tones tradition gives the gland and takes the screen down to near black.',
+ {n:'Pineal',tag:TR,why:'The gland the old books call the third eye and the seat of the soul. It answers to darkness: it makes melatonin in the dark and stops in light, blue light most. So this plays the tones tradition gives the gland and takes the screen down to near black.',
   st:[[4,136.1,6.3,'binaural',{tones:[936],dim:.1,vm:4,text:'Close your eyes.\nLet the room go dark.'}],[4,136.1,4,'binaural',{tones:[963],dim:.04,vm:4,text:'Attention between\nthe eyebrows.'}],[4,136.1,7.83,'binaural',{tones:[852],dim:.02,vm:4,text:'Stay in the dark.'}]]},
- {n:'Headache',tag:TR,why:'From the popular lists. Tension headaches do ease with relaxation and slow breathing, which is what the alpha beat and breath ring are for.',
+ {n:'Headache',tag:TR,why:'The tones given for the head. Tension eases with relaxation and slow breathing, which is what the alpha beat and breath ring are for.',
   st:[[4,174,10,'binaural',{tones:[174],breath:1,dim:.15,text:'Soften the forehead.'}],[4,285,8,'binaural',{tones:[285],breath:1,dim:.1,text:'Soften behind the eyes.'}],[4,432,6,'binaural',{tones:[432],breath:1,dim:.08,text:'Let the scalp loosen.'}]]},
- {n:'Cramps',tag:TR,why:'From the popular lists. Heat and slow breathing are what help cramps; this adds the breath.',
+ {n:'Cramps',tag:TR,why:'The tones given for cramps, over slow breath. Add heat.',
   st:[[4,174,2,'binaural',{tones:[174],breath:1,text:'Breathe low,\ninto the belly.'}],[4,285,5,'binaural',{tones:[285],breath:1,text:'Let it unknot.'}],[4,396,9,'binaural',{tones:[396],breath:1,text:'Warmth spreading.'}]]},
- {n:'Body aches',tag:TR,why:'From the popular lists, on the pain induction above.',
+ {n:'Body aches',tag:TR,why:'The tones given for the aching body, on the pain induction above.',
   st:[[4,174,2,'binaural',{tones:[174],breath:1,text:'Heavy limbs.'}],[4,285,3,'binaural',{tones:[285],breath:1,text:'Each part lets go.'}],[4,528,6,'binaural',{tones:[528],breath:1,text:'Warm and loose.'}]]},
- {n:'Arthritis',tag:TR,why:'From the popular lists. '+NOPE+' Slow vibration of the whole body gives small bone-density gains in older women in pooled trials; that is a platform, not a sound.',
+ {n:'Arthritis',tag:TR,why:'The tones given for the joints, held low and slow so they are felt as much as heard.',
   st:[[4,174,1.5,'binaural',{tones:[174],breath:1,text:'Rest the joints.'}],[4,285,4,'binaural',{tones:[285],breath:1,text:'Warmth in the hands.'}],[4,136.1,7.83,'binaural',{tones:[136.1],breath:1,text:'Easy.'}]]},
- {n:'Vision',tag:TR,why:'From the popular lists. '+NOPE+' Resting the eyes does help strain: this dims the screen and asks you to close them.',
+ {n:'Vision',tag:TR,why:'The tones given for the eyes. This dims the screen and asks you to close them.',
   st:[[4,528,10,'binaural',{tones:[528],dim:.1,text:'Close your eyes.'}],[4,639,12,'binaural',{tones:[639],dim:.06,text:'Let them rest back\nin the head.'}],[4,852,7,'binaural',{tones:[852],dim:.04,text:'Dark and soft.'}]]}
 ];
 const TRANCE=[
- {n:'Fixation',tag:ST,why:'James Braid, 1843: fix the eyes on one bright point until the lids grow heavy. Eye fixation is part of nearly every induction since, though on its own it adds little; the suggestions do the work.',
+ {n:'Fixation',tag:ST,why:'James Braid, 1843: fix the eyes on one bright point until the lids grow heavy. Eye fixation is part of nearly every induction since.',
   st:[[3,136.1,[10,8],'binaural',{vm:1,twist:.25,speed:.2,script:['Look at the centre\nof the glass.','Do not look away.','Let the edges blur.','The lids grow heavy.']}],[5,136.1,[8,5],'binaural',{vm:1,twist:.4,speed:.15,breath:1,script:['Heavier.','You could close them.','Let them close.','Deeper with each breath.']}],[2,136.1,[5,9],'binaural',{script:['Rising.','Eyes open.']}]]},
- {n:'Staircase',tag:ST,why:'The countdown deepener: ten steps down, the beat falling with you from alpha to low theta. Counting is the most used deepening method, though it has not been tested apart from the rest of an induction.',
+ {n:'Staircase',tag:ST,why:'The countdown deepener: ten steps down, the beat falling with you from alpha to low theta. Counting is the most used deepening method there is.',
   st:[[1,136.1,10,'binaural',{breath:1,text:'Ten steps down.'}],...[10,9,8,7,6,5,4,3,2,1].map((k,i)=>[.8,136.1,+(10-i*.65).toFixed(2),'binaural',{breath:1,text:String(k)}]),[3,136.1,3.5,'binaural',{breath:1,dim:.12,text:'The bottom.\nStay.'}],[1.5,136.1,[3.5,9],'binaural',{text:'Climb back.'}]]},
- {n:'Fractionation',tag:TR,why:'Brought up and dropped again, each drop goes deeper than the last. A stage hypnotist\'s tool since the 1940s, widely used and little tested.',
+ {n:'Fractionation',tag:TR,why:'Brought up and dropped again, each drop goes deeper than the last. A stage hypnotist\'s tool since the 1940s.',
   st:[[2,136.1,[10,5],'binaural',{breath:1,text:'Down.'}],[.7,136.1,[5,11],'binaural',{text:'Up. Eyes open.'}],[2,136.1,[11,4.2],'binaural',{breath:1,text:'Down, deeper.'}],[.7,136.1,[4.2,11],'binaural',{text:'Up.'}],[2.5,136.1,[11,3.5],'binaural',{breath:1,dim:.1,text:'Down. Deeper still.'}],[.7,136.1,[3.5,11],'binaural',{text:'Up.'}],[3,136.1,[11,3],'binaural',{breath:1,dim:.06,text:'All the way down.'}],[1.4,136.1,[3,9],'binaural',{text:'Return.'}]]},
- {n:'The pass',tag:TR,why:'Mesmer, Paris, 1780s: slow passes of the hands down the body while the glass armonica played. A royal commission with Franklin and Lavoisier found the effects came from imagination, which made it the first controlled test of suggestion. Choose the glass armonica voice.',
+ {n:'The pass',tag:TR,why:'Mesmer, Paris, 1780s: slow passes of the hands down the body while the glass armonica played. A royal commission with Franklin and Lavoisier was sent to investigate him. Choose the glass armonica voice.',
   st:[[4,146.8,7.5,'monaural',{breath:1,vm:3,layers:{'e:breath:6':.3},script:['A hand passes\nfrom your crown downward.','Slowly. Again.','Something follows it down.','Again.']}],[6,146.8,[7.5,5],'monaural',{breath:1,vm:3,layers:{'e:breath:6':.3,fifth:.2},script:['Warmth where it passes.','Heavier each time.','Let the crisis come\nor let it not.','Stillness.']}]]},
  {n:'Ganzfeld',tag:ST,why:'A featureless field of light and steady noise. Most people begin to see things within minutes, and EEG shows an active, attentive state, not sleep (Wackermann, 2008). Keep your eyes open and soft.',
   st:[[12,136.1,10,'binaural',{vm:4,vis:1,layers:{pink:.45},script:['Eyes open.\nLook at nothing.','Let the field fill\nyour whole sight.','Whatever appears,\nlet it.','Do not chase it.']}]]},
- {n:'Gateway',tag:TR,why:'The Monroe Institute\'s first state, "mind awake, body asleep": a theta beat under pink noise with a resonant hum on the out-breath. A US Army report assessed the method in 1983 and was declassified in 2003. An assessment, not proof.',
+ {n:'Gateway',tag:TR,why:'The Monroe Institute\'s first state, "mind awake, body asleep": a theta beat under pink noise with a resonant hum on the out-breath. A US Army report assessed the method in 1983 and was declassified in 2003.',
   st:[[3,100,[8,4],'binaural',{breath:1,layers:{pink:.3},script:['Put your worries\nin a box. Close it.','Hum on the out-breath.','Feel it in the skull.']}],[9,100,4,'binaural',{layers:{pink:.35},dim:.08,script:['Body asleep.','Mind awake.','Stay at the edge.','Drift, but do not fall.']}]]},
- {n:'Monotony',tag:ST,why:'One tone, one noise, nothing changing. Hebb\'s McGill experiments in the 1950s found that unchanging input raised suggestibility and brought on visions; later work showed some of that came from what subjects expected. Both effects are yours to use.',
+ {n:'Monotony',tag:ST,why:'One tone, one noise, nothing changing. Hebb\'s McGill experiments in the 1950s found that unchanging input raised suggestibility and brought on visions.',
   st:[[15,110,6,'monaural',{vm:4,vis:.4,speed:.05,layers:{brown:.4},script:['Nothing will change.','Wait.','Still nothing.','Notice what the mind\nmakes on its own.']}]]},
  {n:'Confusion',tag:TR,why:'Milton Erickson\'s method: overload the watching mind until it lets go. Here a tone rises forever while another falls, then everything stops.',
   st:[[4,136.1,[12,7],'binaural',{vm:2,twist:.5,speed:.7,layers:{shepard:.3,'e:underworld:14':.4},script:['Is it rising\nor falling?','Follow both.','You cannot.','Stop trying.']}],[6,136.1,[7,4],'binaural',{breath:1,dim:.1,vm:4,script:['Stillness.','There is nothing\nto follow now.','Rest in it.']}]]}
@@ -129,7 +128,7 @@ function buildProgs(id,title,intro,list){const el=$('#'+id),keep=el.querySelecto
   el.innerHTML=`<h3>${title}</h3><p class="vh">${intro}</p><div class="vg" style="margin:8px 0 4px">${[[.5,'short'],[1,'full'],[2,'long']].map(([m,l])=>`<button class="vb pl${m===plen?' on':''}" data-m="${m}">${l}</button>`).join('')}</div>`
     +list.map((p,i)=>{const t=p.st.reduce((a,s)=>a+s[0],0);return `<div class="prow"><div><b>${p.n}</b> <span class="vh">${Math.round(t*plen)} min</span><p>${tg(p.tag)}${p.why}</p></div><button class="vb prun" data-l="${id}" data-i="${i}">begin</button></div>`}).join('');
   el.prepend(keep)}
-function buildAllProgs(){buildProgs('body','Body programs','Timed sessions that change the beat, hold tones, pace the breath and put words in the glass. Each says plainly what is known and what is only tradition. None is medical treatment.',BODY);
+function buildAllProgs(){buildProgs('body','Body programs','Timed sessions that change the beat, hold tones, pace the breath and put words in the glass. Each tells you where it comes from.',BODY);
   buildProgs('trance','Trance','Hypnotic inductions built from how hypnotists actually work. The words appear in the glass; follow them. Headphones, a dark room, alone.',TRANCE)}
 ['body','trance'].forEach(id=>$('#'+id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.classList.contains('pl')){plen=+b.dataset.m;buildAllProgs()}else if(b.classList.contains('prun'))runProg((b.dataset.l==='body'?BODY:TRANCE)[+b.dataset.i],b)}));
@@ -259,7 +258,7 @@ function buildForge(){const el=$('#forge'),keep=el.querySelector('.dclose');
   <input id="fIn" type="text" maxlength="80" placeholder="write your intention" aria-label="Intention">
   <h4>Planet</h4><div class="vg">${KAMEA.map(([nm,n],i)=>`<button class="vb fp${i===MON.i?' on':''}" data-i="${i}">${nm.toLowerCase()} ${n}×${n}</button>`).join('')}</div>
   <div class="vg" style="margin-top:14px"><button class="vb" id="fGo">forge</button><button class="vb" id="fSnd">sound it</button><button class="vb" id="fChg">charge it</button></div>
-  <p id="fRead" class="note">${tg(TR)} Sigils are tradition, not science. The arithmetic is exact and shown here once you forge.</p>`;el.prepend(keep)}
+  <p id="fRead" class="note">${tg(TR)} The arithmetic is exact and shown here once you forge.</p>`;el.prepend(keep)}
 $('#forge').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.classList.contains('fp')){setKamea(+b.dataset.i);$$('#forge .fp').forEach((x,i)=>x.classList.toggle('on',i===MON.i));if($('#fIn').value.trim())forge()}
   else if(b.id==='fGo')forge();else if(b.id==='fSnd')forgeSound();else if(b.id==='fChg'){if(!FORGED)return say('forge a seal first');$('#forge').hidden=true;revStart();setTimeout(revStop,9500)}});
