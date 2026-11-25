@@ -423,3 +423,17 @@ $('#bBlank').onclick=blankAll;
 /* on arrival the visualizer button glows until it is first used */
 function hintVis(){const b=$('#bFilm'),p=$('#bFilmPrev'),m=$('#tabs [data-t=more]'),off=()=>{b.classList.remove('nudge');m.classList.remove('nudge');b.removeEventListener('click',off);p.removeEventListener('click',off)};
   b.classList.add('nudge');m.classList.add('nudge');b.addEventListener('click',off);p.addEventListener('click',off);setTimeout(()=>say('press visualizer to change the picture'),1400)}
+
+/* ================= audio health readout: add ?diag to the address to see it ================= */
+if(/[?&]diag\b/.test(location.search)){
+  const box=document.createElement('div');box.id='diag';box.style.cssText='position:fixed;left:10px;bottom:10px;z-index:99999;background:rgba(0,0,0,.86);color:#9f9;font:11px/1.5 ui-monospace,Menlo,monospace;padding:10px 12px;border:1px solid #3a3;border-radius:6px;white-space:pre;pointer-events:none;max-width:92vw';
+  box.textContent='audio health · enter the instrument to begin';document.body.appendChild(box);
+  const src="class H extends AudioWorkletProcessor{constructor(){super();this.s={gap:0,late:0,clip:0,peak:0,calls:0};this.last=0;this.port.onmessage=()=>{this.port.postMessage(this.s);this.s={gap:0,late:0,clip:0,peak:0,calls:0}}}process(i){const n=Date.now(),s=this.s;if(this.last){const g=n-this.last;if(g>s.gap)s.gap=g;if(g>30)s.late++}this.last=n;s.calls++;for(let c=0;c<i[0].length;c++){const b=i[0][c];for(let k=0;k<b.length;k++){const a=Math.abs(b[k]);if(a>=.999)s.clip++;if(a>s.peak)s.peak=a}}return true}}registerProcessor('health',H)";
+  const tot={late:0,clip:0,gap:0,sec:0};
+  const wait=setInterval(()=>{if(!A.ctx)return;clearInterval(wait);const ctx=A.ctx;
+    ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'text/javascript'}))).then(()=>{const h=new AudioWorkletNode(ctx,'health');A.vol.connect(h);
+      h.port.onmessage=e=>{const s=e.data;tot.late+=s.late;tot.clip+=s.clip;tot.gap=Math.max(tot.gap,s.gap);tot.sec++;
+        const ua=navigator.userAgent,br=/Edg\//.test(ua)?'Edge':/Firefox\//.test(ua)?'Firefox':/Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'other';
+        box.style.color=tot.late||tot.clip?'#fb6':'#9f9';box.style.borderColor=tot.late||tot.clip?'#c63':'#3a3';
+        box.textContent=`audio health · ${br} · ${ctx.sampleRate} Hz · ${ctx.state}\nbuffer ${(ctx.baseLatency*1000||0).toFixed(1)} ms · output delay ${((ctx.outputLatency||0)*1000).toFixed(0)} ms\nlate deliveries  ${tot.late}   (longest gap ${tot.gap} ms)\nclipped samples  ${tot.clip}   peak now ${s.peak.toFixed(2)}\nsounds playing   ${Object.keys(act).length} world · ${Object.keys(held).length} keys\nrunning ${tot.sec} s`};
+      setInterval(()=>h.port.postMessage(0),1000)}).catch(()=>{box.textContent='audio health · this browser would not start the probe'})},500)}
