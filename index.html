@@ -787,8 +787,11 @@ const A={};
 function initAudio(){
   const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.045:'interactive'}),sr=ctx.sampleRate;
   A.master=ctx.createGain();A.master.gain.value=0;A.master.gain.linearRampToValueAtTime(.8,ctx.currentTime+2.5);
-  const lim=ctx.createDynamicsCompressor();lim.threshold.value=-6;lim.ratio.value=12;lim.attack.value=.003;lim.release.value=.2;
-  A.vol=ctx.createGain();A.vol.gain.value=S.vol;A.master.connect(lim).connect(A.vol).connect(ctx.destination);
+  const lim=ctx.createDynamicsCompressor();lim.threshold.value=-12;lim.knee.value=9;lim.ratio.value=14;lim.attack.value=.002;lim.release.value=.22;
+  /* a true ceiling: the compressor rides the level, then a soft curve guarantees nothing ever leaves above full scale */
+  const ceil=ctx.createWaveShaper(),cv=new Float32Array(4097),T=.62,L=.97;for(let i=0;i<4097;i++){const x=(i-2048)/2048*3,a=Math.abs(x);cv[i]=Math.sign(x)*(a<=T?a:T+(L-T)*Math.tanh((a-T)/(L-T)))}
+  const pre=ctx.createGain();pre.gain.value=.68/3;/* .68 cancels the extra make-up gain of the firmer compressor, so quiet material sits where it did */const post=ctx.createGain();post.gain.value=1;ceil.curve=cv;ceil.oversample=MOBILE?'2x':'4x';A.out=post;A.limTrim=pre;
+  A.vol=ctx.createGain();A.vol.gain.value=S.vol;A.master.connect(lim).connect(pre).connect(ceil).connect(post).connect(A.vol).connect(ctx.destination);
   A.toneBus=ctx.createGain();A.toneBus.connect(A.master);const split=ctx.createChannelSplitter(2);A.toneBus.connect(split);
   A.anM=ctx.createAnalyser();A.anM.fftSize=32768;A.anM.smoothingTimeConstant=.6;lim.connect(A.anM);A.bufM=new Float32Array(A.anM.frequencyBinCount);
   A.anL=ctx.createAnalyser();A.anR=ctx.createAnalyser();
@@ -850,7 +853,7 @@ function initAudio(){
   /* recorder */
   const src="class R extends AudioWorkletProcessor{constructor(){super();this.on=false;this.port.onmessage=e=>this.on=e.data}process(i){if(this.on&&i[0].length)this.port.postMessage([i[0][0].slice(),(i[0][1]||i[0][0]).slice()]);return true}}registerProcessor('rec',R)";
   ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'text/javascript'}))).then(()=>{
-    A.rec=new AudioWorkletNode(ctx,'rec');lim.connect(A.rec);A.rec.port.onmessage=e=>{recL.push(e.data[0]);recR.push(e.data[1])}}).catch(()=>{$('#bRec').hidden=true});
+    A.rec=new AudioWorkletNode(ctx,'rec');A.out.connect(A.rec);A.rec.port.onmessage=e=>{recL.push(e.data[0]);recR.push(e.data[1])}}).catch(()=>{$('#bRec').hidden=true});
   bankInit();applyAll();setInterval(drumTick,40);setInterval(closeTick,70);
   if(navigator.requestMIDIAccess)navigator.requestMIDIAccess().then(m=>{const hook=()=>m.inputs.forEach(i=>i.onmidimessage=onMidi);hook();m.onstatechange=hook}).catch(()=>{});
 }

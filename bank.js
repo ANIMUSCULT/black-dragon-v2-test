@@ -210,8 +210,8 @@ let silenced=false;
 function silence(on){
   silenced=on==null?!silenced:on;const b=$('#bSilence');b.classList.toggle('on',silenced);b.textContent=silenced?'sound on':'pause';document.body.classList.toggle('muted',silenced);
   if(!A.ctx)return;const t=A.ctx.currentTime;A.vol.gain.cancelScheduledValues(t);
-  if(silenced){A.vol.gain.setValueAtTime(0,t);if(possess)$('#bPossess').click();
-    Object.keys(held).forEach(k=>{const h=held[k];h.g.gain.cancelScheduledValues(t);h.g.gain.setValueAtTime(0,t);h.os.forEach(o=>{try{o.stop(t)}catch(_){}});delete held[k]});
+  if(silenced){A.vol.gain.setValueAtTime(A.vol.gain.value,t);A.vol.gain.linearRampToValueAtTime(0,t+.03);if(possess)$('#bPossess').click();
+    Object.keys(held).forEach(k=>{const h=held[k];h.g.gain.cancelScheduledValues(t);h.g.gain.setTargetAtTime(0,t,.008);h.os.forEach(o=>{try{o.stop(t+.07)}catch(_){}});delete held[k]});
     $$('.key.on').forEach(k=>k.classList.remove('on'));setTimeout(()=>silenced&&A.ctx.suspend(),80)}
   else{A.ctx.resume();A.vol.gain.setValueAtTime(0,t);A.vol.gain.linearRampToValueAtTime(S.vol,t+.5)}
 }
