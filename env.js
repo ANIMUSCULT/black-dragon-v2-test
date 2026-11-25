@@ -288,7 +288,7 @@ function liveList(){
   if(S.body>.01)L.push(['body chord',()=>{S.body=0}]);
   if(S.air>.01)L.push(['air',()=>{S.air=0}]);
   if(S.close>.01)L.push(['close whisper',()=>{S.close=0}]);
-  if(S.tide)L.push(['tide bells',()=>$('#bTide').click()]);
+  if(S.tide)L.push(['tide',()=>$('#bTide').click()]);
   if(possess)L.push(['possess',()=>$('#bPossess').click()]);
   Object.keys(S.layers).forEach(id=>BK[id]&&L.push([BK[id].n,()=>setLayer(id,null)]));
   return L}

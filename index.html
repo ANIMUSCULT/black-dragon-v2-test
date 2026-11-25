@@ -1192,7 +1192,7 @@ function descentTick(ms){if(!desc)return;const k=clamp((ms-desc.t0)/desc.dur,0,1
 function bell(i){const ctx=A.ctx,t=ctx.currentTime,f=degFreq(i),g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.15,t+.01);g.gain.exponentialRampToValueAtTime(.0008,t+6);
   [1,2.76,5.4].forEach((r,k)=>{const o=ctx.createOscillator(),og=ctx.createGain();o.frequency.value=f*r;og.gain.value=1/(k*2+1);o.connect(og).connect(g);o.start(t);o.stop(t+6.2)});g.connect(A.vBus)}
 function tide(){if(!A.ctx||!S.tide)return;const t=A.ctx.currentTime,f=A.bodyLP.frequency;f.cancelScheduledValues(t);f.setValueAtTime(f.value,t);f.linearRampToValueAtTime(3200,t+16);f.linearRampToValueAtTime(900,t+27);
-  setTimeout(()=>{if(!S.tide)return;[0,2,4,7].forEach((d,k)=>setTimeout(()=>bell(d+5),k*190));pluck=1.6},16000)}
+  setTimeout(()=>{if(!S.tide)return;pluck=1.6},16000)}
 $('#bTide').onclick=()=>{S.tide=!S.tide;$('#bTide').classList.toggle('on',S.tide)};
 setTimeout(()=>{tide();setInterval(tide,52000)},20000);
 
