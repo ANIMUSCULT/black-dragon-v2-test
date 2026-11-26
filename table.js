@@ -20,8 +20,6 @@ const HBANKS=[
   t:[[.5,'delta, deepest'],[1.5,'delta'],[3,'delta'],[4.5,'theta'],[6,'theta'],[7.83,'schumann'],[10,'alpha'],[12,'alpha'],[14,'smr'],[18,'beta'],[25,'beta'],[40,'gamma']]},
  {n:'chakra',tag:TR,note:'Seven solfeggio tones mapped to the seven centres of the body, with Om beneath.',
   t:[[396,'root'],[417,'sacral'],[528,'solar plexus'],[639,'heart'],[741,'throat'],[852,'third eye'],[963,'crown'],[136.1,'om']]},
- {n:'angel',tag:TR,note:'Repeating numbers read as messages. The tones are exact.',
-  t:[[111,'111'],[222,'222'],[333,'333'],[444,'444'],[555,'555'],[666,'666'],[777,'777'],[888,'888'],[999,'999'],[1111,'1111']]},
  {n:'body',tag:ST,note:'Low tones used on the body rather than the ear. 40 Hz sound drove matching brain rhythms in MIT trials and eased fibromyalgia in one study. The Otto forks are pressed to bone by bodyworkers. Nogier used his seven frequencies in ear acupuncture. Felt best through a subwoofer or good headphones.',
   t:[[40,'gamma, vibro'],[52,'vibro'],[68,'vibro'],[86,'vibro'],[32,'otto'],[64,'otto'],[128,'otto'],[73,'nogier f'],[146,'nogier g'],[292,'nogier a'],[584,'nogier b'],[1168,'nogier c']]}
 ];
@@ -36,7 +34,7 @@ function healToggle(hz){const b=HBANKS[hbank];
 function paintHeal(){const b=HBANKS[hbank];$$('#heal .hb').forEach(x=>{const hz=+x.dataset.hz;x.classList.toggle('on',b.beat?Math.abs(S.beat-hz)<.005:hid(hz) in S.layers)});
   $$('#heal .bk').forEach((x,i)=>x.classList.toggle('on',i===hbank));$$('#heal .rc').forEach((x,i)=>x.classList.toggle('on',i===recipe))}
 function buildHeal(){const b=HBANKS[hbank],el=$('#heal'),keep=el.querySelector('.dclose');
-  el.innerHTML=`<h3>Healing table</h3><p class="vh">Six banks of held tones. Press a tone to hold it; press again to let go. Hold as many as you like. Every held tone is measured in the Proof panel.</p>
+  el.innerHTML=`<h3>Healing table</h3><p class="vh">Five banks of held tones. Press a tone to hold it; press again to let go. Hold as many as you like. Every held tone is measured in the Proof panel.</p>
   <div class="vg">${HBANKS.map((x,i)=>`<button class="vb bk" data-i="${i}">${x.n}</button>`).join('')}</div>
   <div class="note">${tg(b.tag)} ${b.note}</div>
   <div class="hgrid">${b.t.map(([hz,nm])=>`<button class="hb" data-hz="${hz}"><b>${hz}</b><span>${nm}</span></button>`).join('')}</div>
@@ -717,68 +715,118 @@ const PH={};
   const hushAll=()=>Object.keys(NAME).forEach(k=>{if(PH[k])fadeStop(k,.6)});const baseReset=resetAll;resetAll=function(){hushAll();return baseReset.apply(this,arguments)};
   const baseLive=liveList;liveList=function(){const L=baseLive();Object.keys(NAME).forEach(k=>{if(PH[k])L.push([NAME[k],()=>fadeStop(k)])});return L}}
 
-/* ================= THE TRANSMUTATION DECK: the clips run through five machines of the video underground =================
-   A separate deck over the glass. It reads the playing clip as it is and passes it through emulations of
-   1970s image machines. The visualizer itself is untouched underneath. */
+/* ================= THE TRANSMUTATION DECK: the clip run through the machines of the image underground =================
+   A separate deck over the glass. It reads the playing clip as it is and passes it through thirteen image machines,
+   from the 1816 kaleidoscope's heirs to datamoshing. The vision dials steer every machine: effect and warp are each
+   machine's own two handles; speed, twist, mirrors, colour, exposure, trails, split and grain work on all of them. */
 {const c=$('#trans'),bar=$('#transBar'),nm=$('#transName'),v=$('#veil');
   const gl=c.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:false});
-  const M=[['rutt-etra','The Rutt/Etra scan processor, 1972: the picture tube’s beam bent by brightness, so every scan line becomes a ridge of light and the image a relief of glowing wire.'],
-    ['magnet','Nam June Paik and Shuya Abe, 1970: magnets and coils on the picture tube, driven by sound, bend the raster; a colorizer paints each grey a new hue.'],
-    ['corridor','Video feedback: the camera turned on its own monitor, as Steina and Woody Vasulka worked it. Each frame falls into the last, an endless corridor.'],
-    ['stargate','Douglas Trumbull’s slit-scan for 2001, 1968: light through a moving slit smeared into walls rushing past. Here the slit is the clip.'],
-    ['droste','The Droste spiral after Escher’s Print Gallery, 1956: the picture curls into itself and repeats inward forever.']];
-  let on=false,mode=0,P=null,CP=null,U={},tex=null,fb=[],cur=0,t0=performance.now(),lvl=0,an=null;
-  const b=document.createElement('button');b.className='pill';b.id='bTrans';b.textContent='transmute';b.title='Open the Transmutation deck: the clip through five machines of 1970s video';($('#bOwn')||$('#bFilm')).after(b);
+  /* name, what it is, what effect does, what warp does */
+  const M=[['rutt-etra','The Rutt/Etra scan processor, 1972: the picture tube’s beam bent by brightness, so every scan line becomes a ridge of light.','ridge height','line count'],
+    ['magnet','Nam June Paik and Shuya Abe, 1970: magnets on the picture tube bend the raster; a colorizer paints each grey a new hue.','pull of the magnet','ripple'],
+    ['corridor','Video feedback, as Steina and Woody Vasulka worked it: the camera turned on its own monitor, each frame falling into the last.','depth of the fall','what light gets in'],
+    ['droste','The Droste spiral after Escher’s Print Gallery, 1956: the picture curls into itself and repeats inward forever.','tightness of the coil','arms'],
+    ['liquid light','The Joshua Light Show, Fillmore East, 1967: oil, water and dye pressed between clock glasses on an overhead projector.','oil colour','how far it flows'],
+    ['datamosh','Takeshi Murata’s Monster Movie, 2005: compressed video with its key frames removed, so motion drags old pixels like wet paint.','drag','drift'],
+    ['crystal','The multi-image prism: faceted glass screwed onto the lens, every facet holding its own bent copy of the scene.','bend of each facet','facet count'],
+    ['solar','The Sabattier effect, 1862, the solarisation Man Ray and Lee Miller made famous in 1929: tones fold back on themselves and edges burn.','folds','colour'],
+    ['lapis','James Whitney’s Lapis, 1966: a mandala turned on an analog computer built from an anti-aircraft gun director.','turn','reach'],
+    ['backlit','The backlit animation of Tron, 1982: only the edges of things, burning as lines of light on black.','glow','how much picture stays'],
+    ['pas de deux','Norman McLaren’s Pas de deux, 1968: each movement printed again and again, so a dancer trails her own ghosts.','ghosts','colour of the ghosts'],
+    ['ink','Suminagashi, ink floated on water, Japan, twelfth century: the picture is dropped on a slow current and carried off in curls.','current','what is dropped in'],
+    ['pixel sort','Kim Asendorf’s pixel sorting, 2010: bright runs of the image pulled into long falling streaks.','length','threshold']];
+  const FEED=[2,5,10,11];
+  let on=false,mode=0,P=null,CP=null,U={},tex=null,fb=[],cur=0,T=0,last=0,lvl=0,an=null;
+  const b=document.createElement('button');b.className='pill';b.id='bTrans';b.textContent='transmute';b.title='Open the Transmutation deck: the clip through thirteen image machines, steered by the vision dials';($('#bOwn')||$('#bFilm')).after(b);
   bar.querySelector('.tmodes').innerHTML=M.map(([k],i)=>`<button data-i="${i}">${k}</button>`).join('');
   const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-  const FS=`precision highp float;uniform sampler2D uV,uP;uniform vec2 uRes,uVR;uniform float uT,uL;uniform int uM;
+  const FS=`precision highp float;uniform sampler2D uV,uP;uniform vec2 uRes,uVR;uniform float uT,uL,uK,uW,uTw,uMi,uHue,uEx,uTr,uPk;uniform int uM;
 #define PI 3.14159265
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
+float h1(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+vec2 h2(vec2 p){return vec2(h1(p),h1(p+17.31));}
+float ns(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h1(i),h1(i+vec2(1,0)),f.x),mix(h1(i+vec2(0,1)),h1(i+1.),f.x),f.y);}
+float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*ns(p);p=p*2.03+7.1;a*=.5;}return s;}
 vec2 cov(vec2 uv){float sa=uRes.x/uRes.y,va=uVR.x/max(uVR.y,1.);vec2 q=uv-.5;if(sa>va)q.y*=va/sa;else q.x*=sa/va;return vec2(q.x+.5,.5-q.y);}
 vec3 vid(vec2 uv){return texture2D(uV,cov(uv)).rgb;}
 vec3 vidW(vec2 uv){uv=abs(fract(uv*.5+.5)*2.-1.);return vid(uv);}
 vec3 pal(float x){return .5+.5*cos(6.2831*(x+vec3(0.,.33,.67)));}
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
-void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uRes.y);float t=uT;vec3 col=vec3(0.);
-  if(uM==0){float L=max(uRes.y/90.,3.),A=uRes.y*.11*(1.+uL*.6);float y=fc.y,k0=floor((y-A*1.2)/L),acc=0.;vec3 tint=vec3(0.);
-    for(int i=0;i<40;i++){float k=k0+float(i);float yb=k*L;if(yb>y+L)break;vec2 su=vec2(uv.x,yb/uRes.y);vec3 cc=vid(su);float h=lum(cc);
-      float yd=yb+h*A;float d=abs(y-yd);float g=exp(-d*d/1.6)+.25*exp(-d*d/18.);acc+=g;tint+=g*mix(vec3(.55,1.,.85),cc*1.6+.15,.55);}
+float edge(vec2 uv,float w){vec2 px=w/uRes;float a=lum(vid(uv+vec2(px.x,0.))),b2=lum(vid(uv-vec2(px.x,0.))),c2=lum(vid(uv+vec2(0.,px.y))),d=lum(vid(uv-vec2(0.,px.y)));return length(vec2(a-b2,c2-d));}
+void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);vec2 p=(fc0-.5*uRes)/mn;float t=uT;vec3 col=vec3(0.);
+  /* twist and mirrors fold the plane before any machine sees it */
+  p=rot(uTw*3.2*(.55-length(p)))*p;
+  if(uMi>.02){float n=2.+floor(uMi*10.),sg=PI/n,a=atan(p.y,p.x);a=abs(mod(a+t*.03,2.*sg)-sg);p=length(p)*vec2(cos(a),sin(a));}
+  vec2 uv=p*mn/uRes+.5,fc=uv*uRes;float K=uK,W=uW,L=uL+uPk*.5;
+  if(uM==0){float Ln=max(uRes.y/(55.+W*110.),3.),A=min(uRes.y*.1*(.25+K*1.7)*(1.+L*.6),Ln*40.);float y=fc.y,k0=floor((y-A*1.1)/Ln);vec3 tint=vec3(0.);
+    for(int i=0;i<46;i++){float k=k0+float(i);float yb=k*Ln;if(yb>y+Ln)break;vec2 su=vec2(uv.x,yb/uRes.y);vec3 cc=vid(su);float hh=lum(cc);
+      float yd=yb+hh*A;float d=abs(y-yd);float g=exp(-d*d/1.6)+.25*exp(-d*d/18.);tint+=g*mix(vec3(.55,1.,.85),cc*1.6+.15,.55);}
     col=tint*.85;col+=vec3(.02,.04,.05)*smoothstep(1.,0.,length(p));}
-  else if(uM==1){vec2 q=p;float r=length(q-vec2(.18*sin(t*.21),.12*cos(t*.17)));float tw=(.35+uL*1.4)/(r+.35);q=rot(tw*.6*sin(t*.3))*q;
-    q.x+=sin(q.y*7.+t*1.3)*(.025+uL*.08);q.y+=sin(q.x*5.-t*.9)*.02;vec2 su=q*min(uRes.x,uRes.y)/uRes+.5;float g=lum(vidW(su));
-    col=pal(g*1.6+t*.03)*(.25+g*1.1);col*=.85+.15*sin(fc.y*PI*.5);}
-  else if(uM==2){vec2 q=rot(.012+uL*.02)*((uv-.5)*(.965-uL*.02))+.5;vec3 pr=texture2D(uP,q).rgb;pr=mix(pr,pr.gbr,.035);
-    vec3 cv=vid(uv);float key=smoothstep(.28,.5,lum(cv));col=max(cv*key,pr*.975);col=mix(col,cv,.04);}
-  else if(uM==3){float ay=abs(p.y),ax=abs(p.x);bool wall=ax*.75>ay;float d=wall?ax:ay;float z=.18/max(d,.002);float u=(wall?p.y:p.x)*z;float w=z*.9+t*(1.6+uL*2.);
-    vec3 s=vidW(vec2(fract(u*.22+.5),fract(w*.035)));vec3 hue=pal(w*.02+(wall?.33:0.));s=pow(s,vec3(.75));col=mix(s,s*hue*2.,.5)*(2.1+uL*1.5)*smoothstep(0.,.1,d)*min(1.,z*.05+.3);col+=hue*.05*smoothstep(.08,0.,d);}
-  else{float r=max(length(p),1e-4),a=atan(p.y,p.x);float r1=.18,r2=1.,sc=log(r2/r1),an=atan(sc/(2.*PI));vec2 lz=vec2(log(r),a);
+  else if(uM==1){vec2 q=p;float r=length(q-vec2(.18*sin(t*.21),.12*cos(t*.17)));float tw=(.1+K*.7+L*1.2)/(r+.35);q=rot(tw*.6*sin(t*.3))*q;
+    q.x+=sin(q.y*7.+t*1.3)*(.008+W*.07+L*.07);q.y+=sin(q.x*5.-t*.9)*(.006+W*.04);vec2 su=q*mn/uRes+.5;float g=lum(vidW(su));
+    col=pal(g*1.6+t*.03)*(.25+g*1.1);col*=.85+.15*sin(fc0.y*PI*.5);}
+  else if(uM==2){vec2 q=rot(.004+uTw*.05+L*.02)*((uv0-.5)*(.992-K*.05-L*.02))+.5;vec3 pr=texture2D(uP,q).rgb;pr=mix(pr,pr.gbr,.035);
+    vec3 cv=vid(uv);float key=smoothstep(.12+W*.4,.34+W*.4,lum(cv));col=max(cv*key,pr*(.9+uTr*.095));col=mix(col,cv,.04);}
+  else if(uM==3){float r=max(length(p),1e-4),a=atan(p.y,p.x);float r1=.34-K*.26,r2=1.,sc=log(r2/r1),arms=1.+floor(W*3.99),an=atan(sc*arms/(2.*PI));vec2 lz=vec2(log(r),a);
     lz=rot(an)*lz*cos(an);lz.x=mod(lz.x-t*.18,sc)+log(r1);vec2 q=exp(lz.x)*vec2(cos(lz.y),sin(lz.y));col=vid(q*.5+.5);col*=.9+.1*cos(lz.y*6.);}
-  gl_FragColor=vec4(col,1.);}`;
-  /* the glass of an old tube, laid over every machine: soft scan lines, a little colour fringe toward the edges, the corners falling dark */
-  const CF='precision mediump float;uniform sampler2D uP;uniform vec2 uRes;void main(){vec2 uv=gl_FragCoord.xy/uRes;vec2 d=(uv-.5)*.004;vec3 c=vec3(texture2D(uP,uv+d).r,texture2D(uP,uv).g,texture2D(uP,uv-d).b);vec2 p=(gl_FragCoord.xy-.5*uRes)/min(uRes.x,uRes.y);c*=.9+.1*sin(gl_FragCoord.y*2.07);c*=smoothstep(1.25,.35,length(p*vec2(.9,1.1)));gl_FragColor=vec4(c,1.);}';
+  else if(uM==4){vec2 q=p*1.4;float tt=t*.15;vec2 w=vec2(fbm(q+vec2(tt,-tt)),fbm(q+vec2(5.2-tt,1.3+tt)));
+    vec2 w2=vec2(fbm(q+3.*w+vec2(1.7,9.2)+tt),fbm(q+3.*w+vec2(8.3,2.8)-tt));vec2 su=uv+(w2-.5)*(.06+W*.5)*(1.+L);
+    vec3 cc=vidW(su);float f=fbm(q*2.+4.*w2);vec3 oil=pal(f*1.5+lum(cc)*.6+t*.02);col=mix(cc,cc*oil*2.3,.2+K*.75);col+=oil*pow(f,3.)*.3*K;}
+  else if(uM==5){vec2 px=1./uRes;vec3 cc=vid(uv);vec2 g=vec2(lum(vid(uv+vec2(px.x*5.,0.)))-lum(vid(uv-vec2(px.x*5.,0.))),lum(vid(uv+vec2(0.,px.y*5.)))-lum(vid(uv-vec2(0.,px.y*5.))));
+    vec2 flow=g*px*(10.+K*60.)*(1.+L*2.)+(vec2(ns(uv*5.+t*.2),ns(uv*5.-t*.2+7.))-.5)*px*(1.+W*16.);
+    vec3 pr=texture2D(uP,uv0-flow).rgb;vec2 blk=floor(uv0*uRes/vec2(48.,48.));float fresh=step(.955+uTr*.04,h1(blk+floor(t*2.)));
+    col=mix(pr,cc,max(fresh,.012+(1.-uTr)*.05));}
+  else if(uM==6){vec2 q=p*(2.5+W*9.);vec2 i=floor(q),f=fract(q);float md=8.,md2=8.;vec2 mr=vec2(0.),mo=vec2(0.);
+    for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 gg=vec2(float(x),float(y));vec2 o=h2(i+gg);o=.5+.4*sin(t*.4+6.2831*o);vec2 r=gg+o-f;float d=dot(r,r);if(d<md){md2=md;md=d;mr=r;mo=i+gg;}else if(d<md2)md2=d;}
+    vec2 fa=h2(mo)-.5;float ang=(h1(mo+3.)-.5)*3.*K;vec2 su=uv+fa*(.03+K*.3)+rot(ang)*mr*.07;vec2 dsp=fa*(.006+K*.02);
+    col=vec3(vidW(su+dsp).r,vidW(su).g,vidW(su-dsp).b);col*=.8+.45*h1(mo+9.);col+=vec3(1.)*smoothstep(.06,0.,sqrt(md2)-sqrt(md))*.18;}
+  else if(uM==7){vec3 cc=vid(uv);float l=lum(cc),f=abs(fract(l*(1.+K*3.5)+t*.03)*2.-1.);col=mix(vec3(f),pal(f*.7+W+l*.3),.25+W*.75)*(.18+f*1.05);
+    col=mix(col,col*cc*2.2,.35);col+=vec3(1.,.95,.9)*edge(uv,1.6)*(1.5+L*3.);}
+  else if(uM==8){vec2 q=p*1.25;for(int i=0;i<5;i++){q=abs(q)-vec2(.3+W*.35+.06*sin(t*.11),.22+W*.2);q=rot(.35+K*1.5+t*.04)*q*1.17;}
+    col=vidW(q*.5+.5)*1.15;col*=smoothstep(1.3,.2,length(p))*.6+.5;}
+  else if(uM==9){vec3 cc=vid(uv);float e=edge(uv,1.4)+.6*edge(uv,3.5);float l=lum(cc);
+    col=pal(l*.7+t*.04+.55)*smoothstep(.03,.22,e)*(1.2+K*4.+L*3.);col+=cc*(.02+W*.5);col=max(col,texture2D(uP,uv0).rgb*(.55+K*.3));}
+  else if(uM==10){vec2 dr=vec2(cos(t*.3),sin(t*.23))*(.4+K*2.5)/uRes;vec3 pr=texture2D(uP,uv0+dr).rgb;pr=mix(pr,pr.gbr,.02+W*.14);
+    vec3 cc=vid(uv);col=max(cc*(.5+.4*smoothstep(.15,.6,lum(cc))),pr*(.9+K*.05+uTr*.04));}
+  else if(uM==11){vec2 q=p*2.;float e=.02,tt=t*.05;float n1=fbm(q+vec2(0.,e)+tt),n2=fbm(q-vec2(0.,e)+tt),n3=fbm(q+vec2(e,0.)+tt),n4=fbm(q-vec2(e,0.)+tt);
+    vec2 curl=vec2(n1-n2,n4-n3)/(2.*e);vec3 pr=texture2D(uP,uv0-curl*(.0012+K*.007)*(1.+L*2.)).rgb;vec3 cc=vid(uv);
+    float key=smoothstep(.25+W*.4,.6+W*.4,lum(cc));col=mix(pr*(.986+uTr*.012),cc,key*.16+.008);}
+  else{float th=.3+W*.45;vec3 cc=vid(uv);col=cc;float stp=(1.5+K*7.)/uRes.y;vec2 su=uv;vec3 s=cc;float run=0.;
+    if(lum(cc)>th*.6){for(int i=0;i<30;i++){su.y+=stp;vec3 x=vid(su);if(lum(x)<th)break;s=x;run+=1.;}col=mix(cc,s*(1.+run*.012),.92);}}
+  /* trails for the machines that do not already live on their own past */
+  if(uM!=2&&uM!=5&&uM!=10&&uM!=11&&uM!=9)col=max(col,texture2D(uP,uv0).rgb*uTr*.9);
+  gl_FragColor=vec4(clamp(col,0.,1.),1.);}`;
+  /* the last glass: the split dial fringes colour toward the edges, the grain dial dusts it, the corners fall dark */
+  const CF='precision mediump float;uniform sampler2D uP;uniform vec2 uRes;uniform float uSp,uGr,uT,uHue,uEx;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}void main(){vec2 uv=gl_FragCoord.xy/uRes;vec2 d=(uv-.5)*(.001+uSp*.014);vec3 c=vec3(texture2D(uP,uv+d).r,texture2D(uP,uv).g,texture2D(uP,uv-d).b);vec2 p=(gl_FragCoord.xy-.5*uRes)/min(uRes.x,uRes.y);if(uHue>.004){float a=uHue*6.2831;vec3 k=vec3(.57735);c=c*cos(a)+cross(k,c)*sin(a)+k*dot(k,c)*(1.-cos(a));}c*=.5+uEx*1.2;c*=smoothstep(1.3,.4,length(p*vec2(.9,1.1)));c+=(h(gl_FragCoord.xy+uT)-.5)*.09*uGr;gl_FragColor=vec4(c,1.);}';
   const prog=(fs)=>{const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
     const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.bindAttribLocation(pr,0,'p');gl.linkProgram(pr);return pr};
   const mkFB=(w,h)=>{const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
     [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR));[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
     const f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.bindFramebuffer(gl.FRAMEBUFFER,null);return{t,f,w,h}};
   if(gl){P=prog(FS);CP=prog(CF);const q=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,q);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
-    ['uV','uP','uRes','uVR','uT','uL','uM'].forEach(n=>U[n]=gl.getUniformLocation(P,n));U.cP=gl.getUniformLocation(CP,'uP');U.cR=gl.getUniformLocation(CP,'uRes');
+    ['uV','uP','uRes','uVR','uT','uL','uM','uK','uW','uTw','uMi','uHue','uEx','uTr','uPk'].forEach(n=>U[n]=gl.getUniformLocation(P,n));U.cP=gl.getUniformLocation(CP,'uP');U.cR=gl.getUniformLocation(CP,'uRes');U.cS=gl.getUniformLocation(CP,'uSp');U.cG=gl.getUniformLocation(CP,'uGr');U.cT=gl.getUniformLocation(CP,'uT');U.cH=gl.getUniformLocation(CP,'uHue');U.cE=gl.getUniformLocation(CP,'uEx');
     tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR));[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]))}
-  const size=()=>{const dp=Math.min(devicePixelRatio||1,MOBILE?1:1.25),w=Math.round(innerWidth*dp),h=Math.round(innerHeight*dp);if(c.width===w&&c.height===h&&fb.length)return;c.width=w;c.height=h;fb=[mkFB(w,h),mkFB(w,h)]};
-  const level=()=>{if(!A.ctx)return 0;if(!an){an=A.ctx.createAnalyser();an.fftSize=1024;A.master.connect(an)}const d=new Float32Array(1024);an.getFloatTimeDomainData(d);let s=0;for(let i=0;i<1024;i+=2)s+=d[i]*d[i];return Math.min(1,Math.sqrt(s/512)*5)};
-  const frame=now=>{if(!on)return;requestAnimationFrame(frame);if(!gl)return;size();lvl+=(level()-lvl)*.08;
+  const size=()=>{const dp=Math.min(devicePixelRatio||1,MOBILE?1:1.5),w=Math.round(innerWidth*dp),h=Math.round(innerHeight*dp);if(c.width===w&&c.height===h&&fb.length)return;c.width=w;c.height=h;fb=[mkFB(w,h),mkFB(w,h)]};
+  const lb=new Float32Array(1024);
+  const level=()=>{if(!A.ctx)return 0;if(!an){an=A.ctx.createAnalyser();an.fftSize=1024;A.master.connect(an)}an.getFloatTimeDomainData(lb);let s=0;for(let i=0;i<1024;i+=2)s+=lb[i]*lb[i];return Math.min(1,Math.sqrt(s/512)*5)};
+  const draw=now=>{if(!gl)return;size();const dt=Math.min(.1,(now-(last||now))/1000);last=now;if(!window.FREEZE)T+=dt*(.25+(S.speed||0)*2.2);lvl+=(level()-lvl)*.08;
     gl.bindTexture(gl.TEXTURE_2D,tex);if(v.readyState>=2){try{gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,v)}catch(_){}}
     const prev=fb[cur],next=fb[1-cur];gl.bindFramebuffer(gl.FRAMEBUFFER,next.f);gl.viewport(0,0,next.w,next.h);gl.useProgram(P);
     gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(U.uV,0);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,prev.t);gl.uniform1i(U.uP,1);
-    gl.uniform2f(U.uRes,next.w,next.h);gl.uniform2f(U.uVR,v.videoWidth||16,v.videoHeight||9);gl.uniform1f(U.uT,(now-t0)/1000);gl.uniform1f(U.uL,lvl);gl.uniform1i(U.uM,mode);gl.drawArrays(gl.TRIANGLES,0,3);
-    gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,c.width,c.height);gl.useProgram(CP);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,next.t);gl.uniform1i(U.cP,0);gl.uniform2f(U.cR,c.width,c.height);gl.drawArrays(gl.TRIANGLES,0,3);cur=1-cur};
-  const pick=i=>{mode=i;bar.querySelectorAll('.tmodes button').forEach((x,j)=>x.classList.toggle('on',j===i));nm.textContent=M[i][1];fb.forEach(f=>{gl.bindFramebuffer(gl.FRAMEBUFFER,f.f);gl.clear(gl.COLOR_BUFFER_BIT)});gl.bindFramebuffer(gl.FRAMEBUFFER,null)};
-  const set=x=>{if(x&&!gl)return say('this device cannot run the deck');on=x;c.hidden=bar.hidden=!x;b.classList.toggle('on',x);document.body.classList.toggle('transOpen',x&&MOBILE);
-    if(x){size();pick(mode);v.play&&v.play().catch(()=>{});requestAnimationFrame(frame);say('transmutation · '+M[mode][0])}else say('transmutation deck closed')};
+    gl.uniform2f(U.uRes,next.w,next.h);gl.uniform2f(U.uVR,v.videoWidth||16,v.videoHeight||9);gl.uniform1f(U.uT,T);gl.uniform1f(U.uL,lvl);gl.uniform1i(U.uM,mode);
+    gl.uniform1f(U.uK,S.vision);gl.uniform1f(U.uW,S.warp);gl.uniform1f(U.uTw,S.twist+(window.REVV||0)*.6);gl.uniform1f(U.uMi,S.mirrors);gl.uniform1f(U.uTr,S.trails);gl.uniform1f(U.uPk,Math.min(1,typeof pluck==='number'?pluck:0));
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,c.width,c.height);gl.useProgram(CP);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,next.t);gl.uniform1i(U.cP,0);gl.uniform2f(U.cR,c.width,c.height);
+    gl.uniform1f(U.cS,S.split);gl.uniform1f(U.cG,S.grain);gl.uniform1f(U.cT,T);gl.uniform1f(U.cH,S.hue);gl.uniform1f(U.cE,S.veil);gl.drawArrays(gl.TRIANGLES,0,3);cur=1-cur};
+  const frame=now=>{if(!on)return;requestAnimationFrame(frame);draw(now)};
+  const label=i=>{nm.innerHTML='';const a=document.createElement('span');a.textContent=M[i][1];const d=document.createElement('em');d.textContent=`effect: ${M[i][2]} · warp: ${M[i][3]} · the other vision dials work on every machine`;nm.append(a,d)};
+  const pick=i=>{mode=i;bar.querySelectorAll('.tmodes button').forEach((x,j)=>x.classList.toggle('on',j===i));label(i);fb.forEach(f=>{gl.bindFramebuffer(gl.FRAMEBUFFER,f.f);gl.clear(gl.COLOR_BUFFER_BIT)});gl.bindFramebuffer(gl.FRAMEBUFFER,null)};
+  const set=x=>{if(x&&!gl)return say('this device cannot run the deck');on=x;c.hidden=bar.hidden=!x;b.classList.toggle('on',x);
+    if(x){size();pick(mode);last=0;v.play&&v.play().catch(()=>{});requestAnimationFrame(frame);say('transmutation · '+M[mode][0]+' · turn the vision dials')}else say('transmutation deck closed')};
   b.onclick=e=>{e.stopPropagation();set(!on)};bar.querySelector('.tclose').onclick=()=>set(false);
   bar.querySelector('.tmodes').onclick=e=>{const x=e.target.closest('button');if(!x)return;pick(+x.dataset.i);say('transmutation · '+M[mode][0])};
-  $('#tabs').addEventListener('click',()=>{if(on&&MOBILE)set(false)})}
+  window.TRANS={set,pick,draw,get on(){return on},names:M.map(m=>m[0]),feed:FEED}}
 
 /* ================= THE DREAMACHINE: flicker watched through closed eyes =================
    After Brion Gysin and Ian Sommerville's Dreamachine and the Ganzflicker studies. The whole screen swells and
