@@ -129,7 +129,7 @@ function buildProgs(id,title,intro,list){const el=$('#'+id),keep=el.querySelecto
     +list.map((p,i)=>{const t=p.st.reduce((a,s)=>a+s[0],0);return `<div class="prow"><div><b>${p.n}</b> <span class="vh">${Math.round(t*plen)} min</span><p>${tg(p.tag)}${p.why}</p></div><button class="vb prun" data-l="${id}" data-i="${i}">begin</button></div>`}).join('');
   el.prepend(keep)}
 function buildAllProgs(){buildProgs('body','Body programs','Timed sessions that change the beat, hold tones, pace the breath and put words in the glass. Each tells you where it comes from.',BODY);
-  buildProgs('trance','Trance','Hypnotic inductions built from how hypnotists actually work. The words appear in the glass; follow them. Headphones, a dark room, alone.',TRANCE)}
+  buildProgs('trance','Extasis','Hypnotic inductions built from how hypnotists actually work. The words appear in the glass; follow them. Headphones, a dark room, alone.',TRANCE)}
 ['body','trance'].forEach(id=>$('#'+id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.classList.contains('pl')){plen=+b.dataset.m;buildAllProgs()}else if(b.classList.contains('prun'))runProg((b.dataset.l==='body'?BODY:TRANCE)[+b.dataset.i],b)}));
 
@@ -254,7 +254,7 @@ function forge(){
 function forgeSound(){if(!FORGED||!A.ctx)return say('forge a seal first');const F=FORGED,ctx=A.ctx;ping(ctx,A.vBus,ctx.currentTime,F.hz,F.hz,F.nums.length*.42+4,.2,0,.4);
   F.nums.forEach((v,j)=>setTimeout(()=>{const d=Math.round((v-1)/(F.n*F.n-1)*14),id='F'+j;noteOn(id,d,.8);setTimeout(()=>noteOff(id,d),700);$('#sealDot').setAttribute('cx',F.pts[j][0]);$('#sealDot').setAttribute('cy',F.pts[j][1])},j*420));say('the seal, sounded')}
 function buildForge(){const el=$('#forge'),keep=el.querySelector('.dclose');
-  el.innerHTML=`<h3>The Forge</h3><p class="vh">Write an intention. The Forge strikes out repeated letters (Austin Osman Spare's method), turns the rest into numbers, and traces them across the magic square of the planet you choose (Agrippa, 1533). The seal appears in the glass.</p>
+  el.innerHTML=`<h3>Fornax</h3><p class="vh">Write an intention. The furnace strikes out repeated letters (Austin Osman Spare's method), turns the rest into numbers, and traces them across the magic square of the planet you choose (Agrippa, 1533). The seal appears in the glass.</p>
   <input id="fIn" type="text" maxlength="80" placeholder="write your intention" aria-label="Intention">
   <h4>Planet</h4><div class="vg">${KAMEA.map(([nm,n],i)=>`<button class="vb fp${i===MON.i?' on':''}" data-i="${i}">${nm.toLowerCase()} ${n}×${n}</button>`).join('')}</div>
   <div class="vg" style="margin-top:14px"><button class="vb" id="fGo">forge</button><button class="vb" id="fSnd">sound it</button><button class="vb" id="fChg">charge it</button></div>

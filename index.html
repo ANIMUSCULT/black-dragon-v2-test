@@ -635,7 +635,7 @@ body.idle .hud{transition:opacity 2.5s}
     <div class="knobwrap"><div class="ktabs"><button class="pill on" data-b="s">sound dials</button><button class="pill" data-b="v">vision dials</button></div><div class="jelly knobs" id="knobs" data-b="s"></div></div>
     <button id="monad" aria-label="Monad. Tap to change planet, hold to trace the square"><span id="monP">saturn</span><b id="monN">15</b><i>monad</i></button>
     <div id="keys"></div>
-    <div class="rside"><button class="pill" id="bHeal">healing</button><button class="pill" id="bBody">body</button><button class="pill" id="bTrance">trance</button><button class="pill" id="bRites">rites</button><button class="pill" id="bForge">forge</button><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">voice</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
+    <div class="rside"><button class="pill" id="bHeal">healing</button><button class="pill" id="bBody">body</button><button class="pill" id="bTrance">extasis</button><button class="pill" id="bRites">rites</button><button class="pill" id="bForge">fornax</button><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">vox</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
   </footer>
   <div class="jelly drawer" id="vox" hidden></div><div class="jelly drawer" id="bank" hidden></div><div class="jelly drawer" id="presets" hidden></div><div class="jelly drawer" id="codex" hidden></div><div class="jelly drawer" id="heal" hidden></div><div class="jelly drawer" id="body" hidden></div><div class="jelly drawer" id="trance" hidden></div><div class="jelly drawer" id="rites" hidden></div><div class="jelly drawer" id="forge" hidden></div>
   <p class="hint">Play the bottom two rows of your keyboard, a MIDI keyboard, or touch the keys. Every note is in tune with the state. Space bar is pause.</p>
@@ -650,7 +650,7 @@ const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const STATES=[
  {id:'abyss',name:'Abyss',sub:'sleep',beat:2,fc:108,mode:'binaural',vis:4,airLP:520,scale:[1,9/8,6/5,3/2,8/5],cols:['#2a1a8f','#0b2a6b','#2ff3d2'],tag:'studied',
   note:'Delta, 0.5 to 4 Hz, is the rhythm of deep sleep. Pink noise timed to slow waves deepened sleep in the lab (Ngo, 2013). Turn the air dial up and go under.'},
- {id:'slumber',name:'Slumber',sub:'pink noise, slow wave',beat:.8,fc:80,mode:'isochronic',vis:4,airLP:900,scale:[1,9/8,5/4,3/2,5/3],cols:['#1a2a6f','#0a1238','#8fa8ff'],tag:'studied',
+ {id:'slumber',name:'Sopor',sub:'pink noise, slow wave',beat:.8,fc:80,mode:'isochronic',vis:4,airLP:900,scale:[1,9/8,5/4,3/2,5/3],cols:['#1a2a6f','#0a1238','#8fa8ff'],tag:'studied',
   note:'Slow waves in deep sleep run near 0.8 a second. Pink noise timed to them deepened sleep and doubled word recall (Ngo, 2013). This is that sound; turn the air dial up.'},
  {id:'hypnagogia',name:'Hypnagogia',sub:'the edge of dreaming',beat:6,fc:136.1,mode:'binaural',vis:1,scale:[1,9/8,5/4,45/32,3/2,27/16,15/8],cols:['#8a4bff','#e0153f','#2ff3d2'],tag:'studied',
   note:'Theta, 4 to 8 Hz, the band of the half-dream, where images rise on their own. The beat is measured here as it plays.'},
@@ -662,9 +662,9 @@ const STATES=[
   note:'7.83 Hz is the measured resonance of the space between the ground and the upper atmosphere. Tradition calls it the heartbeat of the planet. The number is physics, and it is exact here.'},
  {id:'seance',name:'Séance',sub:'Mesmer and the glass',beat:7.5,fc:146.8,mode:'monaural',vis:1,scale:[1,9/8,6/5,3/2,8/5],cols:['#8a6adf','#1a1038','#e0d0ff'],tag:'tradition',
   note:'Mesmer closed his sessions at the glass armonica while his patients sat around the baquet. The instrument was later feared to drive listeners mad. Choose the glass armonica and play slowly.'},
- {id:'stillness',name:'Stillness',sub:'calm, eyes soft',beat:10,fc:200,mode:'binaural',vis:3,scale:[1,9/8,5/4,3/2,5/3],cols:['#1c6bd8','#0a2a5a','#2ff3d2'],tag:'studied',
+ {id:'stillness',name:'Vesper',sub:'calm, eyes soft',beat:10,fc:200,mode:'binaural',vis:3,scale:[1,9/8,5/4,3/2,5/3],cols:['#1c6bd8','#0a2a5a','#2ff3d2'],tag:'studied',
   note:'Alpha, 8 to 12 Hz, the resting rhythm. Pair it with the breath pacer: six breaths a minute is the best supported way to calm the body.'},
- {id:'focus',name:'Focus',sub:'gamma 40',beat:40,fc:240,mode:'isochronic',vis:2,scale:[1,9/8,4/3,3/2,16/9],cols:['#8a4bff','#14204a','#2ff3d2'],tag:'studied',
+ {id:'focus',name:'Vertex',sub:'gamma 40',beat:40,fc:240,mode:'isochronic',vis:2,scale:[1,9/8,4/3,3/2,16/9],cols:['#8a4bff','#14204a','#2ff3d2'],tag:'studied',
   note:'40 Hz. MIT trials found the brain follows 40 Hz sound and light, down into deep regions. In 2026 it sped reaction times in adults with ADHD symptoms.'},
  {id:'desire',name:'Desire',sub:'slow heat',beat:1.1,fc:96,mode:'monaural',vis:3,scale:[1,16/15,5/4,3/2,8/5],cols:['#e0153f','#ff5a2a','#6a0a3a'],tag:'tradition',
   note:'What moves the body: a low tone in the range of a close voice, and a slow pulse at a resting heartbeat, 66 a minute.'},
@@ -1015,7 +1015,7 @@ KN.forEach(([k,l,bk])=>{const d=document.createElement('div');d.className='knob'
 function paintKnobs(){KN.forEach(([k])=>knobEls[k]._set(S[k]))}
 
 /* ---------- buttons ---------- */
-function setVoice(i){S.voice=(i+VOX.length)%VOX.length;$('#bVoice').textContent='voice: '+VOICES[S.voice];$$('.vb').forEach((b,j)=>b.classList.toggle('on',j===S.voice))}
+function setVoice(i){S.voice=(i+VOX.length)%VOX.length;$('#bVoice').textContent='vox: '+VOICES[S.voice];$$('.vb').forEach((b,j)=>b.classList.toggle('on',j===S.voice))}
 function buildVox(){const el=$('#vox');let fam='',h='';VOX.forEach((v,i)=>{if(v.fam!==fam){if(fam)h+='</div>';fam=v.fam;h+=`<h4>${fam}</h4><div class="vg">`}h+=`<button class="vb" data-i="${i}">${v.n}</button>`});
   el.innerHTML='<p class="vh">'+VOX.length+' voices. Pick one, then play. The [ and ] keys step through them.</p>'+h+'</div>';el.onclick=e=>{const b=e.target.closest('.vb');if(b)setVoice(+b.dataset.i)};setVoice(S.voice)}
 $('#bVoice').onclick=e=>{e.stopPropagation();$('#vox').hidden=!$('#vox').hidden};

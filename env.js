@@ -119,7 +119,7 @@ const ENVS=[
  ['comet',[GL([7,7],[2500,4000],[.15],[3,5],.12,{}),B('violet',6000,.1,{ft:'highpass',lfo:[.14,.9]})]],['nebula',[DRN([1,1.5,2,2.5,3],.5,{trem:[.06,.6]})]],
  ['star birth',[GL([5,5],[90,160],[6],[4,6],.2,{w:'triangle'}),BU(3,[3000,9000],[.003,.01],.3)]],['orbit',[B('pink',500,1.2,{ft:'bandpass',q:6,pan:.11}),D([110],.2)]],
  ['schumann',[PU(100,7.83,.7)]],['the spheres',[D([126.22,141.27,221.23,144.72,183.58,147.85],.5,{wide:1.6,trem:[.05,.5]})]],['the void',[D([27.5,27.6],.9),B('brown',60,.3)]]]},
-{id:'lust',n:'Lust',col:'#ff2d73',line:'Heat under the skin.',sig:[0,1,8],snd:[
+{id:'lust',n:'Luxuria',col:'#ff2d73',line:'Heat under the skin.',sig:[0,1,8],snd:[
  ['slow heat',[HB(66,.8),D([55,82.5],.4,{w:'triangle',trem:[.08,.3]})]],['skin',[SW([2.6,4],[900,2600,1200],.6,{pan:'move',q:.8})]],['silk',[SW([1.8,3],[3000,7000,4000],.45,{n:'white',pan:'move',q:.7})]],
  ['breath on your neck',[SW([3.4,4.2],[800,2000,700],.9,{pan:-.85,duty:.8})]],['breath in your ear',[SW([3.1,3.9],[1000,2600,900],.9,{pan:.9,duty:.8})]],
  ['sigh',[GL([5,5],[300,420],[.62],[1.2,2],.22,{w:'sawtooth',form:1}),SW([5,7],[1500,2400,700],.3,{duty:.3})]],
@@ -145,7 +145,7 @@ const ENVS=[
  ['dawn',[{k:'ping',rate:2.6,f:[2200,5200],d:.09,g:.12,drop:1.3},B('pink',3000,.05,{ft:'highpass'})]],['seraph',[{k:'shep',dir:1,g:.5}]],
  ['far bells',[{k:'ping',rate:.14,deg:[0,4],d:7,g:.25,att:.008,h:2.4,tick:300}]],['light rain',[B('white',5000,.15,{ft:'highpass'}),BU(7,[4000,9000],[.003,.008],.35,{q:6})]],
  ['ascension',[DRN([1,1.25,1.5,2,2.5,3],.5,{trem:[.06,.6]}),{k:'shep',dir:1,g:.2}]]]},
-{id:'underworld',n:'Underworld',col:'#7a2be0',line:'Stone, water and what waits below.',sig:[0,1,6],snd:[
+{id:'underworld',n:'Avernus',col:'#7a2be0',line:'Stone, water and what waits below.',sig:[0,1,6],snd:[
  ['cavern',[D([41.2,41.5,61.7],.8,{trem:[.04,.5]}),B('brown',130,.5)]],['deep drip',[PI(.4,[300,700],.2,.6,{drop:1.5,att:.004})]],
  ['the river',[B('brown',400,.8,{lfo:[.13,.3]}),B('pink',700,.3,{ft:'bandpass',q:2,sw:[2.1,300]})]],['chains',[BU(.5,[1800,4200],[.02,.06],1,{q:9,n:5,gap:.05,tick:300})]],
  ['low chant',[D([65.4,65.9,98.1],.6,{w:'sawtooth',lp:420,trem:[.1,.3]})]],['bone flute',[{k:'ping',rate:.3,deg:[0,6],d:3.5,g:.2,att:.5,w:'triangle',tick:300},B('pink',900,.15,{ft:'bandpass',q:6,lfo:[.2,.8]})]],
@@ -215,7 +215,7 @@ const addB=b=>{BANK.push(b);BK[b.id]=b};
 
 /* ---------- presets for the stones ---------- */
 [['Blood','blood','dread','infernal brass'],['Breath','breath','stillness','flute'],['Magnetism','magnetism','gateway','fm glass'],['Heat','heat','journey','oud'],['Wet','wet','stillness','harp'],
- ['Universe','universe','hypnagogia','glass pad'],['Lust','lust','desire','cello'],['Animal attraction','animal','journey','didgeridoo'],['Celestial','celestial','solfeggio','boy choir'],['Underworld','underworld','chamber','bass choir'],['Gold','gold','earth','vibraphone'],['Freeze','freeze','abyss','crystal bowl'],['Dream','dream','hypnagogia','glass pad'],['Nature','nature','earth','flute']]
+ ['Universe','universe','hypnagogia','glass pad'],['Luxuria','lust','desire','cello'],['Animal attraction','animal','journey','didgeridoo'],['Celestial','celestial','solfeggio','boy choir'],['Avernus','underworld','chamber','bass choir'],['Gold','gold','earth','vibraphone'],['Freeze','freeze','abyss','crystal bowl'],['Dream','dream','hypnagogia','glass pad'],['Nature','nature','earth','flute']]
  .forEach(([n,id,st,vo])=>{const e=ENVS.find(x=>x.id===id);PRESETS.push([n,'stones',st,vo,Object.fromEntries(e.sig.map(i=>[`e:${id}:${i}`,.5])),id]);
    PRESETS.push([n+', deep','stones',st,vo,Object.fromEntries([...e.sig,(e.sig[0]+3)%16,(e.sig[1]+5)%16].map(i=>[`e:${id}:${i}`,.45])),id])});
 PCATS.unshift('stones');PRESETS.sort((a,b)=>PCATS.indexOf(a[1])-PCATS.indexOf(b[1]));
@@ -249,7 +249,7 @@ $('#pads').addEventListener('click',e=>{const b=e.target.closest('.pad');if(b){c
 $('#pads').addEventListener('wheel',e=>{const b=e.target.closest('.pad');if(!b)return;e.preventDefault();const id=b.dataset.id,v=clamp((S.layers[id]==null?.3:S.layers[id])+(e.deltaY<0?.06:-.06),.05,1);setLayer(id,v)},{passive:false});
 
 /* ---------- make every control answer back ---------- */
-{const f0=setVoice;setVoice=i=>{f0(i);say('voice · '+VOICES[S.voice])};
+{const f0=setVoice;setVoice=i=>{f0(i);say('vox · '+VOICES[S.voice])};
  const f1=setLayer;setLayer=(id,v)=>{f1(id,v);if(BK[id])say(v==null?BK[id].n+' · off':`${BK[id].n} · ${Math.round(v*100)}`)};
  const f2=paintBank;paintBank=()=>{f2();paintPads()};
  const f3=setState;setState=(i,k)=>{f3(i,k);const s=STATES[S.state];say(`${s.name.toLowerCase()} · ${s.beat} hz · ${s.sub}`)};
