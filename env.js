@@ -140,7 +140,7 @@ const ENVS=[
  ['choir',[B('pink',730,.6,{ft:'bandpass',q:9}),D([220,220.8,330,440],.35,{w:'sawtooth',lp:1400,trem:[.1,.3]})]],['high choir',[D([440,441,660,880],.3,{w:'triangle',trem:[.13,.4],vib:[5,2]})]],
  ['harp',[{k:'ping',rate:1.6,deg:[4,14],d:2.4,g:.25,att:.004,h:2}]],['crystal bowls',[{k:'ping',rate:.22,deg:[0,7],d:9,g:.3,att:.4,h:2.71,tick:300}]],
  ['glass bells',[{k:'ping',rate:.9,deg:[7,14],oct:2,d:3,g:.1,att:.003,h:2.76}]],['dawn light',[GL([3,4],[600,900],[1.5],[2.5,3.5],.08,{form:1.4}),B('pink',4000,.04,{ft:'highpass',lfo:[.08,.7]})]],
- ['star chimes',[{k:'ping',rate:2.2,deg:[8,14],oct:4,d:1.6,g:.05,att:.002}]],['cathedral air',[B('pink',500,.4,{ft:'bandpass',q:.5,lfo:[.05,.4]}),B('brown',150,.2)]],
+ ['starlight',[PI(.9,[0,0],3.2,.3,{deg:[7,14],att:.45,tick:300})]],['cathedral air',[B('pink',500,.4,{ft:'bandpass',q:.5,lfo:[.05,.4]}),B('brown',150,.2)]],
  ['organ',[DRN([.5,1,1.5,2,3],.6)]],['crown tone, 963',[D([963],.2),D([481.5],.2)]],['halo',[DRN([1,2,3,4,5,6,7,8],.6,{trem:[.09,.8]})]],
  ['dawn',[{k:'ping',rate:2.6,f:[2200,5200],d:.09,g:.12,drop:1.3},B('pink',3000,.05,{ft:'highpass'})]],['seraph',[{k:'shep',dir:1,g:.5}]],
  ['far bells',[{k:'ping',rate:.14,deg:[0,4],d:7,g:.25,att:.008,h:2.4,tick:300}]],['overtone halo',[DRN([4,5,6,8],.15,{trem:[.09,.6],lp:2400})]],
