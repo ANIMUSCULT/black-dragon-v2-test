@@ -495,7 +495,7 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
     gl.uniform1f(U.uSize,Math.max(1.3,c.width/(MOBILE?210:250)));gl.uniform1f(U.uT,T);gl.uniform1f(U.uKick,Math.min(1,kick));gl.uniform3f(U.uTint,tint[0],tint[1],tint[2]);gl.drawArrays(gl.POINTS,0,N);
     if(keep){keep=false;const o=document.createElement('canvas');o.width=o.height=1080;const x=o.getContext('2d');x.fillStyle='#050406';x.fillRect(0,0,1080,1080);
       x.beginPath();x.arc(540,500,452,0,TAU);x.fillStyle='#0b090d';x.fill();x.drawImage(c,90,50,900,900);
-      x.fillStyle='rgba(255,220,170,.92)';x.textAlign='center';x.font='600 44px "Grenze Gotisch"';x.fillText(reading?reading.name:'Black Dragon II',540,1010);
+      x.fillStyle='rgba(255,205,210,.92)';x.textAlign='center';x.font='600 44px "Grenze Gotisch"';x.fillText(reading?reading.name:'Black Dragon II',540,1010);
       x.font='17px "Texturina"';x.fillText(`${SHP[shape]} plate · ${VISN[vis]} · ${TONES[tone]} · ${hz.toFixed(1)} Hz`,540,1048);
       o.toBlob(bl=>{save(bl,'black-dragon-sand-'+(reading?reading.name.toLowerCase()+'-':'')+hz.toFixed(1)+'hz.png');say('figure kept · '+(reading?reading.name:'saved'))},'image/png')}};
   const seat=()=>{c.classList.toggle('big',big);bar.classList.toggle('big',big);if(big)document.body.append(c);else $('#dial').before(c);document.body.classList.toggle('cymOpen',on&&big&&MOBILE);
@@ -515,7 +515,7 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
 window.PEARL=0;
 {const sp=$('#spec'),x=sp.getContext('2d'),names=['spectrum','figure','seal'],bl=new Float32Array(1024),br=new Float32Array(1024);sp.title='Press to change the view: spectrum, figure, seal';
   sp.addEventListener('click',()=>{window.PEARL=(window.PEARL+1)%3;say('proof screen · '+names[window.PEARL])});
-  (function loop(){requestAnimationFrame(loop);if(!window.PEARL||!A.ctx)return;const W=sp.width,H=sp.height;x.clearRect(0,0,W,H);x.lineWidth=2;x.strokeStyle='#ffb454';x.beginPath();
+  (function loop(){requestAnimationFrame(loop);if(!window.PEARL||!A.ctx)return;const W=sp.width,H=sp.height;x.clearRect(0,0,W,H);x.lineWidth=2;x.strokeStyle='#f2455c';x.beginPath();
     if(window.PEARL===1){const t=sigilTap();if(!t)return;t.l.getFloatTimeDomainData(SL);t.r.getFloatTimeDomainData(SR);const bl=SL.subarray(1024),br=SR.subarray(1024);let m=.02;for(let i=0;i<1024;i++)m=Math.max(m,Math.abs(bl[i]),Math.abs(br[i]));const k=H*.45/m;
       for(let i=0;i<1024;i++){const px=W/2+bl[i]*k,py=H/2-br[i]*k;i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke()}
     else if(FORGED){const k=H*.9/176;FORGED.pts.forEach((pt,i)=>{const px=W/2+pt[0]*k,py=H/2+pt[1]*k;i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()}
@@ -584,7 +584,7 @@ if(/[?&]diag\b/.test(location.search)){
     ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'text/javascript'}))).then(()=>{const h=new AudioWorkletNode(ctx,'health');A.vol.connect(h);
       h.port.onmessage=e=>{const s=e.data;tot.late+=s.late;tot.clip+=s.clip;tot.gap=Math.max(tot.gap,s.gap);tot.sec++;
         const ua=navigator.userAgent,br=/Edg\//.test(ua)?'Edge':/Firefox\//.test(ua)?'Firefox':/Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'other';
-        box.style.color=tot.late||tot.clip?'#fb6':'#9f9';box.style.borderColor=tot.late||tot.clip?'#c63':'#3a3';
+        box.style.color=tot.late||tot.clip?'#f46':'#9f9';box.style.borderColor=tot.late||tot.clip?'#b23':'#3a3';
         box.textContent=`audio health · ${br} · ${ctx.sampleRate} Hz · ${ctx.state}\nbuffer ${(ctx.baseLatency*1000||0).toFixed(1)} ms · output delay ${((ctx.outputLatency||0)*1000).toFixed(0)} ms\nlate deliveries  ${tot.late}   (longest gap ${tot.gap} ms)\nclipped samples  ${tot.clip}   peak now ${s.peak.toFixed(2)}\nsounds playing   ${Object.keys(act).length} world · ${Object.keys(held).length} keys\nrunning ${tot.sec} s`};
       setInterval(()=>h.port.postMessage(0),1000)}).catch(()=>{box.textContent='audio health · this browser would not start the probe'})},500)}
 
@@ -646,7 +646,7 @@ if(/[?&]diag\b/.test(location.search)){
  const st=document.createElement('style');st.textContent=`
   #keysBar{display:flex;gap:4px;align-items:stretch}
   @media (min-width:1001px) and (pointer:fine){.deck>#keysBar{grid-column:3;grid-row:1;align-self:start;justify-self:center;z-index:2}.deck>#keys{grid-column:3;grid-row:1;align-self:end;height:104px}}
-  #keysBar #bVoice{min-width:190px;max-width:240px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 12px;min-height:26px;font-size:9px;border-color:rgba(255,190,110,.6)}
+  #keysBar #bVoice{min-width:190px;max-width:240px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 12px;min-height:26px;font-size:9px;border-color:rgba(245,96,114,.6)}
   #keysBar .kstep{padding:5px 11px;min-height:26px;font-size:13px;line-height:1}#keysBar .kstep::before{display:none!important}
   @media (max-width:1000px),(pointer:coarse){
    #keysBar{display:none;margin:0 0 6px;gap:6px}.hud[data-tab=play] #keysBar{display:flex}
