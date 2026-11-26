@@ -970,3 +970,68 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
   /* the sliders' glass tubes fill up to the bead */
   const fillR=()=>document.querySelectorAll('input[type=range]').forEach(e=>{const a=+e.min||0,b=+e.max||1,p=((+e.value-a)/((b-a)||1)*100).toFixed(1)+'%';if(e.style.getPropertyValue('--p')!==p)e.style.setProperty('--p',p)});
   addEventListener('input',e=>{if(e.target.type==='range')fillR()},true);setInterval(fillR,600);fillR()}
+
+/* ================= THE VOWEL SPACE: the seven vowels of the rites as a place you can sing through =================
+   A synthesized voice: a soft glottal pulse with breath, through four formant filters, the mouth shapes of the seven
+   Greek vowels the rites use (I, Ē, E, A, O, Ō, U). The pad is laid out like a vowel chart, front vowels to the left,
+   open vowels low. Press and drag to sing and glide; hold keeps it sounding. It sings on the carrier, so it stays in
+   tune with the tones. When a rite sings a vowel the dot moves with it. Through the rites fader; never on the tone channel. */
+{const VW={on:false,hold:false,oct:1,breath:.35,g:null,x:.5,y:.5,flash:0};
+  const d=document.createElement('div');d.className='jelly drawer';d.id='vowels';d.hidden=true;$('#loops').after(d);DR.push('vowels');
+  d.innerHTML='<button class="pill dclose">close</button><h3>Vowels</h3><p class="vh">The seven vowels of the rites as a place to sing through. In the Greek magical papyri and the Gnostic hymns the vowels themselves are the names of power, sung one to each heaven. Press and drag across the mouth; the voice glides from shape to shape on the carrier tone.</p>'
+    +'<canvas id="vwPad" width="560" height="420" style="width:100%;max-width:420px;aspect-ratio:4/3;display:block;margin:8px auto;border-radius:12px;background:radial-gradient(120% 100% at 50% 0%,rgba(255,255,255,.06),rgba(0,0,0,.55));border:1px solid rgba(255,255,255,.14);touch-action:none;cursor:crosshair"></canvas>'
+    +'<div class="vg" style="margin-top:6px"><button class="vb" id="vwHold">hold</button> <button class="vb" data-oct=".5">octave down</button> <button class="vb" data-oct="1">on the carrier</button> <button class="vb" data-oct="2">octave up</button></div>'
+    +'<label class="mrow"><span>breath</span><input type="range" min="0" max="1" step=".01" value=".35" id="vwBreath" aria-label="breath"></label><p class="vh" id="vwSt"></p>';
+  d.querySelector('.dclose').onclick=()=>{d.hidden=true};
+  const b=document.createElement('button');b.className='pill';b.id='bVowels';b.textContent='vowels';$('.rside').insertBefore(b,$('#bLoops'));b.onclick=e=>{e.stopPropagation();openDr('vowels')};
+  const pad=d.querySelector('#vwPad'),x=pad.getContext('2d'),st=t=>{d.querySelector('#vwSt').textContent=t||''};
+  /* the chart: F2 across (front vowels left), F1 down (open vowels low), on log scales */
+  const F2a=600,F2b=2400,F1a=250,F1b=850,lg=Math.log;
+  const toXY=([f1,f2])=>[1-(lg(f2)-lg(F2a))/(lg(F2b)-lg(F2a)),(lg(f1)-lg(F1a))/(lg(F1b)-lg(F1a))];
+  const toF=(px,py)=>[Math.exp(lg(F1a)+py*(lg(F1b)-lg(F1a))),Math.exp(lg(F2a)+(1-px)*(lg(F2b)-lg(F2a)))];
+  const SAY={I:'ee','Ē':'ay',E:'eh',A:'ah',O:'aw','Ō':'oh',U:'oo'},V=Object.keys(VOWEL_F).map(k=>({k,f:VOWEL_F[k],p:toXY(VOWEL_F[k])}));
+  const f3At=(px,py)=>{let s=0,w=0;V.forEach(v=>{const dd=Math.hypot(px-v.p[0],py-v.p[1])+.03,k=1/(dd*dd);s+=k*v.f[2];w+=k});return s/w};
+  const near=(px,py)=>V.reduce((a,v)=>Math.hypot(px-v.p[0],py-v.p[1])<Math.hypot(px-a.p[0],py-a.p[1])?v:a);
+  /* the voice */
+  const build=()=>{if(VW.g)return VW.g;const ctx=A.ctx,G={};const n=40,re=new Float32Array(n+1),im=new Float32Array(n+1);for(let k=1;k<=n;k++)im[k]=Math.pow(k,-1.6);
+    G.src=ctx.createOscillator();G.src.setPeriodicWave(ctx.createPeriodicWave(re,im));G.vib=ctx.createOscillator();G.vib.frequency.value=5.1;G.vibG=gn(ctx,14);G.vib.connect(G.vibG).connect(G.src.detune);
+    G.flut=ctx.createOscillator();G.flut.frequency.value=3.4;G.flutG=gn(ctx,.1);G.amp=gn(ctx,1);G.flut.connect(G.flutG).connect(G.amp.gain);
+    G.br=loopN(ctx,NB.pink);G.brHP=bq(ctx,'highpass',600,.5);G.brG=gn(ctx,VW.breath*.5);G.br.connect(G.brHP).connect(G.brG);
+    G.mix=gn(ctx,1);G.src.connect(G.amp).connect(G.mix);G.brG.connect(G.mix);
+    G.F=[[1,110],[.55,110],[.22,140],[.08,180]].map(([gg,bw],i)=>{const f=bq(ctx,'bandpass',[500,1500,2500,3300][i],[500,1500,2500,3300][i]/bw),g=gn(ctx,gg*3.2);G.mix.connect(f).connect(g);return{f,bw}});
+    G.soft=bq(ctx,'lowpass',3600,.5);G.norm=gn(ctx,.3);G.meter=ctx.createAnalyser();G.meter.fftSize=2048;G.out=gn(ctx,0);G.F.forEach(o=>o.f.connect(G.soft));G.soft.connect(G.meter);G.soft.connect(G.norm).connect(G.out).connect(MB('riteBus'));
+    /* a singer evens the vowels without thinking: close vowels put a formant right on a strong low harmonic and jump out. A slow level holds the voice near 0.055 RMS whatever the shape */
+    const mb=new Float32Array(2048);setInterval(()=>{if(!(VW.on||VW.hold))return;G.meter.getFloatTimeDomainData(mb);let q=0;for(let i=0;i<2048;i++)q+=mb[i]*mb[i];const r=Math.sqrt(q/2048);if(r<1e-4)return;G.norm.gain.setTargetAtTime(clamp(.055/r,.05,6),A.ctx.currentTime,.18)},90);
+    [G.src,G.vib,G.flut].forEach(o=>o.start());return VW.g=G};
+  const pitch=()=>(S.fc||136.1)*VW.oct;
+  const shape=(px,py,tc=.06)=>{const G=VW.g;if(!G)return;const t=A.ctx.currentTime,[f1,f2]=toF(px,py),f3=f3At(px,py),fs=[f1,f2,f3,3300];
+    G.F.forEach((o,i)=>{o.f.frequency.setTargetAtTime(fs[i],t,tc);o.f.Q.setTargetAtTime(fs[i]/o.bw,t,tc)});G.src.frequency.setTargetAtTime(pitch(),t,.05)};
+  const level=v=>{const G=VW.g;if(!G)return;const t=A.ctx.currentTime;G.out.gain.cancelScheduledValues(t);G.out.gain.setValueAtTime(G.out.gain.value,t);G.out.gain.linearRampToValueAtTime(v,t+(v?.25:.6))};
+  const LV=1;
+  const label=()=>{const v=near(VW.x,VW.y);st(VW.on||VW.hold?`singing ${v.k} (“${SAY[v.k]}”) on ${pitch().toFixed(1)} Hz${VW.oct===1?', the carrier':VW.oct<1?', an octave under the carrier':', an octave over the carrier'}`:`press and drag across the mouth · sings on ${pitch().toFixed(1)} Hz`)};
+  const start=()=>{if(!A.ctx){say('enter first, then sing');return false}build();shape(VW.x,VW.y,.01);level(LV);VW.on=true;label();return true};
+  const end=()=>{VW.on=false;if(!VW.hold)level(0);label()};
+  /* drawing the pad: dark glass, a faint chart, the vowels where the mouth makes them, and the moving dot */
+  const draw=()=>{const W=pad.width,H=pad.height,m=46;x.clearRect(0,0,W,H);x.strokeStyle='rgba(255,255,255,.07)';x.lineWidth=1;
+    for(let i=1;i<4;i++){x.beginPath();x.moveTo(m+(W-2*m)*i/4,m*.6);x.lineTo(m+(W-2*m)*i/4,H-m*.6);x.stroke();x.beginPath();x.moveTo(m*.6,m+(H-2*m)*i/4);x.lineTo(W-m*.6,m+(H-2*m)*i/4);x.stroke()}
+    const P=([px,py])=>[m+px*(W-2*m),m+py*(H-2*m)],near1=near(VW.x,VW.y);
+    V.forEach(v=>{const [cx,cy]=P(v.p),on=(VW.on||VW.hold)&&v===near1;x.fillStyle=on?'rgba(255,198,205,1)':'rgba(236,228,214,.8)';x.textAlign='center';
+      x.font=`600 ${on?58:48}px "Grenze Gotisch", serif`;x.fillText(v.k,cx,cy+14);x.font='22px "Texturina", serif';x.fillStyle='rgba(236,228,214,.55)';x.fillText(SAY[v.k],cx,cy+40)});
+    x.font='18px "Texturina", serif';x.fillStyle='rgba(236,228,214,.4)';x.textAlign='left';x.fillText('front',m*.6,H-10);x.textAlign='right';x.fillText('back',W-m*.6,H-10);x.save();x.translate(14,H/2);x.rotate(-Math.PI/2);x.textAlign='center';x.fillText('close   ·   open',0,0);x.restore();
+    const [dx,dy]=P([VW.x,VW.y]),live=VW.on||VW.hold,r=(live?13:9)+VW.flash*10;const gr=x.createRadialGradient(dx,dy,0,dx,dy,r*3);gr.addColorStop(0,live?'rgba(242,69,92,.55)':'rgba(255,255,255,.18)');gr.addColorStop(1,'rgba(0,0,0,0)');
+    x.fillStyle=gr;x.beginPath();x.arc(dx,dy,r*3,0,7);x.fill();x.fillStyle=live?'#ffc6cd':'rgba(255,255,255,.55)';x.beginPath();x.arc(dx,dy,live?5:4,0,7);x.fill();VW.flash*=.9};
+  (function loop(){requestAnimationFrame(loop);if(d.hidden)return;draw()})();
+  const at=e=>{const r=pad.getBoundingClientRect(),m=46/pad.width;VW.x=clamp(((e.clientX-r.left)/r.width-m)/(1-2*m),0,1);VW.y=clamp(((e.clientY-r.top)/r.height-46/pad.height)/(1-2*46/pad.height),0,1);shape(VW.x,VW.y);label()};
+  pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);at(e);start()});pad.addEventListener('pointermove',e=>{if(VW.on)at(e)});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>pad.addEventListener(ev,()=>{if(VW.on)end()}));
+  const paintB=()=>{d.querySelector('#vwHold').classList.toggle('on',VW.hold);d.querySelectorAll('[data-oct]').forEach(e=>e.classList.toggle('on',+e.dataset.oct===VW.oct))};paintB();label();
+  d.addEventListener('click',e=>{const t=e.target.closest('button');if(!t||t.classList.contains('dclose'))return;e.stopPropagation();
+    if(t.id==='vwHold'){VW.hold=!VW.hold;if(VW.hold){if(!VW.on&&!start())VW.hold=false;VW.on=false}else if(!VW.on)level(0);say(VW.hold?'vowels · held':'vowels · released')}
+    else if(t.dataset.oct){VW.oct=+t.dataset.oct;shape(VW.x,VW.y)}paintB();label()});
+  d.querySelector('#vwBreath').addEventListener('input',e=>{VW.breath=+e.target.value;if(VW.g)VW.g.brG.gain.setTargetAtTime(VW.breath*.5,A.ctx.currentTime,.05)});
+  /* the rites move the pad: each vowel a rite sings lands the dot on that vowel */
+  const ch0=chant;chant=function(v,f,dur){const o=VOWEL_F[v];if(o){[VW.x,VW.y]=toXY(o);VW.flash=1;if(VW.hold)shape(VW.x,VW.y,.08);label()}return ch0.apply(this,arguments)};
+  /* sounding now, and reset */
+  const stopAll=()=>{VW.hold=false;VW.on=false;level(0);paintB();label()};
+  const baseLive3=liveList;liveList=function(){const R=baseLive3();if(VW.hold||VW.on)R.push(['vowels',stopAll]);return R};
+  const baseReset3=resetAll;resetAll=function(){stopAll();return baseReset3.apply(this,arguments)}}
