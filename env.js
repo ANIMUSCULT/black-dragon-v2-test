@@ -202,7 +202,6 @@ const addB=b=>{BANK.push(b);BK[b.id]=b};
 [['A',292],['B',584],['C',1168],['D',2336],['E',4672],['F',73],['G',146]].forEach(([l,hz])=>addB({id:'ng'+l,n:`Nogier ${l} ${hz}`,cat:'bodywork tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:hz>2000?.12:.35,
   info:`${hz} Hz, frequency ${l} of the set Paul Nogier used in ear acupuncture from the 1950s. A clinical tradition.`}));
 [32,64,128].forEach(hz=>addB({id:'ot'+hz,n:`Otto ${hz}`,cat:'bodywork tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.6,info:`${hz} Hz, one of the weighted tuning forks bodyworkers press to bone and muscle. Felt as vibration more than heard.`}));
-[111,222,333,444,555,666,777,888,999].forEach(hz=>addB({id:'an'+hz,n:hz+' Hz',cat:'number tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.3,info:`${hz} Hz. Angel numbers, sounded. The tone is exact.`}));
 ['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'].forEach((nm,i)=>[432,440].forEach(a=>{const hz=+(a*Math.pow(2,(i-9)/12)).toFixed(2);
   addB({id:`n${a}_${i}`,n:`${nm} at ${a}`,cat:`notes, A at ${a}`,tag:ME,bus:'tone',hz,gen:G.tone(hz),lvl:.35,info:`The note ${nm} at ${hz} Hz, in the scale where A is ${a} Hz. ${a===432?'432 tuning has a devoted following, who call it the natural pitch.':'440 is the modern concert standard, fixed in 1939.'}`})}));
 [['minor second 15:16',16/15],['major second 8:9',9/8],['minor third 5:6',6/5],['major third 4:5',5/4],['minor sixth 5:8',8/5],['major sixth 3:5',5/3],['harmonic seventh 4:7',7/4],['minor seventh 5:9',9/5],['major seventh 8:15',15/8],['octave 1:2',2]]
