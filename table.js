@@ -728,7 +728,7 @@ void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uR
   const open=()=>{R.hidden=false;gate.hidden=false;cv.hidden=true;paint()};
   const sizeC=()=>{const dp=MOBILE?1:Math.min(devicePixelRatio||1,1.25);cv.width=Math.round(innerWidth*dp);cv.height=Math.round(innerHeight*dp)};
   /* brown noise in the ears, as in the 2024 Ganzflicker protocol; through the rites fader, off with its switch */
-  const noiseOn=()=>{if(!A.ctx||nz)return;const s=loopN(A.ctx,NB.brown),g=gn(A.ctx,0);s.connect(bq(A.ctx,'lowpass',900,.5)).connect(g).connect(MB('riteBus'));g.gain.setTargetAtTime(.5,A.ctx.currentTime,2);nz={s,g}};
+  const noiseOn=()=>{if(!A.ctx||nz)return;const s=loopN(A.ctx,NB.brown),g=gn(A.ctx,0);s.connect(bq(A.ctx,'lowpass',900,.5)).connect(g).connect(MB('riteBus'));g.gain.setTargetAtTime(.42,A.ctx.currentTime,2);nz={s,g}};
   const noiseOff=()=>{if(!nz)return;const n=nz;nz=null;n.g.gain.setTargetAtTime(0,A.ctx.currentTime,.8);setTimeout(()=>{try{n.s.stop()}catch(_){}},3500)};
   const stop=why=>{if(!run)return;run.end=performance.now();run.why=why;noiseOff()};
   const draw=now=>{if(!run)return;requestAnimationFrame(draw);const W=cv.width,H=cv.height,el=(now-run.t0)/1000,dur=D.min*60;
