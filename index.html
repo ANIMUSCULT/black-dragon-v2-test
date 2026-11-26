@@ -1261,7 +1261,7 @@ function frame(ms){
   gl.uniform3fv(U.c1,rgb(window.ENVCOL||s.cols[0]));gl.uniform3fv(U.c2,rgb(s.cols[1]));gl.uniform3fv(U.c3,rgb(s.cols[2]));
   gl.drawArrays(gl.TRIANGLES,0,3);
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.useProgram(pr2);gl.bindTexture(gl.TEXTURE_2D,fbo[cur].t);gl.uniform1i(U2.s,0);gl.uniform2f(U2.r,cv.width,cv.height);gl.uniform1f(U2.t,vt);
-  if(lensN++%8===0){const b=dial.getBoundingClientRect(),k=cv.width/innerWidth;lens=[(b.left+b.width/2)*k,cv.height-(b.top+b.height/2)*k,b.width*.35*k]}
+  if(lensN++%8===0){const b=window.GATEBOX||dial.getBoundingClientRect(),k=cv.width/innerWidth;lens=[(b.left+b.width/2)*k,cv.height-(b.top+b.height/2)*k,b.width*.35*k]}
   gl.uniform1f(U2.ab,S.split);gl.uniform1f(U2.grn,S.grain);gl.uniform1f(U2.lz,S.lens);gl.uniform2f(U2.lc,lens[0],lens[1]);gl.uniform1f(U2.lr,lens[2]);
   gl.drawArrays(gl.TRIANGLES,0,3);cur=1-cur;if(window.afterFrame)window.afterFrame();requestAnimationFrame(frame);
 }
@@ -1337,8 +1337,8 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1126f"></script>
-<script src="env.js?v=1126f"></script>
-<script src="table.js?v=1126f"></script>
+<script src="bank.js?v=1126g"></script>
+<script src="env.js?v=1126g"></script>
+<script src="table.js?v=1126g"></script>
 </body>
 </html>
