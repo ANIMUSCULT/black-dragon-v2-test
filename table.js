@@ -357,8 +357,10 @@ let SLOTS=[null,null,null];try{const v=JSON.parse(localStorage.getItem('bd2-slot
   el.querySelector('.vh').after(box);box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;e.stopPropagation();if(b.id==='jrStop'){stopDescent();say('journey stopped');return}
     stopRun(true);S.beat=18;paintDial();applyBeat();desc={t0:performance.now(),from:18,to:1.5,dur:+b.dataset.m*60e3};$('#bDescent').classList.add('on');el.hidden=true;say(`journey · ${b.dataset.m} minutes · beta to delta`)})}
 {const kt=$('.ktabs'),mk=(id,txt,title)=>{const b=document.createElement('button');b.className='pill mini';b.id=id;b.textContent=txt;b.title=title;kt.append(b);return b};
-  mk('bDice','dice','Throw the vision dials').onclick=()=>{const r=(a,b)=>+(a+Math.random()*(b-a)).toFixed(2);Object.assign(S,{vision:r(.3,1),trails:r(0,.8),twist:r(0,.6),mirrors:Math.random()<.5?0:r(.1,.9),warp:r(0,.6),hue:Math.random()<.5?0:r(0,1),split:r(.1,.8),speed:r(.15,.8),lens:r(.3,.75)});
-    window.VMODE=Math.random()*6|0;paintKnobs();applyAll();say('dice · the vision is thrown')};
+  mk('bDice','dice','Throw the vision dials and the picture behind them').onclick=()=>{const r=(a,b)=>+(a+Math.random()*(b-a)).toFixed(2);
+    /* the picture is thrown too, unless your own video is playing */
+    if(!($('#bOwn')&&$('#bOwn').classList.contains('on'))&&FILMS.length>1){let n=film;while(n===film)n=Math.random()*FILMS.length|0;setFilm(n)}Object.assign(S,{vision:r(.3,1),trails:r(0,.8),twist:r(0,.6),mirrors:Math.random()<.5?0:r(.1,.9),warp:r(0,.6),hue:Math.random()<.5?0:r(0,1),split:r(.1,.8),speed:r(.15,.8),lens:r(.3,.75)});
+    window.VMODE=Math.random()*6|0;paintKnobs();applyAll();say('dice · the vision and its picture are thrown')};
   const fz=mk('bFreeze','freeze','Hold the vision still');fz.onclick=()=>{window.FREEZE=!window.FREEZE;fz.classList.toggle('on',!!window.FREEZE);say(window.FREEZE?'freeze · the vision is held':'freeze off')}}
 
 /* ================= the sand plate: cymatics in real grains, inside the centre dial =================
