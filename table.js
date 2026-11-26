@@ -489,7 +489,7 @@ if(/[?&]diag\b/.test(location.search)){
  BANK.push(b);BK.umbra=b;
  const st=document.createElement('style');st.textContent=`
   .umbraBtn+.padg{height:auto!important}
-  .umbraBtn{display:block;width:100%;margin:0 0 8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,120,150,.45);cursor:pointer;position:relative;overflow:hidden;
+  .umbraBtn{display:block;width:100%;margin:0 0 8px;padding:12px 10px;border-radius:10px;border:1px solid rgba(255,120,150,.45);cursor:pointer;position:relative;overflow:hidden;
     font-family:var(--serif,serif);font-style:italic;font-size:18px;line-height:1.1;letter-spacing:.14em;color:#ffe3ea;text-shadow:0 0 14px rgba(255,70,120,.8);
     background:radial-gradient(120% 160% at 50% 120%,rgba(255,60,110,.55),rgba(90,10,60,.55) 45%,rgba(8,4,14,.9) 80%);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -10px 24px rgba(0,0,0,.6),0 0 18px rgba(200,30,90,.25)}
@@ -510,21 +510,21 @@ if(/[?&]diag\b/.test(location.search)){
  const umbraOff=()=>{setLayer('umbra',null);const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
  const umbPaint=()=>{const u=$('#bUmbra');if(u)u.classList.toggle('on',umbIsOn())};
  const b0=buildPads;buildPads=()=>{b0();if(ENV!=='universe')return;const u=document.createElement('button');u.id='bUmbra';u.className='umbraBtn';u.title='Umbra: one press builds the whole soundscape. Press again to release it.';
-    u.innerHTML='Umbra<small>dark warmth · held</small>';u.onclick=()=>{umbIsOn()?umbraOff():umbraOn();umbPaint()};$('#pads h3').after(u);umbPaint()};
+    u.textContent='Umbra';u.onclick=()=>{umbIsOn()?umbraOff():umbraOn();umbPaint()};$('#pads h3').after(u);umbPaint()};
  const p0=paintPads;paintPads=()=>{p0();umbPaint()};
  const s0=setEnv;setEnv=(id,start)=>{s0(id,start);if(ENV!=='universe'&&umbIsOn())setLayer('umbra',null)};
  buildPads();paintPads()}
 
-/* ================= the Keys bar: choose the keyboard's voice from the top left corner of the keyboard =================
+/* ================= the Keys bar: choose the keyboard's voice from the far left of the deck, above the dials =================
    The voice button used to sit among the menus on the right and got lost. It now lives here with a step back and a step forward.
    Pressing the name still opens the full list. On phones the bar sits directly above the keys. */
 {const bar=document.createElement('div'),v=$('#bVoice'),mk=(txt,title,step)=>{const b=document.createElement('button');b.className='pill kstep';b.textContent=txt;b.title=title;b.setAttribute('aria-label',title);
     b.onclick=e=>{e.stopPropagation();setVoice(S.voice+step)};return b};
  bar.id='keysBar';bar.append(mk('‹','Previous keyboard voice',-1),v,mk('›','Next keyboard voice',1));v.title='The voice the keyboard plays. Press to see all of them.';
- $('#keys').before(bar);
+ if(MOBILE)$('#keys').before(bar);else $('.knobwrap').prepend(bar);
  const st=document.createElement('style');st.textContent=`
   #keysBar{display:flex;gap:4px;align-items:stretch}
-  @media (min-width:1001px) and (pointer:fine){.deck>#keysBar{grid-column:3;grid-row:1;align-self:start;justify-self:start;z-index:2}.deck>#keys{grid-column:3;grid-row:1;align-self:end;height:104px}}
+  .knobwrap>#keysBar{padding-left:14px}.knobwrap>#keysBar #bVoice{flex:1;max-width:none}
   #keysBar #bVoice{min-width:190px;max-width:240px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 12px;min-height:26px;font-size:9px;border-color:rgba(255,190,110,.6)}
   #keysBar .kstep{padding:5px 11px;min-height:26px;font-size:13px;line-height:1}#keysBar .kstep::before{display:none!important}
   @media (max-width:1000px),(pointer:coarse){
