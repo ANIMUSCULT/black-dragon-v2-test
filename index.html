@@ -463,7 +463,10 @@ body.idle .hud{transition:opacity 2.5s}
 #bHide{grid-column:auto}
 #row2{grid-column:1/-1;display:flex;gap:12px;align-items:center;min-height:36px}
 #row2 #live{flex:1;min-width:0}
-.acts{display:flex;gap:6px;flex:none}.acts .pill{padding:7px 10px;min-height:32px;font-size:9px;white-space:nowrap}
+.acts{display:flex;gap:6px;flex:none}
+/* the strip of what is sounding gets a line of its own, so it never collapses into a tall column and steals height from the panels */
+#row2{flex-direction:column;align-items:stretch;gap:6px}#row2 #live{flex:none;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#row2 #live::-webkit-scrollbar{display:none}#row2 .lv,#row2 #live b{flex:none;white-space:nowrap}.acts{flex-wrap:wrap}
+@media (min-width:1001px){#pads{overflow-y:auto!important;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}}.acts .pill{padding:7px 10px;min-height:32px;font-size:9px;white-space:nowrap}
 .acts .pill::before{content:"";display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-2px;background-position:center;background-size:contain;background-repeat:no-repeat}
 #bHide::before{display:none}
 .rside{grid-template-columns:repeat(3,1fr)}

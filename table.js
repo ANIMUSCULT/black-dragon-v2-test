@@ -466,3 +466,51 @@ if(/[?&]diag\b/.test(location.search)){
         box.style.color=tot.late||tot.clip?'#fb6':'#9f9';box.style.borderColor=tot.late||tot.clip?'#c63':'#3a3';
         box.textContent=`audio health · ${br} · ${ctx.sampleRate} Hz · ${ctx.state}\nbuffer ${(ctx.baseLatency*1000||0).toFixed(1)} ms · output delay ${((ctx.outputLatency||0)*1000).toFixed(0)} ms\nlate deliveries  ${tot.late}   (longest gap ${tot.gap} ms)\nclipped samples  ${tot.clip}   peak now ${s.peak.toFixed(2)}\nsounds playing   ${Object.keys(act).length} world · ${Object.keys(held).length} keys\nrunning ${tot.sec} s`};
       setInterval(()=>h.port.postMessage(0),1000)}).catch(()=>{box.textContent='audio health · this browser would not start the probe'})},500)}
+
+/* ================= UMBRA: the hidden heart of the Universe stone =================
+   One button that builds a whole soundscape meant to feel like dark warmth and being held.
+   Everything in it is slow, low, soft-edged and consonant, which is what tender music has in common.
+   Built on the Venus tone (221.23 Hz, an orbit doubled until it can be heard) and its lower octave, 110.615 Hz. */
+{const VEN=221.23,ROOT=VEN/2,UMB=[
+   /* the ground: root, the octave below it, a fifth above. Two roots a tenth of a hertz apart swell once every ten seconds, the pace of a slow breath */
+   D([ROOT/2,ROOT,ROOT+.1,ROOT*1.5],.62,{w:'triangle',lp:700,wide:.5}),
+   /* the bloom: Venus, a pure third, a fifth and a ninth above it, each rising and fading on its own slow tide of 24 to 29 seconds */
+   D([VEN,VEN*1.25,VEN*1.5,VEN*2.25],.34,{wide:1.4,trem:[.035,.95]}),
+   /* the dark: low brown noise breathing with the ground */
+   B('brown',170,.5,{lfo:[.1,.35]}),
+   /* the heart: 54 beats a minute, a little slower than a heart at rest */
+   HB(54,.3,{f:58,d:.22}),
+   /* gravity: a soft tone that sinks one octave over ten seconds, now and then */
+   GL([22,16],[VEN,VEN],[.5],[9,12],.07,{w:'sine',lp:800}),
+   B('pink',900,.05,{ft:'bandpass',q:.7,lfo:[.05,.6]})],
+  b={id:'umbra',n:'umbra',cat:'universe stone',tag:TR,verb:1,env:'universe',lvl:.85,
+   info:'Umbra. The Venus tone and its lower octave, a breath every ten seconds, a heart at fifty-four. Dark warmth.',
+   gen:(ctx,out,L)=>UMB.forEach(s=>prim(ctx,out,L,structuredClone(s)))};
+ BANK.push(b);BK.umbra=b;
+ const st=document.createElement('style');st.textContent=`
+  .umbraBtn+.padg{height:auto!important}
+  .umbraBtn{display:block;width:100%;margin:0 0 8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,120,150,.45);cursor:pointer;position:relative;overflow:hidden;
+    font-family:var(--serif,serif);font-style:italic;font-size:18px;line-height:1.1;letter-spacing:.14em;color:#ffe3ea;text-shadow:0 0 14px rgba(255,70,120,.8);
+    background:radial-gradient(120% 160% at 50% 120%,rgba(255,60,110,.55),rgba(90,10,60,.55) 45%,rgba(8,4,14,.9) 80%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -10px 24px rgba(0,0,0,.6),0 0 18px rgba(200,30,90,.25)}
+  .umbraBtn::before{content:"";position:absolute;inset:-40%;background:radial-gradient(closest-side,rgba(255,90,140,.5),transparent 70%);animation:umbraPulse 10s ease-in-out infinite;pointer-events:none}
+  .umbraBtn small{display:block;font:9px var(--tech,sans-serif);font-style:normal;letter-spacing:.24em;opacity:.7;margin-top:3px;text-transform:uppercase}
+  .umbraBtn.on{border-color:#ff7fa6;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 34px rgba(255,60,120,.6)}
+  .umbraBtn.on::before{animation-duration:1.11s}
+  @keyframes umbraPulse{0%,100%{transform:scale(.6);opacity:.35}50%{transform:scale(1.15);opacity:.9}}
+  @media (prefers-reduced-motion:reduce){.umbraBtn::before{animation:none}}`;document.head.appendChild(st);
+ const umbIsOn=()=>'umbra' in S.layers;
+ const umbraOn=()=>{
+   if(!A.ctx)return;envPads('universe').forEach(k=>setLayer(k,null));
+   setState(STATES.findIndex(x=>x.id==='desire'));
+   Object.assign(S,{fc:+ROOT.toFixed(2),beat:.9,mode:'monaural',tone:.4,body:.45,air:0,close:0,space:.85,echo:.62,att:.72,rel:.8,tide:false,speed:.14,trails:.72,warp:.25,grain:.22,veil:.5,twist:0,mirrors:0});
+   $('#bTide').classList.remove('on');tun=TUN.findIndex(t=>t[0]==='pythagorean');$$('.tn').forEach((x,i)=>x.classList.toggle('on',i===tun));
+   setVoice(VOICES.indexOf('opium choir'));window.ENVCOL='#b1123c';paintDial();paintModes();paintKnobs();applyAll();setLayer('umbra',.6);
+   say('umbra · you are held')};
+ const umbraOff=()=>{setLayer('umbra',null);const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
+ const umbPaint=()=>{const u=$('#bUmbra');if(u)u.classList.toggle('on',umbIsOn())};
+ const b0=buildPads;buildPads=()=>{b0();if(ENV!=='universe')return;const u=document.createElement('button');u.id='bUmbra';u.className='umbraBtn';u.title='Umbra: one press builds the whole soundscape. Press again to release it.';
+    u.innerHTML='Umbra<small>dark warmth · held</small>';u.onclick=()=>{umbIsOn()?umbraOff():umbraOn();umbPaint()};$('#pads h3').after(u);umbPaint()};
+ const p0=paintPads;paintPads=()=>{p0();umbPaint()};
+ const s0=setEnv;setEnv=(id,start)=>{s0(id,start);if(ENV!=='universe'&&umbIsOn())setLayer('umbra',null)};
+ buildPads();paintPads()}
