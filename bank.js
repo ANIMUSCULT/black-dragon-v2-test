@@ -107,37 +107,37 @@ const BANK=[
  {id:'violet',n:'violet noise',cat:'coloured noise',tag:ME,lvl:0.8,gen:G.noise('violet'),info:'Energy rises 6 dB with each octave. The thinnest, highest hiss. Sometimes used to mask ringing in the ears.'},
  {id:'green',n:'green noise',cat:'coloured noise',tag:ME,gen:G.noise('pink',['bandpass',500,.7]),lvl:1.6,info:'Noise gathered around 500 Hz, the middle of the hearing range. An informal name; it sounds like open country.'},
  /* elements */
- {id:'rain',n:'rain',cat:'elements',tag:ME,lvl:2,gen:G.rain,info:'Water. A steady fall with single drops landing around you.'},
- {id:'ocean',n:'ocean',cat:'elements',tag:ME,lvl:1.6,gen:G.ocean,info:'Water. A wave about every twelve seconds, close to a slow breath.'},
- {id:'stream',n:'stream',cat:'elements',tag:ME,lvl:2.5,gen:G.stream,info:'Water. A quick shallow run over stones.'},
- {id:'wind',n:'wind',cat:'elements',tag:ME,lvl:1.8,gen:G.wind,info:'Air. Gusts that rise and fall, with a thin whistle on top.'},
- {id:'fire',n:'fire',cat:'elements',tag:ME,gen:G.fire,info:'Fire. A low roar and dry crackle.'},
- {id:'thunder',n:'thunder',cat:'elements',tag:ME,lvl:1.2,gen:G.thunder,info:'Air and fire. A strike somewhere around you every ten to twenty-five seconds.'},
- {id:'earth',n:'earth',cat:'elements',tag:ME,lvl:0.35,gen:G.earth,info:'Earth. A rumble under 70 Hz with a 32 Hz tone inside it. Felt more than heard; needs headphones or a subwoofer.'},
- {id:'drip',n:'cave drip',cat:'elements',tag:ME,verb:1,lvl:0.8,gen:G.drip,info:'Water. Single drops falling in a stone space.'},
- {id:'underwater',n:'underwater',cat:'elements',tag:ME,gen:G.underwater,info:'Water. The muffled pressure of being below the surface, with rising bubbles.'},
+ {id:'rain',n:'rain',cat:'elements',tag:'',lvl:2,gen:G.rain,info:'Water. A steady fall with single drops landing around you.'},
+ {id:'ocean',n:'ocean',cat:'elements',tag:'',lvl:1.6,gen:G.ocean,info:'Water. A wave about every twelve seconds, close to a slow breath.'},
+ {id:'stream',n:'stream',cat:'elements',tag:'',lvl:2.5,gen:G.stream,info:'Water. A quick shallow run over stones.'},
+ {id:'wind',n:'wind',cat:'elements',tag:'',lvl:1.8,gen:G.wind,info:'Air. Gusts that rise and fall, with a thin whistle on top.'},
+ {id:'fire',n:'fire',cat:'elements',tag:'',gen:G.fire,info:'Fire. A low roar and dry crackle.'},
+ {id:'thunder',n:'thunder',cat:'elements',tag:'',lvl:1.2,gen:G.thunder,info:'Air and fire. A strike somewhere around you every ten to twenty-five seconds.'},
+ {id:'earth',n:'earth',cat:'elements',tag:'',lvl:0.35,gen:G.earth,info:'Earth. A rumble under 70 Hz with a 32 Hz tone inside it. Felt more than heard; needs headphones or a subwoofer.'},
+ {id:'drip',n:'cave drip',cat:'elements',tag:'',verb:1,lvl:0.8,gen:G.drip,info:'Water. Single drops falling in a stone space.'},
+ {id:'underwater',n:'underwater',cat:'elements',tag:'',gen:G.underwater,info:'Water. The muffled pressure of being below the surface, with rising bubbles.'},
  /* living things */
- {id:'crickets',n:'crickets',cat:'living things',tag:ME,gen:G.crickets,lvl:.7,info:'Three crickets, each chirping at its own pace between 4.1 and 4.8 kHz.'},
- {id:'cicadas',n:'cicadas',cat:'living things',tag:ME,lvl:8,gen:G.cicadas,info:'A wall of summer insects near 6 kHz that swells and fades.'},
- {id:'birds',n:'birds',cat:'living things',tag:ME,lvl:2,gen:G.birds,info:'Short phrases of birdsong from different directions.'},
- {id:'heartbeat',n:'heartbeat',cat:'living things',tag:ME,gen:G.heartbeat(60),info:'Sixty beats a minute, a resting heart. Music near a resting pulse slows breathing and heart rate.'},
+ {id:'crickets',n:'crickets',cat:'living things',tag:'',gen:G.crickets,lvl:.7,info:'Three crickets, each chirping at its own pace between 4.1 and 4.8 kHz.'},
+ {id:'cicadas',n:'cicadas',cat:'living things',tag:'',lvl:8,gen:G.cicadas,info:'A wall of summer insects near 6 kHz that swells and fades.'},
+ {id:'birds',n:'birds',cat:'living things',tag:'',lvl:2,gen:G.birds,info:'Short phrases of birdsong from different directions.'},
+ {id:'heartbeat',n:'heartbeat',cat:'living things',tag:'',gen:G.heartbeat(60),info:'Sixty beats a minute, a resting heart. Music near a resting pulse slows breathing and heart rate.'},
  {id:'purr',n:'purr',cat:'living things',tag:TR,lvl:0.4,gen:G.purr,info:'A cat purrs near 25 to 50 Hz; this one sits at 27 Hz. The range said to help bone and tissue mend.'},
- {id:'womb',n:'womb',cat:'living things',tag:ME,gen:G.womb,info:'A muffled rush of blood and a heartbeat at 68 a minute, as heard from inside.'},
+ {id:'womb',n:'womb',cat:'living things',tag:'',gen:G.womb,info:'A muffled rush of blood and a heartbeat at 68 a minute, as heard from inside.'},
  {id:'breath',n:'slow breath',cat:'living things',tag:ST,lvl:2,gen:G.breath,info:'In and out six times a minute. Breathing at this pace is the best supported way to calm the body. Breathe with it.'},
- {id:'chimes',n:'wind chimes',cat:'living things',tag:ME,lvl:1.6,gen:G.chimes,info:'Chimes struck at random, always in tune with the state.'},
+ {id:'chimes',n:'wind chimes',cat:'living things',tag:'',lvl:1.6,gen:G.chimes,info:'Chimes struck at random, always in tune with the state.'},
  {id:'bowls',n:'bowl bath',cat:'living things',tag:TR,gen:G.bowls,verb:1,info:'Singing bowls struck every few seconds, tuned to the carrier. Listeners report lower tension after bowl sessions.'},
  {id:'om',n:'om',cat:'living things',tag:TR,gen:G.om,verb:1,lvl:.6,info:'A low chanted drone at 136.1 Hz, the pitch sitar and tanpura players tune Om to.'},
- {id:'frogs',n:'frogs',cat:'living things',tag:ME,lvl:0.35,gen:G.frogs,info:'Two frogs calling across a pond.'},
- {id:'owl',n:'owl',cat:'living things',tag:ME,verb:1,lvl:.9,gen:G.owl,info:'An owl calls every ten to fifteen seconds.'},
- {id:'wolf',n:'wolf',cat:'living things',tag:ME,verb:1,lvl:.7,gen:G.glide([[0,290],[.9,470],[1.6,455],[1.1,330]],[14,12],.35),info:'A long howl, far off, every so often.'},
- {id:'whale',n:'whale',cat:'living things',tag:ME,verb:1,lvl:.9,gen:G.glide([[0,120],[1.6,250],[1.4,170],[1.2,95]],[9,9],.5),info:'Slow sliding calls like a humpback, low in the hearing range.'},
- {id:'bees',n:'bees',cat:'living things',tag:ME,lvl:.6,gen:G.bees,info:'A hive: three drifting tones near 200 Hz with a fast flutter.'},
+ {id:'frogs',n:'frogs',cat:'living things',tag:'',lvl:0.35,gen:G.frogs,info:'Two frogs calling across a pond.'},
+ {id:'owl',n:'owl',cat:'living things',tag:'',verb:1,lvl:.9,gen:G.owl,info:'An owl calls every ten to fifteen seconds.'},
+ {id:'wolf',n:'wolf',cat:'living things',tag:'',verb:1,lvl:.7,gen:G.glide([[0,290],[.9,470],[1.6,455],[1.1,330]],[14,12],.35),info:'A long howl, far off, every so often.'},
+ {id:'whale',n:'whale',cat:'living things',tag:'',verb:1,lvl:.9,gen:G.glide([[0,120],[1.6,250],[1.4,170],[1.2,95]],[9,9],.5),info:'Slow sliding calls like a humpback, low in the hearing range.'},
+ {id:'bees',n:'bees',cat:'living things',tag:'',lvl:.6,gen:G.bees,info:'A hive: three drifting tones near 200 Hz with a fast flutter.'},
  /* the room */
- {id:'vinyl',n:'vinyl crackle',cat:'the room',tag:ME,lvl:.7,gen:G.vinyl,info:'Surface noise from a turning record.'},
- {id:'clock',n:'clock',cat:'the room',tag:ME,lvl:1,gen:G.clock,info:'One tick a second. A steady point for the eyes-closed mind to hold.'},
- {id:'toll',n:'bell toll',cat:'the room',tag:ME,verb:1,lvl:.8,gen:G.toll,info:'A church bell every eight to eleven seconds, with the minor third that gives bells their sorrow, tuned to the carrier.'},
- {id:'static',n:'radio static',cat:'the room',tag:ME,lvl:.6,gen:G.static,info:'The hiss between stations, with stray whistles drifting through.'},
- {id:'geiger',n:'geiger counter',cat:'the room',tag:ME,lvl:1,gen:G.geiger,info:'Random clicks whose rate slowly rises and falls.'},
+ {id:'vinyl',n:'vinyl crackle',cat:'the room',tag:'',lvl:.7,gen:G.vinyl,info:'Surface noise from a turning record.'},
+ {id:'clock',n:'clock',cat:'the room',tag:'',lvl:1,gen:G.clock,info:'One tick a second. A steady point for the eyes-closed mind to hold.'},
+ {id:'toll',n:'bell toll',cat:'the room',tag:'',verb:1,lvl:.8,gen:G.toll,info:'A church bell every eight to eleven seconds, with the minor third that gives bells their sorrow, tuned to the carrier.'},
+ {id:'static',n:'radio static',cat:'the room',tag:'',lvl:.6,gen:G.static,info:'The hiss between stations, with stray whistles drifting through.'},
+ {id:'geiger',n:'geiger counter',cat:'the room',tag:'',lvl:1,gen:G.geiger,info:'Random clicks whose rate slowly rises and falls.'},
  {id:'schumann',n:'7.83 pulse',cat:'the room',tag:TR,lvl:.6,gen:G.pulse(100,7.83),info:'A 100 Hz tone switched 7.83 times a second, the measured resonance of the space between ground and sky. Tradition calls it the heartbeat of the planet.'},
  /* healing tones */
  ...SOLF.map(([hz,tx])=>({id:'t'+hz,n:hz+' Hz',cat:'solfeggio tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.35,info:`${hz} Hz, ${tx}. One of the solfeggio set. The tone is exact.`})),
@@ -310,7 +310,7 @@ function paintBank(){
     :'<p class="vh">Nothing in the mix. Choose sounds below; they layer under the keys.</p>';
   $('#bBank').textContent=ids.length?`sounds: ${ids.length} on`:'sounds';
 }
-function showInfo(id){const b=BK[id];$('#binfo').innerHTML=`<span class="tag ${b.tag}">${b.tag}</span> <b>${b.n}</b><br>${b.info}`}
+function showInfo(id){const b=BK[id];$('#binfo').innerHTML=(b.tag?`<span class="tag ${b.tag}">${b.tag}</span> `:'')+`<b>${b.n}</b>`+(b.info?`<br>${b.info}`:'')}
 function buildBank(){
   /* the held tones live in the healing table; their copies stay in BANK for presets and states but are not listed twice */
   const HIDE=new Set(['solfeggio tones','planetary tones','chakra tones','bodywork tones','brainwave pulses']),SHOWN=BANK.filter(b=>!HIDE.has(b.cat));
@@ -326,7 +326,7 @@ function buildPresets(){
   $('#presets').onclick=e=>{const b=e.target.closest('.pb');if(b)applyPreset(+b.dataset.i)};
 }
 function buildCodex(){
-  const tg=t=>`<span class="tag ${t}">${t}</span>`;
+  const tg=t=>t?`<span class="tag ${t}">${t}</span>`:'';
   $('#codex').innerHTML=`<h3>Codex</h3>
   <p>Every number on this instrument is exact and can be checked with any tuner or analyser. What has been measured or studied carries a mark.</p>
   <p>${tg(ME)} A physical fact about the sound.<br>${tg(ST)} Explored in published research.</p>
@@ -341,7 +341,7 @@ function buildCodex(){
   <p>The lens holds a magic square: a grid of the numbers from 1 upward in which every row, column and diagonal adds to the same total. Renaissance magicians gave one to each of the seven planets, from Saturn at 3 by 3 (total 15) to the Moon at 9 by 9 (total 369). The Sun's is 6 by 6; its rows add to 111 and the whole square to 666.</p>
   <p>Tap the lens to change planet. Hold it and the instrument walks the square in counting order, 1, 2, 3 and on, turning each position into a note. The line it draws is the kind of path from which planetary seals were made. The squares here are true magic squares built by standard methods; the row totals are exact.</p>
   <h4>The states</h4>`+STATES.map(s=>`<p>${tg(s.tag)} <b>${s.name}</b>, ${s.beat} Hz on ${s.fc} Hz. ${s.note}</p>`).join('')
-  +group(BANK,b=>b.cat,b=>`<p>${tg(b.tag)} <b>${b.n}</b>. ${b.info}</p>`).replace(/class="vg"/g,'')
+  +group(BANK,b=>b.cat,b=>`<p>${tg(b.tag)} <b>${b.n}</b>${b.info?'. '+b.info:''}</p>`).replace(/class="vg"/g,'')
   +`<h4>Volume</h4><p>Quiet works. Keep it at the level of a soft voice, and take the headphones off if your ears ring.</p>`;
 }
 
