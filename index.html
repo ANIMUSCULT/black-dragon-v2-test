@@ -914,19 +914,46 @@ function initAudio(){
   const lim=ctx.createDynamicsCompressor();lim.threshold.value=-12;lim.knee.value=9;lim.ratio.value=14;lim.attack.value=.002;lim.release.value=.22;
   /* a true ceiling: the compressor rides the level, then a soft curve guarantees nothing ever leaves above full scale */
   const ceil=ctx.createWaveShaper(),cv=new Float32Array(4097),T=.62,L=.97;for(let i=0;i<4097;i++){const x=(i-2048)/2048*3,a=Math.abs(x);cv[i]=Math.sign(x)*(a<=T?a:T+(L-T)*Math.tanh((a-T)/(L-T)))}
-  const pre=ctx.createGain();pre.gain.value=.68/3;/* .68 cancels the extra make-up gain of the firmer compressor, so quiet material sits where it did */const post=ctx.createGain();post.gain.value=1;ceil.curve=cv;ceil.oversample=MOBILE?'2x':'4x';A.out=post;A.limTrim=pre;
+  const pre=ctx.createGain();pre.gain.value=.68/3;/* .68 cancels the extra make-up gain of the firmer compressor, so quiet material sits where it did */const post=ctx.createGain();post.gain.value=1;ceil.curve=cv;ceil.oversample=MOBILE?'2x':'4x';A.out=post;A.limTrim=pre;A.ceil=ceil;
   A.vol=ctx.createGain();A.vol.gain.value=S.vol;A.master.connect(lim).connect(pre).connect(ceil).connect(post).connect(A.vol).connect(ctx.destination);
+  /* a look-ahead limiter between the trim and the ceiling: it sees each peak 5 ms early and turns it down smoothly, so the
+     soft ceiling below is a safety net and loud moments stay clean instead of saturating. Stereo-linked, ceiling just under
+     the curve's knee; if the browser cannot run it, the chain stays as it was */
+  if(ctx.audioWorklet){const src=`class L extends AudioWorkletProcessor{constructor(){super();this.la=Math.max(16,Math.round(sampleRate*.005));this.n=this.la+256;
+      this.b=[new Float32Array(this.n),new Float32Array(this.n)];this.qv=new Float32Array(this.n);this.qi=new Int32Array(this.n);this.qh=0;this.qt=0;this.t=0;this.w=0;this.g=1;this.c=.24;
+      this.att=1-Math.exp(-4/this.la);this.rel=1-Math.exp(-1/(sampleRate*.2))}
+    process(i,o){const I=i[0],O=o[0];if(!I||!I.length)return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],n=this.n,la=this.la;
+      for(let k=0;k<l.length;k++){const w=this.w;this.b[0][w]=l[k];this.b[1][w]=r[k];const v=Math.max(Math.abs(l[k]),Math.abs(r[k])),t=this.t++;
+        while(this.qt>this.qh&&this.qv[(this.qt-1)%n]<=v)this.qt--;this.qv[this.qt%n]=v;this.qi[this.qt%n]=t;this.qt++;while(this.qi[this.qh%n]<t-la)this.qh++;const m=this.qv[this.qh%n];
+        const tg=m>this.c?this.c/m:1;this.g+=(tg-this.g)*(tg<this.g?this.att:this.rel);const rd=(w-la+n)%n;ol[k]=this.b[0][rd]*this.g;or[k]=this.b[1][rd]*this.g;this.w=(w+1)%n}
+      return true}}registerProcessor('bd-look',L);`;
+    ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'application/javascript'}))).then(()=>{
+      const lk=new AudioWorkletNode(ctx,'bd-look',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2]});pre.disconnect(ceil);pre.connect(lk).connect(ceil);A.look=lk}).catch(()=>{})}
   A.toneBus=ctx.createGain();A.toneBus.connect(A.master);const split=ctx.createChannelSplitter(2);A.toneBus.connect(split);
   A.anM=ctx.createAnalyser();A.anM.fftSize=32768;A.anM.smoothingTimeConstant=.6;lim.connect(A.anM);A.bufM=new Float32Array(A.anM.frequencyBinCount);
   A.anL=ctx.createAnalyser();A.anR=ctx.createAnalyser();
   for(const [an,ch] of [[A.anL,0],[A.anR,1]]){an.fftSize=32768;an.smoothingTimeConstant=.6;split.connect(an,ch)}
   A.bufL=new Float32Array(A.anL.frequencyBinCount);A.bufR=new Float32Array(A.anR.frequencyBinCount);
-  /* space: a stone hall. Early slaps, then a tail that darkens as it dies */
-  const len=sr*(MOBILE?2.4:5.5)|0,ir=ctx.createBuffer(2,len,sr);
-  for(let c=0;c<2;c++){const d=ir.getChannelData(c);let y=0;
-    for(let i=0;i<len;i++){const k=i/len,a=.06+.9*Math.exp(-k*6);y+=a*((Math.random()*2-1)-y);d[i]=y*Math.pow(1-k,2.3)*2.4}
-    for(let e=0;e<9;e++){const at=(.006+Math.random()*.085)*sr|0;d[at]+=(Math.random()<.5?-1:1)*(.9-e*.07)}}
-  A.verb=ctx.createConvolver();A.verb.buffer=ir;A.wet=ctx.createGain();A.verb.connect(A.wet).connect(A.master);
+  /* space: four rooms the space knob opens onto. Each is built so the highs die away faster than the lows, as in a real
+     room, with its own early reflections and pre-delay; the cathedral is the measured nave of York Minster. A.verb is the
+     send every voice already feeds; rooms crossfade behind it so changing one never clicks */
+  A.verb=ctx.createGain();A.wet=ctx.createGain();A.wet.connect(A.master);A.room=null;
+  const ROOMS={hall:{n:'stone hall',rt:3.2,pre:.018,dark:.55,er:[9,.085],len:5.5},chamber:{n:'chamber',rt:1.15,pre:.007,dark:.75,er:[14,.035],len:2},
+    cave:{n:'cave',rt:4.6,pre:.034,dark:.28,er:[6,.16],len:6.5},cathedral:{n:'cathedral',file:'media/audio/york-minster.wav'}};
+  A.ROOMS=ROOMS;
+  const makeIR=R=>{const len=Math.min(R.len,MOBILE?3:R.len),n=sr*len|0,ir=ctx.createBuffer(2,n,sr),pd=R.pre*sr|0;
+    for(let c=0;c<2;c++){const d=ir.getChannelData(c);let y=0,z=0;
+      for(let i=pd;i<n;i++){const t=(i-pd)/sr,env=Math.exp(-6.91*t/R.rt),fc=Math.min(.95,(.55+.4*R.dark)*Math.exp(-t*(2.2-1.6*R.dark))),w=Math.random()*2-1;
+        y+=fc*(w-y);z+=.5*fc*(y-z);d[i]=(y*.7+z*.3)*env*Math.pow(1-(i-pd)/(n-pd),1.5)}
+      for(let e=0;e<R.er[0];e++){const at=pd+((.004+Math.random()*R.er[1])*sr|0);if(at<n)d[at]+=(Math.random()<.5?-1:1)*(.8-e*.6/R.er[0])*(c?.9:1)}}
+    return ir};
+  const irCache={};
+  const loadRoom=id=>irCache[id]||(irCache[id]=ROOMS[id].file?fetch(ROOMS[id].file).then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)):Promise.resolve(makeIR(ROOMS[id])));
+  A.setRoom=id=>{if(!ROOMS[id])id='hall';return loadRoom(id).then(buf=>{const cv=ctx.createConvolver(),g=ctx.createGain(),t=ctx.currentTime;cv.buffer=buf;g.gain.value=0;
+      A.verb.connect(cv);cv.connect(g).connect(A.wet);g.gain.setTargetAtTime(1,t,.25);const old=A.room;A.room={id,cv,g};
+      if(old){old.g.gain.setTargetAtTime(0,t,.25);setTimeout(()=>{try{A.verb.disconnect(old.cv)}catch(_){}try{old.g.disconnect()}catch(_){}},1800)}return id})
+    .catch(()=>id==='hall'?null:A.setRoom('hall'))};
+  A.setRoom(S.room||'hall');
   /* echo for the played voice: two delays that feed each other across the head */
   A.echoIn=ctx.createGain();A.echoIn.gain.value=.28;
   const dl=ctx.createDelay(2),dr=ctx.createDelay(2),fl=ctx.createGain(),fr=ctx.createGain(),pl=ctx.createStereoPanner(),prr=ctx.createStereoPanner(),elp=ctx.createBiquadFilter();
@@ -1108,7 +1135,8 @@ function paintDial(){
   const d=beatDeg(S.beat),[sx,sy]=pol(186,A0),[ex,ey]=pol(186,d);
   $('#arc').setAttribute('d',`M${sx},${sy} A186,186 0 ${d-A0>180?1:0} 1 ${ex},${ey}`);
   $('#handle').setAttribute('transform',`translate(${ex},${ey})`);
-  $('#bHz').textContent=S.beat.toFixed(2);const band=BANDS.find(x=>S.beat<x[0]);$('#bandN').textContent=band[1];$('#bandD').textContent=band[2];
+  $('#bHz').textContent=S.beat.toFixed(2);/* in Desire a slow beat is a pulse of the body, so the dial names it by its count a minute */
+  const band=STATES[S.state].id==='desire'&&S.beat<2.5?[0,'Pulse',Math.round(S.beat*60)+' a minute']:BANDS.find(x=>S.beat<x[0]);$('#bandN').textContent=band[1];$('#bandD').textContent=band[2];
   $('#dial').setAttribute('aria-valuenow',S.beat.toFixed(2));
 }
 const dial=$('#dial');let dragging=false;
@@ -1168,6 +1196,22 @@ addEventListener('dragover',e=>e.preventDefault());addEventListener('drop',e=>{e
 const spec=$('#spec'),sx=spec.getContext('2d');
 function peak(buf,f0,span){const hz=A.ctx.sampleRate/A.anL.fftSize,a=Math.max(1,Math.round((f0-span)/hz)),b=Math.round((f0+span)/hz);let m=a;for(let i=a;i<=b;i++)if(buf[i]>buf[m])m=i;
   const y0=buf[m-1],y1=buf[m],y2=buf[m+1],d=(y0-y2)/(2*(y0-2*y1+y2)||1);return y1<-90?null:(m+clamp(d,-.5,.5))*hz}
+/* slow beats, under 5 Hz, sit closer together than the spectrum can split, so they are measured in time instead:
+   the loudness of the tone channel is read every frame and the rises of its swell are counted */
+function envTick(){
+  /* only while the beat pair is alone on the tone channel: a held tone beside it would colour the swell */
+  if(!A.ctx)return;const slow=S.mode!=='binaural'&&S.beat<5&&S.tone>.01&&!Object.keys(S.layers).some(id=>BK[id]&&BK[id].bus==='tone'),key=S.mode+S.beat+S.fc;
+  if(!slow){if(A.env)A.env.length=0;return}
+  if(!A.anE){A.anE=A.ctx.createAnalyser();A.anE.fftSize=2048;A.toneBus.connect(A.anE);A.bufE=new Float32Array(2048);A.env=[]}
+  if(A.envKey!==key){A.envKey=key;A.env.length=0}
+  A.anE.getFloatTimeDomainData(A.bufE);let e=0;for(let i=0;i<2048;i++)e+=A.bufE[i]*A.bufE[i];const t=A.ctx.currentTime;
+  A.env.push([t,Math.sqrt(e/2048)]);while(A.env.length&&t-A.env[0][0]>9)A.env.shift()}
+function envBeat(){
+  const e=A.env;if(!e||e.length<30)return null;let m=0,lo=1e9,hi=0;for(const x of e){m+=x[1];if(x[1]<lo)lo=x[1];if(x[1]>hi)hi=x[1]}m/=e.length;
+  /* too few readings for each swell to count them truly (a slow screen): show nothing rather than a wrong number */
+  if(m<1e-4||(hi-lo)<m*.2||(e[e.length-1][0]-e[0][0])/(e.length-1)*S.beat*5>1)return null;const arm=m-(hi-lo)*.15,c=[];let armed=false;
+  for(let i=1;i<e.length;i++){const a=e[i-1],b=e[i];if(b[1]<arm)armed=true;else if(armed&&a[1]<m&&b[1]>=m){c.push(a[0]+(b[0]-a[0])*(m-a[1])/(b[1]-a[1]));armed=false}}
+  return c.length<3?null:(c.length-1)/(c[c.length-1]-c[0])}
 let proofN=0;
 function proof(){
   if(!A.ctx)return;const nowP=performance.now();if(nowP-proofN<(MOBILE?330:120))return;proofN=nowP;
@@ -1178,8 +1222,8 @@ function proof(){
       $('#mL').textContent=f(l);$('#mR').textContent=f(r);$('#mD').textContent=l&&r?(r-l).toFixed(1):'–'}
     else if(S.mode==='monaural'){if(S.beat>=5){const sp=Math.min(S.beat/2-1,8),l=peak(A.bufL,S.fc,sp),r=peak(A.bufL,S.fc+S.beat,sp);lab('tone one','tone two','beat');
         $('#mL').textContent=f(l);$('#mR').textContent=f(r);$('#mD').textContent=l&&r?(r-l).toFixed(1):'–'}
-      else{lab('tones, merged','beat, as set','too close to split');$('#mL').textContent=f(peak(A.bufL,S.fc+S.beat/2,6));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent='–'}}
-    else{lab('carrier','pulse, as set','');$('#mL').textContent=f(peak(A.bufL,S.fc,2.5));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent='–'}
+      else{const b=envBeat();lab('tones, merged','beat, set','beat, measured');$('#mL').textContent=f(peak(A.bufL,S.fc+S.beat/2,6));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent=b?b.toFixed(2):'–'}}
+    else{const b=S.beat<5?envBeat():null;lab('carrier',S.beat<5?'pulse, set':'pulse, as set',S.beat<5?'pulse, measured':'');$('#mL').textContent=f(peak(A.bufL,S.fc,2.5));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent=b?b.toFixed(2):'–'}
   }
   if(window.PEARL)return;
   const W=spec.width,H=spec.height,hz=A.ctx.sampleRate/A.anL.fftSize,f1=20,f2=1200;sx.clearRect(0,0,W,H);
@@ -1257,7 +1301,7 @@ function frame(ms){
   if(A.ctx){const an=A.anM;an.getByteTimeDomainData(td);let e=0;for(let i=0;i<256;i++){const v=(td[i]-128)/128;e+=v*v}lvl+=(Math.min(1,Math.sqrt(e/256)*3)-lvl)*.08;
     if(S.breath){const ph=((A.ctx.currentTime-A.breathT0)*.1)%1;breath=.5-.5*Math.cos(ph*2*Math.PI);$('#breathRing').setAttribute('r',70+breath*62);$('#breathRing').setAttribute('opacity',.35+breath*.5)}
     else $('#breathRing').setAttribute('opacity',0);
-    proof()}
+    envTick();proof()}
   pluck*=.94;vt+=window.FREEZE?0:dt*(.08+S.speed*2.3);descentTick(ms);
   gl.useProgram(pr);gl.bindFramebuffer(gl.FRAMEBUFFER,fbo[cur].f);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,fbo[1-cur].t);gl.uniform1i(U.pv,0);gl.uniform1f(U.fb,S.trails);
   gl.uniform2f(U.r,cv.width,cv.height);gl.uniform1f(U.t,vt);gl.uniform1f(U.lvl,lvl);gl.uniform1f(U.br,breath);gl.uniform1f(U.md,window.VMODE!=null?window.VMODE:s.vis);
@@ -1341,9 +1385,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1126r"></script>
-<script src="env.js?v=1126r"></script>
-<script src="table.js?v=1126r"></script>
-<script src="luxuria.js?v=1126r"></script>
+<script src="bank.js?v=1126s"></script>
+<script src="env.js?v=1126s"></script>
+<script src="table.js?v=1126s"></script>
+<script src="luxuria.js?v=1126s"></script>
 </body>
 </html>

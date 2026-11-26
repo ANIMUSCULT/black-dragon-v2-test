@@ -18,7 +18,7 @@ const HBANKS=[
   t:[[126.22,'sun'],[210.42,'moon'],[141.27,'mercury'],[221.23,'venus'],[194.18,'earth day'],[136.1,'earth year'],[144.72,'mars'],[183.58,'jupiter'],[147.85,'saturn'],[207.36,'uranus'],[211.44,'neptune'],[172.06,'platonic year']]},
  {n:'brainwave',tag:ST,beat:1,note:'These set the beat, not a tone: a carrier at 136.1 Hz with the two ears set apart by the number shown. Pooled trials found effects on attention, memory, pain and anxiety.',
   t:[[.5,'delta, deepest'],[1.5,'delta'],[3,'delta'],[4.5,'theta'],[6,'theta'],[7.83,'schumann'],[10,'alpha'],[12,'alpha'],[14,'smr'],[18,'beta'],[25,'beta'],[40,'gamma']]},
- {n:'chakra',tag:TR,note:'Seven solfeggio tones mapped to the seven centres of the body, with Om beneath.',
+ {n:'chakra',tag:TR,note:'Seven solfeggio tones mapped to the seven centres of the body, with Om beneath. The sounds drawer holds the other mapping, a scale built on C at 256 Hz.',
   t:[[396,'root'],[417,'sacral'],[528,'solar plexus'],[639,'heart'],[741,'throat'],[852,'third eye'],[963,'crown'],[136.1,'om']]},
  {n:'body',tag:ST,note:'Low tones used on the body rather than the ear. 40 Hz sound drove matching brain rhythms in MIT trials and eased fibromyalgia in one study. The Otto forks are pressed to bone by bodyworkers. Nogier used his seven frequencies in ear acupuncture. Felt best through a subwoofer or good headphones.',
   t:[[40,'gamma, vibro'],[52,'vibro'],[68,'vibro'],[86,'vibro'],[32,'otto'],[64,'otto'],[128,'otto'],[73,'nogier f'],[146,'nogier g'],[292,'nogier a'],[584,'nogier b'],[1168,'nogier c']]}
@@ -1041,3 +1041,9 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
 
 /* descent is the same glide as Journey; its button shows only while a glide is running, as the countdown and the way to stop it */
 {const bd=$('#bDescent');if(bd){const sync=()=>{bd.hidden=!desc};sync();setInterval(sync,500)}}
+
+/* the room the space knob opens onto: stone hall, chamber, cave, or the measured nave of York Minster */
+{const kt=$('.ktabs');if(kt){const ORD=['hall','chamber','cave','cathedral'],b=document.createElement('button');b.className='pill mini';b.id='bRoom';
+  const label=()=>{b.textContent='room · '+((A.ROOMS&&A.ROOMS[S.room||'hall'])||{n:'stone hall'}).n};label();b.title='Choose the room the space dial opens onto';kt.append(b);
+  b.onclick=()=>{const nx=ORD[(ORD.indexOf(S.room||'hall')+1)%ORD.length];S.room=nx;label();if(A.setRoom)A.setRoom(nx);say('room · '+((A.ROOMS&&A.ROOMS[nx])||{}).n+(S.space<.05?' · turn up space to hear it':''))};
+  setInterval(()=>{if(A.room&&A.room.id!==(S.room||'hall')&&A.setRoom)A.setRoom(S.room||'hall');label()},2000)}}

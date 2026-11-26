@@ -137,6 +137,8 @@ const st=document.createElement('style');st.textContent=`
   .lxSet b{font-family:var(--tech,serif);font-weight:400;min-width:1.6em;text-align:right}
   .lxSet .lxLen{display:flex;gap:3px}.lxSet .lxLen button{font:10px var(--tech,serif);padding:4px 7px;border-radius:6px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);color:#d8c9cf;cursor:pointer;min-height:24px}
   .lxSet .lxLen button.on{border-color:#ff7fa6;color:#fff;background:rgba(255,45,115,.28)}
+  /* on a short desktop window the stone panel is only a few rows tall: let the right column scroll so the pads stay in reach under the two buttons */
+  @media (min-width:1001px) and (pointer:fine){#shellR:has(.lxRow){overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}#shellR:has(.lxRow)>#proof{flex:none}#shellR:has(.lxRow)>#pads{flex:none;overflow:visible!important}}
   @media (max-width:1000px),(pointer:coarse){.lxBtn{padding:12px 8px}.lxSet{flex-wrap:wrap}.lxSet .lxLen button{min-height:36px;padding:6px 12px}.lxSet input[type=range]{height:34px}}`;
 document.head.appendChild(st);
 const spOn=()=>'spiritus' in S.layers,bpm=()=>Math.round(600/BC.P0)/10;

@@ -146,7 +146,7 @@ const BANK=[
  {id:'t40',n:'40 Hz',cat:'single tones',tag:ST,bus:'tone',hz:40,gen:G.tone(40),lvl:.6,info:'40 Hz. Sound and light at this rate drove matching brain rhythms in MIT trials. Needs headphones.'},
  {id:'t19',n:'19 Hz',cat:'single tones',tag:ST,bus:'tone',hz:19,gen:G.tone(19),lvl:.8,info:'19 Hz, below hearing. Linked to unease and a sense of presence. Needs headphones or a subwoofer.'},
  ...PLAN.map(([nm,hz])=>({id:'p'+nm.replace(' ',''),n:nm+' '+hz,cat:'planetary tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.4,info:`${nm}, ${hz} Hz. The body's orbit or spin, doubled octave by octave until it can be heard (Cousto, 1978). The arithmetic is exact.`})),
- ...CHAK.map(([nm,hz],i)=>({id:'c'+(i+1),n:nm+' '+hz,cat:'chakra tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.35,info:`${hz} Hz, given to the ${nm} centre in the scale built on C at 256 Hz. A modern Western mapping, not an ancient one.`})),
+ ...CHAK.map(([nm,hz],i)=>({id:'c'+(i+1),n:nm+' '+hz,cat:'chakra tones',tag:TR,bus:'tone',hz,gen:G.tone(hz),lvl:.35,info:`${hz} Hz, given to the ${nm} centre in the scale built on C at 256 Hz. A modern Western mapping, not an ancient one. The healing table holds the other mapping of the centres, the solfeggio tones.`})),
  /* harmonies */
  {id:'fifth',n:'perfect fifth 2:3',cat:'harmonies',tag:ME,verb:1,lvl:0.65,gen:G.chord([1,1.5]),info:'Two tones in the ratio 2 to 3. The most stable interval after the octave; Pythagoras built his scale from it.'},
  {id:'fourth',n:'perfect fourth 3:4',cat:'harmonies',tag:ME,verb:1,lvl:0.6,gen:G.chord([1,4/3]),info:'Two tones in the ratio 3 to 4.'},

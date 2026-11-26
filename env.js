@@ -25,9 +25,10 @@ function prim(ctx,out,L,s){
     if(s.form){nd=ctx.createGain();[[730,1],[1090,.5],[2440,.2]].forEach(([ff,l])=>o.connect(bq(ctx,'bandpass',ff*s.form,7)).connect(gn(ctx,l*3)).connect(nd))}else{nd=bq(ctx,'lowpass',s.lp||2400);o.connect(nd)}
     if(s.am){const m=ctx.createOscillator(),mg=gn(ctx,g0*.6);m.type='sawtooth';m.frequency.value=s.am;m.connect(mg).connect(g.gain);m.start(tt);m.stop(tt+d+.6)}
     nd.connect(g).connect(p).connect(out);o.start(tt);o.stop(tt+d+.6)}});break}
-  case 'beat':{let next=0,bpm=s.bpm;L.every(60,t=>{if(t<next-.12)return;if(next<t)next=t+.05;const per=60/bpm;
+  case 'beat':{let next=0,bpm=s.bpm,dir=1;L.every(60,t=>{if(t<next-.12)return;if(next<t)next=t+.05;const per=60/bpm;
     (s.pat||[0]).forEach((off,i)=>ping(ctx,out,next+off*per,s.f*(i?.86:1),s.f*.55,s.d||.14,g0*(i?.7:1),0,.008));
-    if(s.acc){bpm+=s.acc[0];if(bpm>s.acc[1])bpm=s.bpm}next+=per});break}
+    /* quickens to the top, then eases back down more quickly than it rose, and begins again */
+    if(s.acc){bpm+=dir>0?s.acc[0]:-s.acc[0]*2.5;if(bpm>=s.acc[1])dir=-1;else if(bpm<=s.bpm){bpm=s.bpm;dir=1}}next+=per});break}
   case 'swell':{let next=0,side=1;L.every(100,t=>{if(t<next)return;const per=s.per[0]+Math.random()*(s.per[1]-s.per[0]);next=t+per;
     const d=per*(s.duty||.8),src=ctx.createBufferSource(),f=bq(ctx,s.ft||'bandpass',s.f[0],s.q||1),g=ctx.createGain(),p=ctx.createStereoPanner();src.buffer=NB[s.n||'pink'];
     f.frequency.setValueAtTime(s.f[0],t);f.frequency.linearRampToValueAtTime(s.f[1],t+d*.5);f.frequency.linearRampToValueAtTime(s.f[2]==null?s.f[0]:s.f[2],t+d);
