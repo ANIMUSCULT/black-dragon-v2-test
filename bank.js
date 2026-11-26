@@ -326,8 +326,8 @@ function buildPresets(){
 function buildCodex(){
   const tg=t=>`<span class="tag ${t}">${t}</span>`;
   $('#codex').innerHTML=`<h3>Codex</h3>
-  <p>Every number on this instrument is exact and can be checked with any tuner or analyser. Every sound carries one of three marks.</p>
-  <p>${tg(ME)} A physical fact about the sound.<br>${tg(ST)} Explored in published research.<br>${tg(TR)} An old or occult practice, handed down.</p>
+  <p>Every number on this instrument is exact and can be checked with any tuner or analyser. What has been measured or studied carries a mark.</p>
+  <p>${tg(ME)} A physical fact about the sound.<br>${tg(ST)} Explored in published research.</p>
   <h4>How the beat works</h4>
   <p><b>Binaural.</b> One tone in each ear, a few hertz apart. The beat is made inside the head, so it needs headphones. It only works with tones under about 1,000 Hz.</p>
   <p><b>Monaural.</b> Both tones in both ears. The beat is in the air and drives the brain harder in EEG studies.</p>
@@ -336,7 +336,7 @@ function buildCodex(){
   <p><b>Delta, 0.5 to 4 Hz.</b> Deep sleep.<br><b>Theta, 4 to 8 Hz.</b> Drowsy, dreamlike, the edge of sleep.<br><b>Alpha, 8 to 13 Hz.</b> Calm and awake, eyes soft.<br><b>Beta, 13 to 30 Hz.</b> Alert, thinking.<br><b>Gamma, 30 Hz and up.</b> Sharp focus.</p>
   <p>Choose a band, set the beat inside it and stay. Give any state at least ten minutes.</p>
   <h4>The Monad</h4>
-  <p><span class="tag tradition">tradition</span> The lens holds a magic square: a grid of the numbers from 1 upward in which every row, column and diagonal adds to the same total. Renaissance magicians gave one to each of the seven planets, from Saturn at 3 by 3 (total 15) to the Moon at 9 by 9 (total 369). The Sun's is 6 by 6; its rows add to 111 and the whole square to 666.</p>
+  <p>The lens holds a magic square: a grid of the numbers from 1 upward in which every row, column and diagonal adds to the same total. Renaissance magicians gave one to each of the seven planets, from Saturn at 3 by 3 (total 15) to the Moon at 9 by 9 (total 369). The Sun's is 6 by 6; its rows add to 111 and the whole square to 666.</p>
   <p>Tap the lens to change planet. Hold it and the instrument walks the square in counting order, 1, 2, 3 and on, turning each position into a note. The line it draws is the kind of path from which planetary seals were made. The squares here are true magic squares built by standard methods; the row totals are exact.</p>
   <h4>The states</h4>`+STATES.map(s=>`<p>${tg(s.tag)} <b>${s.name}</b>, ${s.beat} Hz on ${s.fc} Hz. ${s.note}</p>`).join('')
   +group(BANK,b=>b.cat,b=>`<p>${tg(b.tag)} <b>${b.n}</b>. ${b.info}</p>`).replace(/class="vg"/g,'')
