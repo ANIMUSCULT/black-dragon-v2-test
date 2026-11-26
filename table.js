@@ -34,11 +34,10 @@ function healToggle(hz){const b=HBANKS[hbank];
 function paintHeal(){const b=HBANKS[hbank];$$('#heal .hb').forEach(x=>{const hz=+x.dataset.hz;x.classList.toggle('on',b.beat?Math.abs(S.beat-hz)<.005:hid(hz) in S.layers)});
   $$('#heal .bk').forEach((x,i)=>x.classList.toggle('on',i===hbank));$$('#heal .rc').forEach((x,i)=>x.classList.toggle('on',i===recipe))}
 function buildHeal(){const b=HBANKS[hbank],el=$('#heal'),keep=el.querySelector('.dclose');
-  el.innerHTML=`<h3>Healing table</h3><p class="vh">Five banks of held tones. Press a tone to hold it; press again to let go. Hold as many as you like. Every held tone is measured in the Proof panel.</p>
+  el.innerHTML=`<h3>Healing table</h3>
   <div class="vg">${HBANKS.map((x,i)=>`<button class="vb bk" data-i="${i}">${x.n}</button>`).join('')}</div>
-  <div class="note">${tg(b.tag)} ${b.note}</div>
   <div class="hgrid">${b.t.map(([hz,nm])=>`<button class="hb" data-hz="${hz}"><b>${hz}</b><span>${nm}</span></button>`).join('')}</div>
-  ${b.beat?'':`<h4>Tone recipe</h4><div class="vg">${RECIPES.map((r,i)=>`<button class="vb rc" data-i="${i}" title="${r[1]}">${r[0]}</button>`).join('')}</div><p class="vh" id="rcNote" style="margin-top:8px">${RECIPES[recipe][1]}</p>`}
+  ${b.beat?'':`<h4>Tone recipe</h4><div class="vg">${RECIPES.map((r,i)=>`<button class="vb rc" data-i="${i}">${r[0]}</button>`).join('')}</div>`}
   <button class="vb" id="hClear" style="margin-top:14px">let go of every tone</button>`;
   el.prepend(keep);paintHeal()}
 $('#heal').addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
@@ -123,10 +122,14 @@ const TRANCE=[
   st:[[4,136.1,[12,7],'binaural',{vm:2,twist:.5,speed:.7,layers:{shepard:.3,'e:underworld:14':.4},script:['Is it rising\nor falling?','Follow both.','You cannot.','Stop trying.']}],[6,136.1,[7,4],'binaural',{breath:1,dim:.1,vm:4,script:['Stillness.','There is nothing\nto follow now.','Rest in it.']}]]}
 ];
 function buildProgs(id,title,intro,list){const el=$('#'+id),keep=el.querySelector('.dclose');
-  el.innerHTML=`<h3>${title}</h3><p class="vh">${intro}</p><div class="vg" style="margin:8px 0 4px">${[[.5,'short'],[1,'full'],[2,'long']].map(([m,l])=>`<button class="vb pl${m===plen?' on':''}" data-m="${m}">${l}</button>`).join('')}</div>`
-    +list.map((p,i)=>{const t=p.st.reduce((a,s)=>a+s[0],0);return `<div class="prow"><div><b>${p.n}</b> <span class="vh">${Math.round(t*plen)} min</span><p>${tg(p.tag)}${p.why}</p></div><button class="vb prun" data-l="${id}" data-i="${i}">begin</button></div>`}).join('');
+  el.innerHTML=`<h3>${title}</h3>${intro?`<p class="vh">${intro}</p>`:''}<div class="vg" style="margin:8px 0 4px">${[[.5,'short'],[1,'full'],[2,'long']].map(([m,l])=>`<button class="vb pl${m===plen?' on':''}" data-m="${m}">${l}</button>`).join('')}</div>`
+    +list.map((p,i)=>{const t=p.st.reduce((a,s)=>a+s[0],0);
+      /* the healing programs show only their name and the numbers they play: the beat in hertz, then any held tones */
+      if(id==='body'){const bs=[...new Set(p.st.flatMap(s=>Array.isArray(s[2])?s[2]:[s[2]]))],ts=[...new Set(p.st.flatMap(s=>(s[4]&&s[4].tones)||[]))];
+        return `<div class="prow"><div><b>${p.n}</b> <span class="vh">${bs.join(' → ')} Hz${ts.length?' · '+ts.join(', ')+' Hz':''} · ${Math.round(t*plen)} min</span></div><button class="vb prun" data-l="${id}" data-i="${i}">begin</button></div>`}
+      return `<div class="prow"><div><b>${p.n}</b> <span class="vh">${Math.round(t*plen)} min</span><p>${tg(p.tag)}${p.why}</p></div><button class="vb prun" data-l="${id}" data-i="${i}">begin</button></div>`}).join('');
   el.prepend(keep)}
-function buildAllProgs(){buildProgs('body','Body programs','Timed sessions that change the beat, hold tones, pace the breath and put words in the glass. Each tells you where it comes from.',BODY);
+function buildAllProgs(){buildProgs('body','Body programs','',BODY);
   buildProgs('trance','Extasis','Hypnotic inductions built from how hypnotists actually work. The words appear in the glass; follow them. Headphones, a dark room, alone.',TRANCE)}
 ['body','trance'].forEach(id=>$('#'+id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.classList.contains('pl')){plen=+b.dataset.m;buildAllProgs()}else if(b.classList.contains('prun'))runProg((b.dataset.l==='body'?BODY:TRANCE)[+b.dataset.i],b)}));
@@ -1035,3 +1038,6 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
   const stopAll=()=>{VW.hold=false;VW.on=false;level(0);paintB();label()};
   const baseLive3=liveList;liveList=function(){const R=baseLive3();if(VW.hold||VW.on)R.push(['vowels',stopAll]);return R};
   const baseReset3=resetAll;resetAll=function(){stopAll();return baseReset3.apply(this,arguments)}}
+
+/* descent is the same glide as Journey; its button shows only while a glide is running, as the countdown and the way to stop it */
+{const bd=$('#bDescent');if(bd){const sync=()=>{bd.hidden=!desc};sync();setInterval(sync,500)}}

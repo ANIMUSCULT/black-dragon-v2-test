@@ -312,8 +312,10 @@ function paintBank(){
 }
 function showInfo(id){const b=BK[id];$('#binfo').innerHTML=`<span class="tag ${b.tag}">${b.tag}</span> <b>${b.n}</b><br>${b.info}`}
 function buildBank(){
-  const el=$('#bank');el.innerHTML=`<p class="vh">${BANK.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
-    +group(BANK,b=>b.cat,b=>`<button class="vb lb" data-id="${b.id}">${b.n}</button>`)+'<button class="vb" id="bClear" style="margin-top:14px">clear the mix</button>';
+  /* the held tones live in the healing table; their copies stay in BANK for presets and states but are not listed twice */
+  const HIDE=new Set(['solfeggio tones','planetary tones','chakra tones','bodywork tones','brainwave pulses']),SHOWN=BANK.filter(b=>!HIDE.has(b.cat));
+  const el=$('#bank');el.innerHTML=`<p class="vh">${SHOWN.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
+    +group(SHOWN,b=>b.cat,b=>`<button class="vb lb" data-id="${b.id}">${b.n}</button>`)+'<button class="vb" id="bClear" style="margin-top:14px">clear the mix</button>';
   el.addEventListener('click',e=>{const b=e.target.closest('.lb'),off=e.target.dataset.off;if(off)return setLayer(off,null);if(e.target.id==='bClear')return clearLayers();
     if(b){const id=b.dataset.id;showInfo(id);setLayer(id,id in S.layers?null:.5)}});
   el.addEventListener('input',e=>{const id=e.target.dataset.id;if(id){S.layers[id]=+e.target.value;if(act[id])act[id].g.gain.setTargetAtTime(S.layers[id]*lyrLvl(id),A.ctx.currentTime,.05)}});
