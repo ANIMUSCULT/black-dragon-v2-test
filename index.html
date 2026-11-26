@@ -45,8 +45,8 @@ button:focus-visible,.knob:focus-visible,#dial:focus-visible{outline:2px solid v
 #transBar button.on{background:#d8f5ea;color:#05140f;border-color:#fff}
 @media (max-width:1000px),(pointer:coarse){#transBar{bottom:calc(76px + env(safe-area-inset-bottom,0px))}#transBar button{min-height:36px}body.transOpen .hud{opacity:0;pointer-events:none}}
 /* the sand plate: cymatics in real grains, seated in the centre dial or lifted out over the glass */
-#cym{position:fixed;pointer-events:none;border-radius:50%;background:radial-gradient(circle at 42% 34%,rgba(34,28,33,.9),rgba(8,6,10,.94) 62%,rgba(2,2,4,.96))}
-#cym.big{z-index:5;box-shadow:0 0 0 1px rgba(255,255,255,.22),0 0 70px rgba(0,0,0,.85)}
+#cym{position:fixed;pointer-events:none;border-radius:50%;background:radial-gradient(circle,rgba(0,0,0,.2),rgba(0,0,0,.14) 70%,rgba(0,0,0,.24))}
+#cym.big{z-index:5;box-shadow:0 0 0 1px rgba(255,255,255,.28),0 0 50px rgba(0,0,0,.45)}
 #cymBar{position:fixed;z-index:6;left:50%;transform:translateX(-50%);display:flex;flex-wrap:nowrap;justify-content:center;align-items:center;gap:5px;max-width:94vw;white-space:nowrap;
   font:10px var(--tech,sans-serif);letter-spacing:.1em;color:#ffd9a0;background:rgba(0,0,0,.55);border:1px solid rgba(255,180,84,.35);border-radius:14px;padding:5px 6px 5px 12px;backdrop-filter:blur(10px)}
 #cymBar.big{bottom:150px}
@@ -1288,8 +1288,8 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1126a"></script>
-<script src="env.js?v=1126a"></script>
-<script src="table.js?v=1126a"></script>
+<script src="bank.js?v=1126b"></script>
+<script src="env.js?v=1126b"></script>
+<script src="table.js?v=1126b"></script>
 </body>
 </html>
