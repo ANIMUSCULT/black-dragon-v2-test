@@ -361,12 +361,41 @@ let SLOTS=[null,null,null];try{const v=JSON.parse(localStorage.getItem('bd2-slot
     window.VMODE=Math.random()*6|0;paintKnobs();applyAll();say('dice · the vision is thrown')};
   const fz=mk('bFreeze','freeze','Hold the vision still');fz.onclick=()=>{window.FREEZE=!window.FREEZE;fz.classList.toggle('on',!!window.FREEZE);say(window.FREEZE?'freeze · the vision is held':'freeze off')}}
 
+/* ================= the sigil scope: the tone channel as a phosphor beam over the glass =================
+   Left ear moves the beam across, right ear moves it up. Exact ratios hold still; a binaural pair rolls at the beat.
+   It only listens: its own splitter and two small analysers on the tone channel, made once the sound has started. */
+let TAP=null;const SL=new Float32Array(2048),SR=new Float32Array(2048);
+function sigilTap(){if(TAP)return TAP;if(!A.ctx||!A.toneBus)return null;
+  const sp=A.ctx.createChannelSplitter(2),l=A.ctx.createAnalyser(),r=A.ctx.createAnalyser();l.fftSize=r.fftSize=2048;A.toneBus.connect(sp);sp.connect(l,0);sp.connect(r,1);return TAP={l,r}}
+{const c=$('#sigil'),x=c.getContext('2d'),close=$('#sigilX'),dprMax=MOBILE?1.5:2;let on=false,g=0,dpr=1;
+  const b=document.createElement('button');b.className='pill';b.id='bScope';b.textContent='sigil scope';
+  b.title='Draw the tone channel large over the glass as a phosphor beam: left ear across, right ear up. Exact ratios hold still.';$('#bTone').before(b);
+  const sigSize=()=>{dpr=Math.min(devicePixelRatio||1,dprMax);c.width=Math.round(innerWidth*dpr);c.height=Math.round(innerHeight*dpr)};
+  addEventListener('resize',()=>{if(on)sigSize()});
+  /* glow passes for each beam speed: slow parts of the trace burn brighter, as on a real tube */
+  const PASS=[[18,'255,130,34',.05],[7,'255,168,72',.16],[1.8,'255,238,206',.9]],SPEED=[1,.6,.34,.16];
+  const sigDot=(cx,cy)=>{x.fillStyle='rgba(255,170,80,.05)';x.beginPath();x.arc(cx,cy,9*dpr,0,7);x.fill();x.fillStyle='rgba(255,225,180,.35)';x.beginPath();x.arc(cx,cy,1.8*dpr,0,7);x.fill()};
+  const sigFrame=()=>{if(!on)return;requestAnimationFrame(sigFrame);const W=c.width,H=c.height,cx=W/2;let cy=H/2,R=Math.min(W,H)*.36;
+    /* on a phone, draw in the open glass between the open panel and the close mark */
+    if(MOBILE){const pr=$('#proof').getBoundingClientRect(),top=pr.height?pr.bottom:0,bot=close.getBoundingClientRect().top||innerHeight;if(bot-top>120){cy=(top+bot)/2*dpr;R=Math.min(W/2,(bot-top)/2*dpr)*.86}}
+    x.globalCompositeOperation='destination-out';x.fillStyle='rgba(0,0,0,.45)';x.fillRect(0,0,W,H);x.globalCompositeOperation='lighter';
+    const t=sigilTap();if(!t)return sigDot(cx,cy);t.l.getFloatTimeDomainData(SL);t.r.getFloatTimeDomainData(SR);
+    let m=0;for(let i=0;i<2048;i++){const a=Math.abs(SL[i]),q=Math.abs(SR[i]);if(a>m)m=a;if(q>m)m=q}
+    if(m<.002){g=0;return sigDot(cx,cy)}
+    const tg=1/m;g=g?g+(tg-g)*.04:tg;if(m*g>1.08)g=1.04/m;const k=g*R;
+    const N0=1024,P=[new Path2D(),new Path2D(),new Path2D(),new Path2D()],s1=R*.004,s2=R*.016,s3=R*.05;let px=cx+SL[N0]*k,py=cy-SR[N0]*k;
+    for(let i=N0+1;i<2048;i++){const nx=cx+SL[i]*k,ny=cy-SR[i]*k,d=Math.hypot(nx-px,ny-py),p=P[d<s1?0:d<s2?1:d<s3?2:3];p.moveTo(px,py);p.lineTo(nx,ny);px=nx;py=ny}
+    x.lineCap='round';for(let j=0;j<4;j++)for(const [w,col,a] of PASS){x.lineWidth=w*dpr;x.strokeStyle=`rgba(${col},${a*SPEED[j]})`;x.stroke(P[j])}};
+  const set=v=>{on=v;c.hidden=close.hidden=!v;b.classList.toggle('on',v);
+    if(v){sigSize();x.clearRect(0,0,c.width,c.height);g=0;requestAnimationFrame(sigFrame);say(A.ctx?'sigil scope · the tones write themselves on the glass':'sigil scope · it wakes with the sound')}else say('sigil scope off')};
+  b.onclick=()=>set(!on);close.onclick=()=>set(false)}
+
 /* ================= the small screen in Proof: spectrum, figure, seal ================= */
 window.PEARL=0;
 {const sp=$('#spec'),x=sp.getContext('2d'),names=['spectrum','figure','seal'],bl=new Float32Array(1024),br=new Float32Array(1024);sp.title='Press to change the view: spectrum, figure, seal';
   sp.addEventListener('click',()=>{window.PEARL=(window.PEARL+1)%3;say('proof screen · '+names[window.PEARL])});
   (function loop(){requestAnimationFrame(loop);if(!window.PEARL||!A.ctx)return;const W=sp.width,H=sp.height;x.clearRect(0,0,W,H);x.lineWidth=2;x.strokeStyle='#ffb454';x.beginPath();
-    if(window.PEARL===1){A.anL.getFloatTimeDomainData(bl);A.anR.getFloatTimeDomainData(br);let m=.02;for(let i=0;i<1024;i++)m=Math.max(m,Math.abs(bl[i]),Math.abs(br[i]));const k=H*.45/m;
+    if(window.PEARL===1){const t=sigilTap();if(!t)return;t.l.getFloatTimeDomainData(SL);t.r.getFloatTimeDomainData(SR);const bl=SL.subarray(1024),br=SR.subarray(1024);let m=.02;for(let i=0;i<1024;i++)m=Math.max(m,Math.abs(bl[i]),Math.abs(br[i]));const k=H*.45/m;
       for(let i=0;i<1024;i++){const px=W/2+bl[i]*k,py=H/2-br[i]*k;i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke()}
     else if(FORGED){const k=H*.9/176;FORGED.pts.forEach((pt,i)=>{const px=W/2+pt[0]*k,py=H/2+pt[1]*k;i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()}
     else{x.fillStyle='rgba(255,255,255,.6)';x.font='20px "Chakra Petch"';x.textAlign='center';x.fillText('forge a seal to see it here',W/2,H/2+7)}})()}
