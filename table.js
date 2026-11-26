@@ -361,34 +361,94 @@ let SLOTS=[null,null,null];try{const v=JSON.parse(localStorage.getItem('bd2-slot
     window.VMODE=Math.random()*6|0;paintKnobs();applyAll();say('dice · the vision is thrown')};
   const fz=mk('bFreeze','freeze','Hold the vision still');fz.onclick=()=>{window.FREEZE=!window.FREEZE;fz.classList.toggle('on',!!window.FREEZE);say(window.FREEZE?'freeze · the vision is held':'freeze off')}}
 
-/* ================= the sigil scope: the tone channel as a phosphor beam over the glass =================
-   Left ear moves the beam across, right ear moves it up. Exact ratios hold still; a binaural pair rolls at the beat.
-   It only listens: its own splitter and two small analysers on the tone channel, made once the sound has started. */
+/* ================= the cymatic sigil: a Chladni plate sung by the tone you hear =================
+   Carried over from Black Dragon 01's great screen and rebuilt to rise over the glass. In 1787 Ernst Chladni bowed
+   sand-strewn plates: the sand flees what moves and gathers on the nodal lines that stay still. Here the plate is
+   sung by the strongest tone measured on the tone channel; its pitch chooses the mode, the beat makes it breathe,
+   and the figure is read for its symmetry and named. Keep a sigil to save it as an image. */
 let TAP=null;const SL=new Float32Array(2048),SR=new Float32Array(2048);
 function sigilTap(){if(TAP)return TAP;if(!A.ctx||!A.toneBus)return null;
   const sp=A.ctx.createChannelSplitter(2),l=A.ctx.createAnalyser(),r=A.ctx.createAnalyser();l.fftSize=r.fftSize=2048;A.toneBus.connect(sp);sp.connect(l,0);sp.connect(r,1);return TAP={l,r}}
-{const c=$('#sigil'),x=c.getContext('2d'),close=$('#sigilX'),dprMax=MOBILE?1.5:2;let on=false,g=0,dpr=1;
-  const b=document.createElement('button');b.className='pill';b.id='bScope';b.textContent='sigil scope';
-  b.title='Draw the tone channel large over the glass as a phosphor beam: left ear across, right ear up. Exact ratios hold still.';$('#bTone').before(b);
-  const sigSize=()=>{dpr=Math.min(devicePixelRatio||1,dprMax);c.width=Math.round(innerWidth*dpr);c.height=Math.round(innerHeight*dpr)};
-  addEventListener('resize',()=>{if(on)sigSize()});
-  /* glow passes for each beam speed: slow parts of the trace burn brighter, as on a real tube */
-  const PASS=[[18,'255,130,34',.05],[7,'255,168,72',.16],[1.8,'255,238,206',.9]],SPEED=[1,.6,.34,.16];
-  const sigDot=(cx,cy)=>{x.fillStyle='rgba(255,170,80,.05)';x.beginPath();x.arc(cx,cy,9*dpr,0,7);x.fill();x.fillStyle='rgba(255,225,180,.35)';x.beginPath();x.arc(cx,cy,1.8*dpr,0,7);x.fill()};
-  const sigFrame=()=>{if(!on)return;requestAnimationFrame(sigFrame);const W=c.width,H=c.height,cx=W/2;let cy=H/2,R=Math.min(W,H)*.36;
-    /* on a phone, draw in the open glass between the open panel and the close mark */
-    if(MOBILE){const pr=$('#proof').getBoundingClientRect(),top=pr.height?pr.bottom:0,bot=close.getBoundingClientRect().top||innerHeight;if(bot-top>120){cy=(top+bot)/2*dpr;R=Math.min(W/2,(bot-top)/2*dpr)*.86}}
-    x.globalCompositeOperation='destination-out';x.fillStyle='rgba(0,0,0,.45)';x.fillRect(0,0,W,H);x.globalCompositeOperation='lighter';
-    const t=sigilTap();if(!t)return sigDot(cx,cy);t.l.getFloatTimeDomainData(SL);t.r.getFloatTimeDomainData(SR);
-    let m=0;for(let i=0;i<2048;i++){const a=Math.abs(SL[i]),q=Math.abs(SR[i]);if(a>m)m=a;if(q>m)m=q}
-    if(m<.002){g=0;return sigDot(cx,cy)}
-    const tg=1/m;g=g?g+(tg-g)*.04:tg;if(m*g>1.08)g=1.04/m;const k=g*R;
-    const N0=1024,P=[new Path2D(),new Path2D(),new Path2D(),new Path2D()],s1=R*.004,s2=R*.016,s3=R*.05;let px=cx+SL[N0]*k,py=cy-SR[N0]*k;
-    for(let i=N0+1;i<2048;i++){const nx=cx+SL[i]*k,ny=cy-SR[i]*k,d=Math.hypot(nx-px,ny-py),p=P[d<s1?0:d<s2?1:d<s3?2:3];p.moveTo(px,py);p.lineTo(nx,ny);px=nx;py=ny}
-    x.lineCap='round';for(let j=0;j<4;j++)for(const [w,col,a] of PASS){x.lineWidth=w*dpr;x.strokeStyle=`rgba(${col},${a*SPEED[j]})`;x.stroke(P[j])}};
-  const set=v=>{on=v;c.hidden=close.hidden=!v;b.classList.toggle('on',v);
-    if(v){sigSize();x.clearRect(0,0,c.width,c.height);g=0;requestAnimationFrame(sigFrame);say(A.ctx?'sigil scope · the tones write themselves on the glass':'sigil scope · it wakes with the sound')}else say('sigil scope off')};
-  b.onclick=()=>set(!on);close.onclick=()=>set(false)}
+{const c=$('#cym'),bar=$('#cymBar'),rd=$('#cymRead'),bShape=$('#cymShape'),bKeep=$('#cymKeep'),bClose=$('#cymX');
+  const gl=c.getContext('webgl',{alpha:true,premultipliedAlpha:true,antialias:false,preserveDrawingBuffer:false});
+  const SHP=['square','circle','hexagram','quasicrystal'],NAGA=['Ananta','Vasuki','Takshaka','Mucalinda','Virupaksha','Karkotaka','Shesha','Upananda','Nanda','Airavata','Padma','Mahapadma','Shankha','Kulika'];
+  let on=false,shape=1,mt=[2,0],mc=[2,0],hz=0,lvl=0,lastF=0,reading=null,keep=false,t0=performance.now(),rot=0;
+  const b=document.createElement('button');b.className='pill';b.id='bScope';b.textContent='cymatic sigil';
+  b.title='A Chladni plate rises over the glass, sung by the tone you hear: sand gathers on the still lines. Keep a sigil to save it.';$('#bTone').before(b);
+  const FS=`precision highp float;uniform vec2 uRes;uniform float uT,uM,uN,uQ,uBeat,uLvl,uRot;uniform int uShape;
+#define PI 3.14159265
+float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float bes(float n,float x){float s=0.;for(int i=0;i<24;i++){float t=(float(i)+.5)*PI/24.;s+=cos(n*t-x*sin(t));}return s/24.;}
+float circ1(vec2 p,float m,float n){float r=length(p),a=atan(p.y,p.x);return bes(n,(m+.5*n+.25)*PI*.9*r)*cos(n*a)*1.8;}
+float plate(vec2 p,float m,float n){
+  if(uShape==0){vec2 u=p*.5+.5;return cos(n*PI*u.x)*cos(m*PI*u.y)-cos(m*PI*u.x)*cos(n*PI*u.y);}
+  if(uShape==1){float n0=floor(n),fr=n-n0;float a=circ1(p,m,n0);if(fr<.001)return a;return mix(a,circ1(p,m,n0+1.),fr);}
+  if(uShape==2){float s=0.;for(int i=0;i<3;i++){float an=float(i)*PI/3.;vec2 d=vec2(cos(an),sin(an));s+=cos(m*PI*dot(p,d))-cos(n*PI*dot(p,vec2(-d.y,d.x))*.866);}return s/3.;}
+  float s=0.;for(int i=0;i<12;i++){if(float(i)>=uQ)break;float an=float(i)*PI/uQ;s+=cos(m*PI*.7*dot(p,vec2(cos(an),sin(an)))+uT*.12*mod(float(i),2.));}return s/(uQ*.5);}
+float field(vec2 p){float s=plate(p,uM,uN),w=1.;if(uShape!=1){s+=.42*plate(p,uM+1.,uN+1.);w+=.42;}s+=.18*plate(p,uM+2.,uN+(uShape==1?0.:2.));w+=.18;return s/w;}
+void main(){vec2 px=gl_FragCoord.xy;vec2 p=(px-.5*uRes)/(.5*min(uRes.x,uRes.y))*1.06;
+  p/=1.+.014*sin(6.2831*uBeat*uT)+uLvl*.025;float cs=cos(uRot),sn=sin(uRot);p=mat2(cs,-sn,sn,cs)*p;
+  float edge=uShape==0?max(abs(p.x),abs(p.y)):length(p);if(edge>1.03){gl_FragColor=vec4(0.);return;}
+  float f=field(p),sand=exp(-abs(f)*24.),core=exp(-abs(f)*80.);
+  float g=hash(floor(px/1.6)),gr=smoothstep(.25,1.,g);sand*=.45+.55*gr;core*=.6+.4*gr;
+  float a=atan(p.y,p.x),sheen=.5+.5*sin(a*2.+length(p)*5.-uT*.15);
+  vec3 amber=mix(vec3(1.,.58,.24),vec3(1.,.42,.36),sheen*.5),hot=vec3(1.,.94,.82);
+  vec3 col=amber*sand*1.05+hot*core*.95;
+  col+=vec3(.32,.16,.07)*smoothstep(.35,1.,abs(f))*.05;
+  float in_=smoothstep(1.005,.985,edge);col*=in_;col+=vec3(1.,.82,.55)*smoothstep(.014,0.,abs(edge-1.))*.4;
+  col+=hot*step(.996,g)*sand*.6*(.5+.5*sin(uT*3.+g*90.));
+  float al=clamp(max(col.r,max(col.g,col.b)),0.,1.);gl_FragColor=vec4(col,al);}`;
+  let P=null,U={};
+  if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
+    P=gl.createProgram();gl.attachShader(P,sh(gl.VERTEX_SHADER,'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));gl.attachShader(P,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(P);
+    const q=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,q);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    gl.useProgram(P);const l=gl.getAttribLocation(P,'p');gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0);
+    ['uRes','uT','uM','uN','uQ','uBeat','uLvl','uRot','uShape'].forEach(n=>U[n]=gl.getUniformLocation(P,n))}
+  /* the mode a pitch rings: m²+n² grows with frequency, as on Black Dragon 01's plate, set three times finer so each tone draws a fuller figure */
+  const modeFor=f=>{const T=(f<60?f*8:f)/7;let best=[2,1],be=1e9;for(let m=1;m<=16;m++)for(let n=(shape===0?1:0);n<m;n++){const e=Math.abs(m*m+n*n-T)+m*.001;if(e<be){be=e;best=[m,n]}}return best};
+  /* the CPU mirror of the plate, used only to read the figure's symmetry */
+  const besJ=(n,x)=>{let s=0;for(let i=0;i<40;i++){const t=(i+.5)*Math.PI/40;s+=Math.cos(n*t-x*Math.sin(t))}return s/40};
+  const plateCPU=(x,y,m,n)=>{const PI=Math.PI;if(shape===0){const u=x*.5+.5,v=y*.5+.5;return Math.cos(n*PI*u)*Math.cos(m*PI*v)-Math.cos(m*PI*u)*Math.cos(n*PI*v)}
+    if(shape===1){const r=Math.hypot(x,y),a=Math.atan2(y,x);return besJ(n,(m+.5*n+.25)*PI*.9*r)*Math.cos(n*a)*1.8}
+    if(shape===2){let s=0;for(let i=0;i<3;i++){const an=i*PI/3,dx=Math.cos(an),dy=Math.sin(an);s+=Math.cos(m*PI*(x*dx+y*dy))-Math.cos(n*PI*(-x*dy+y*dx)*.866)}return s/3}
+    const Q=qOf(n);let s=0;for(let i=0;i<Q;i++){const an=i*PI/Q;s+=Math.cos(m*PI*.7*(x*Math.cos(an)+y*Math.sin(an)))}return s/(Q*.5)};
+  const qOf=n=>clamp(Math.round(n)+4,5,12);
+  const read=(m,n)=>{let fold=1,mirror=false,grp;const TAU=Math.PI*2;
+    if(shape===1){fold=n===0?0:2*n;grp=n===0?'D∞':'D'+fold}else if(shape===3){const Q=qOf(n);fold=Q%2?2*Q:Q;grp='D'+fold}
+    else{const fld=(x,y)=>plateCPU(x,y,m,n)+.42*plateCPU(x,y,m+1,n+1)+.18*plateCPU(x,y,m+2,n+2),samp=[];for(let ri=1;ri<=5;ri++)for(let ai=0;ai<72;ai++)samp.push([ri/6*.9,ai/72*TAU]);
+      const fv=(r,a)=>fld(r*Math.cos(a),r*Math.sin(a)),base=samp.map(([r,a])=>fv(r,a)),e0=base.reduce((s,v)=>s+v*v,0)||1;
+      for(let k=12;k>=2;k--){let cc=0;samp.forEach(([r,a],i)=>cc+=base[i]*fv(r,a+TAU/k));if(Math.abs(cc)/e0>.97){fold=k;break}}
+      let mc2=0;samp.forEach(([r,a],i)=>mc2+=base[i]*fv(r,-a));mirror=Math.abs(mc2)/e0>.97;grp=(mirror?'D':'C')+fold}
+    return{m,n,grp,name:NAGA[(m*5+n*3+shape*7)%NAGA.length]}};
+  /* the strongest tone on the tone channel, measured from the Proof analyser */
+  const fb=new Float32Array(16384);
+  const measure=()=>{if(!A.ctx||!A.anL)return 0;A.anL.getFloatFrequencyData(fb);const bw=A.ctx.sampleRate/A.anL.fftSize,a=Math.round(30/bw),z=Math.round(2000/bw);let k=a;
+    for(let i=a;i<=z;i++)if(fb[i]>fb[k])k=i;if(fb[k]<-75)return 0;const y0=fb[k-1],y1=fb[k],y2=fb[k+1],d=(y0-y2)/(2*(y0-2*y1+y2)||1);return(k+clamp(d,-.5,.5))*bw};
+  let box={x:0,y:0,s:0};
+  const place=()=>{let cx=innerWidth/2,cy=innerHeight/2,s=Math.min(innerWidth,innerHeight)*.86;
+    if(MOBILE){const top=12,bot=bar.getBoundingClientRect().top-8||innerHeight;cy=(top+bot)/2;s=Math.min(innerWidth*.98,bot-top)}
+    else s=Math.min(s,innerHeight-150);
+    if(Math.abs(box.s-s)>1||Math.abs(box.x-cx)>1||Math.abs(box.y-cy)>1){box={x:cx,y:cy,s};const dp=Math.min(devicePixelRatio||1,MOBILE?1:1.25);
+      c.style.width=c.style.height=s+'px';c.style.left=(cx-s/2)+'px';c.style.top=(cy-s/2)+'px';c.width=c.height=Math.round(s*dp)}};
+  const label=()=>{if(!reading){rd.textContent=A.ctx?SHP[shape]+' plate · waiting for a tone':SHP[shape]+' plate · it wakes with the sound';return}
+    rd.textContent=`${SHP[shape]} plate · ${hz.toFixed(1)} Hz · mode ${reading.m},${reading.n} · ${reading.grp} · ${reading.name}`};
+  const draw=now=>{if(!on)return;requestAnimationFrame(draw);if(!gl)return;place();const t=(now-t0)/1000,dt=Math.min(.5,(now-(draw.l||now))/1000);draw.l=now;
+    if(now-lastF>180){lastF=now;const f=measure();if(f){hz=f;const nm=modeFor(f);if(nm[0]!==mt[0]||nm[1]!==mt[1]||!reading||reading.shape!==shape){mt=nm;reading=read(nm[0],nm[1]);reading.shape=shape}}else reading=null;label()}
+    const k=1-Math.exp(-dt*1.4);mc[0]+=(mt[0]-mc[0])*k;mc[1]+=(mt[1]-mc[1])*k;rot+=dt*.02;
+    if(TAP||sigilTap()){TAP.l.getFloatTimeDomainData(SL);let s=0;for(let i=0;i<2048;i+=4)s+=SL[i]*SL[i];lvl+=(Math.min(1,Math.sqrt(s/512)*4)-lvl)*.1}
+    gl.viewport(0,0,c.width,c.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);if(!reading&&!hz)return;
+    gl.uniform2f(U.uRes,c.width,c.height);gl.uniform1f(U.uT,t);gl.uniform1f(U.uM,mc[0]);gl.uniform1f(U.uN,mc[1]);gl.uniform1f(U.uQ,qOf(mc[1]));
+    gl.uniform1f(U.uBeat,S.beat||0);gl.uniform1f(U.uLvl,lvl);gl.uniform1f(U.uRot,rot);gl.uniform1i(U.uShape,shape);gl.drawArrays(gl.TRIANGLES,0,3);
+    if(keep){keep=false;const o=document.createElement('canvas');o.width=o.height=1080;const x=o.getContext('2d');x.fillStyle='#050406';x.fillRect(0,0,1080,1080);x.drawImage(c,90,60,900,900);
+      x.fillStyle='rgba(255,220,170,.92)';x.textAlign='center';x.font='40px "Pirata One"';x.fillText(reading?reading.name:'Black Dragon II',540,1005);
+      x.font='17px "Michroma"';x.fillText(rd.textContent.replace(' · '+(reading?reading.name:''),''),540,1045);
+      o.toBlob(bl=>{save(bl,'black-dragon-sigil-'+(reading?reading.name.toLowerCase()+'-':'')+hz.toFixed(1)+'hz.png');say('sigil kept · '+(reading?reading.name:'saved'))},'image/png')}};
+  /* on a phone the plate takes the whole glass: the panels step aside until it is closed or a tab is chosen */
+  const set=v=>{on=v;c.hidden=bar.hidden=!v;b.classList.toggle('on',v);document.body.classList.toggle('cymOpen',v&&MOBILE);
+    if(v){box.s=0;reading=null;hz=0;lastF=0;label();requestAnimationFrame(draw);say(gl?'cymatic sigil · the tone you hear draws in the sand':'this device cannot draw the plate')}else say('cymatic sigil off')};
+  b.onclick=()=>set(!on);bClose.onclick=()=>set(false);$('#tabs').addEventListener('click',()=>{if(on&&MOBILE)set(false)});
+  bShape.onclick=()=>{shape=(shape+1)%4;bShape.textContent='plate · '+SHP[shape];reading=null;lastF=0;say('plate · '+SHP[shape])};
+  bKeep.onclick=()=>{if(!reading)return say('play a tone first, then keep its sigil');keep=true}}
 
 /* ================= the small screen in Proof: spectrum, figure, seal ================= */
 window.PEARL=0;
@@ -531,3 +591,55 @@ if(/[?&]diag\b/.test(location.search)){
    #keysBar{display:none;margin:0 0 6px;gap:6px}.hud[data-tab=play] #keysBar{display:flex}
    #keysBar #bVoice{flex:1;max-width:none;min-height:44px;font-size:11px}#keysBar .kstep{min-height:44px;min-width:52px;font-size:18px}}`;
  document.head.appendChild(st);setVoice(S.voice)}
+
+/* ================= PHANTOMS: sounds the ear finishes for itself =================
+   Three of them, each off until pressed and listed in "sounding now" while it runs.
+   The descent and the circling breath go through the rites fader; the silence sings goes straight to the output
+   because it hushes the rest of the board for its listening and brings it back after. None touches the tone channel. */
+const PH={};
+{const d=document.createElement('div');d.className='jelly drawer';d.id='phantom';d.hidden=true;$('#mixer').after(d);DR.push('phantom');
+  const card=(k,h,p,btn)=>`<div class="phc" data-k="${k}"><h4>${h}</h4><p class="vh">${p}</p><button class="vb" data-k="${k}">${btn}</button> <span class="vh phs" data-s="${k}"></span></div>`;
+  d.innerHTML='<button class="pill dclose">close</button><h3>Phantoms</h3><p class="vh">Sounds the ear finishes for itself. Headphones bring them closest. Each runs until you stop it.</p>'
+    +card('zwicker','The silence sings','In 1964 Eberhard Zwicker played rushing noise with a band cut out of it. When the noise stopped, his listeners heard a faint pure tone inside the missing band for several seconds, a tone with no source: the Zwicker tone, an afterimage in the ear. Here: twenty seconds of soft noise with that band cut out, the board hushes, then silence. Listen into it.','begin')
+    +card('shepard','The endless descent','Roger Shepard built a scale in 1964 that seems to fall forever, and Jean-Claude Risset made it glide. Nine voices an octave apart sink together; each fades in at the top and out at the bottom, so the fall never arrives.','sink')
+    +card('orbit','The circling breath','A soft breath travels around your head, placed by the way the outer ear shapes sound arriving from each direction. On headphones it passes behind you and returns.','let it circle');
+  d.querySelector('.dclose').onclick=()=>{d.hidden=true};
+  const b=document.createElement('button');b.className='pill';b.id='bPhantom';b.textContent='phantoms';$('.rside').insertBefore(b,$('#bMixer'));b.onclick=e=>{e.stopPropagation();openDr('phantom')};
+  const st=(k,txt)=>{const e=d.querySelector(`[data-s=${k}]`);if(e)e.textContent=txt||''};
+  const paint=()=>{d.querySelectorAll('button.vb[data-k]').forEach(x=>{const k=x.dataset.k,on=!!PH[k];x.classList.toggle('on',on);x.textContent=on?'stop':{zwicker:'begin',shepard:'sink',orbit:'let it circle'}[k]})};
+  const fadeStop=(k,secs=1)=>{const p=PH[k];if(!p)return;delete PH[k];p.timers&&p.timers.forEach(clearTimeout);p.iv&&clearInterval(p.iv);if(p.end)p.end();
+    const ctx=A.ctx,t=ctx.currentTime;p.out.gain.cancelScheduledValues(t);p.out.gain.setValueAtTime(p.out.gain.value,t);p.out.gain.linearRampToValueAtTime(0,t+secs);
+    setTimeout(()=>{p.src.forEach(s=>{try{s.stop()}catch(_){}});try{p.out.disconnect()}catch(_){}},secs*1000+120);st(k,'');paint()};
+  /* the silence sings: pink noise, the band 2.5 to 3.55 kHz cut out by steep filters on either side, then silence */
+  const zwicker=()=>{const ctx=A.ctx,t=ctx.currentTime,src=loopN(ctx,NB.pink),out=gn(ctx,0);
+    src.connect(bq(ctx,'lowpass',2500,.7)).connect(bq(ctx,'lowpass',2500,.7)).connect(bq(ctx,'lowpass',2500,.7)).connect(out);
+    src.connect(bq(ctx,'highpass',3550,.7)).connect(bq(ctx,'highpass',3550,.7)).connect(bq(ctx,'highpass',3550,.7)).connect(bq(ctx,'lowpass',5800,.6)).connect(gn(ctx,.55)).connect(out);
+    out.connect(A.out);const LV=.4,H=20;out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(LV,t+2.5);out.gain.setValueAtTime(LV,t+H);out.gain.linearRampToValueAtTime(0,t+H+1.2);
+    const trim=A.limTrim.gain,keep=trim.value;trim.setTargetAtTime(0,t,.6);
+    const p={src:[src],out,timers:[],end:()=>{trim.cancelScheduledValues(A.ctx.currentTime);trim.setTargetAtTime(keep,A.ctx.currentTime,1.2)}};PH.zwicker=p;
+    let n=H;p.iv=setInterval(()=>{n--;if(n>0)st('zwicker','noise · '+n);else if(n>-12)st('zwicker','silence · listen');else fadeStop('zwicker',.2)},1000);st('zwicker','noise · '+H)};
+  /* the endless descent: nine voices an octave apart, each weighted by a bell curve around 220 Hz, gliding down one octave every 40 s */
+  const shepard=()=>{const ctx=A.ctx,out=gn(ctx,0),N=9,F0=27.5,src=[],V=[];out.connect(MB('riteBus'));
+    for(let i=0;i<N;i++){const g=gn(ctx,0),pn=ctx.createStereoPanner();pn.pan.value=i%2?.28:-.28;g.connect(pn).connect(out);
+      const o1=ctx.createOscillator(),o2=ctx.createOscillator();o2.detune.value=4;[o1,o2].forEach(o=>{o.connect(g);o.start();src.push(o)});V.push({k:i,o1,o2,g})}
+    const w=f=>{const z=Math.log2(f/220)/1.1;return Math.exp(-z*z/2)};let last=performance.now();
+    const step=()=>{const now=performance.now(),dt=Math.min(.2,(now-last)/1000);last=now;const t=ctx.currentTime;
+      V.forEach(v=>{v.k-=dt/40;let jump=false;if(v.k<0){v.k+=N;jump=true}const f=F0*Math.pow(2,v.k);
+        if(jump){v.o1.frequency.setValueAtTime(f,t);v.o2.frequency.setValueAtTime(f,t)}else{v.o1.frequency.setTargetAtTime(f,t,.03);v.o2.frequency.setTargetAtTime(f,t,.03)}
+        v.g.gain.setTargetAtTime(w(f)*.056,t,.06)})};
+    step();out.gain.setTargetAtTime(1,ctx.currentTime,.8);PH.shepard={src,out,iv:setInterval(step,40)};st('shepard','sinking · one octave every forty seconds')};
+  /* the circling breath: soft band of pink noise placed by the HRTF panner, one lap every 14 s, rising and falling a little */
+  const orbit=()=>{const ctx=A.ctx,src=loopN(ctx,NB.pink),sw=gn(ctx,.6),pn=ctx.createPanner(),out=gn(ctx,0);
+    pn.panningModel='HRTF';pn.distanceModel='inverse';pn.refDistance=1;pn.rolloffFactor=.6;
+    src.connect(bq(ctx,'bandpass',650,.9)).connect(bq(ctx,'lowpass',2400,.6)).connect(sw).connect(pn).connect(out);out.connect(MB('riteBus'));
+    const lf=ctx.createOscillator(),lg=gn(ctx,.35);lf.frequency.value=.09;lf.connect(lg).connect(sw.gain);lf.start();
+    let a=0,last=performance.now();const pos=(x,y,z)=>{const t=ctx.currentTime;if(pn.positionX){pn.positionX.setTargetAtTime(x,t,.05);pn.positionY.setTargetAtTime(y,t,.05);pn.positionZ.setTargetAtTime(z,t,.05)}else pn.setPosition(x,y,z)};
+    const step=()=>{const now=performance.now(),dt=Math.min(.2,(now-last)/1000);last=now;a+=dt*Math.PI*2/14;pos(Math.sin(a)*1.6,Math.sin(a*.5)*.35,-Math.cos(a)*1.6)};
+    step();out.gain.setTargetAtTime(1.4,ctx.currentTime,.8);PH.orbit={src:[src,lf],out,iv:setInterval(step,40)};st('orbit','circling · one lap every fourteen seconds')};
+  const RUN={zwicker,shepard,orbit},NAME={zwicker:'the silence sings',shepard:'endless descent',orbit:'circling breath'};
+  d.addEventListener('click',e=>{const x=e.target.closest('button.vb[data-k]');if(!x)return;e.stopPropagation();const k=x.dataset.k;
+    if(PH[k]){fadeStop(k);say(NAME[k]+' · off');return}if(!A.ctx)return say('enter first, then call the phantoms');RUN[k]();paint();say(NAME[k])});
+  /* each running phantom shows in "sounding now" with its own off switch */
+  /* silence and reset stop them too */
+  const hushAll=()=>Object.keys(NAME).forEach(k=>{if(PH[k])fadeStop(k,.6)});const baseReset=resetAll;resetAll=function(){hushAll();return baseReset.apply(this,arguments)};
+  const baseLive=liveList;liveList=function(){const L=baseLive();Object.keys(NAME).forEach(k=>{if(PH[k])L.push([NAME[k],()=>fadeStop(k)])});return L}}
