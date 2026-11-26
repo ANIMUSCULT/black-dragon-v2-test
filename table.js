@@ -867,11 +867,15 @@ void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uR
     +'<radialGradient id="gHalo"><stop offset=".62" stop-color="#fff" stop-opacity="0"/><stop offset=".72" stop-color="#fff" stop-opacity=".16"/><stop offset=".86" stop-color="#fff" stop-opacity=".03"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>');
   const g=mk('g',{id:'dTrip','pointer-events':'none'});
   const rose=(id,n,rx,ry,op,sw)=>{const r=mk('g',{id,fill:'none',stroke:'url(#gFilm)','stroke-width':sw||.7,opacity:op});for(let i=0;i<n;i++)r.append(mk('ellipse',{rx,ry,transform:`rotate(${(i*180/n).toFixed(2)})`}));return r};
-  g.append(mk('circle',{r:163,fill:'url(#gHalo)'}),rose('dRoseC',12,133,50,.2,.8),rose('dRoseD',9,128,78,.12,.6),rose('dRoseA',16,166,141,.3),rose('dRoseB',20,164,143,.22),
-    mk('circle',{id:'dFilmIn',r:141.5,fill:'none',stroke:'url(#gFilm)','stroke-width':1.6,opacity:.45}),
+  /* the glass is left clear so the orb from the entrance shows: only a pearl line at its edge and the ripple */
+  {const st=d.querySelectorAll('#gLens stop'),op=[.1,.03,.05,.34];st.forEach((s,i)=>s.setAttribute('stop-opacity',op[i]))}
+  g.append(mk('circle',{id:'dFilmIn',r:141.5,fill:'none',stroke:'url(#gFilm)','stroke-width':1.2,opacity:.4}),
     mk('circle',{id:'dPulse',r:141,fill:'none',stroke:'#fff','stroke-width':2}));
   $('#ticks').before(g);
   const rimG=mk('g',{'pointer-events':'none'});rimG.append(mk('circle',{id:'dFilmOut',r:196,fill:'none',stroke:'url(#gFilm)','stroke-width':5,opacity:.28}));d.querySelector('circle').after(rimG);
   {const h=$('#handle').children;h[0].setAttribute('r',9);h[0].setAttribute('stroke','none');h[1].setAttribute('r',3.5)}
   const paintDial0=paintDial;const tempo=()=>{let p=1/Math.max(.1,S.beat||6);while(p<.45)p*=2;$('#dPulse').style.animationDuration=Math.min(8,p).toFixed(3)+'s'};
-  paintDial=function(){const r=paintDial0.apply(this,arguments);tempo();return r};tempo()}
+  paintDial=function(){const r=paintDial0.apply(this,arguments);tempo();return r};tempo();
+  /* the sliders' glass tubes fill up to the bead */
+  const fillR=()=>document.querySelectorAll('input[type=range]').forEach(e=>{const a=+e.min||0,b=+e.max||1,p=((+e.value-a)/((b-a)||1)*100).toFixed(1)+'%';if(e.style.getPropertyValue('--p')!==p)e.style.setProperty('--p',p)});
+  addEventListener('input',e=>{if(e.target.type==='range')fillR()},true);setInterval(fillR,600);fillR()}

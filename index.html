@@ -612,6 +612,26 @@ body{font-size-adjust:.53}
 #dTrip{transform-box:view-box;transform-origin:50% 50%;animation:dBreathe 11s ease-in-out infinite}
 @keyframes dBreathe{0%,100%{transform:scale(.988)}50%{transform:scale(1.012)}}
 @keyframes dRipple{0%{transform:scale(1);opacity:.3;stroke-width:1.6}100%{transform:scale(1.3);opacity:0;stroke-width:.3}}
+/* the dial as the glass orb from the entrance: clear glass, a hairline ring, quiet marks */
+#dial>circle:nth-of-type(3){stroke:rgba(255,255,255,.22)!important}
+#dTrip{animation:none}
+/* sheen: sliders become glass tubes with a pearl bead; the volume box and the message strip catch a slow light */
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;accent-color:auto;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:9px;border-radius:99px;border:1px solid rgba(0,0,0,.7);
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.06) 42%,rgba(0,0,0,.28)),linear-gradient(90deg,#8f1230,#ff8494 var(--p,50%),rgba(255,255,255,.09) var(--p,50%));
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.22)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;margin-top:-5px;border-radius:50%;border:1px solid rgba(0,0,0,.6);
+  background:radial-gradient(circle at 34% 28%,#fff 0 12%,#f3e8ea 30%,#a8979c 68%,#4a3d42);box-shadow:0 2px 6px rgba(0,0,0,.75),inset 0 -2px 3px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-track{height:9px;border-radius:99px;border:1px solid rgba(0,0,0,.7);background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.05) 42%,rgba(0,0,0,.28));box-shadow:inset 0 1px 3px rgba(0,0,0,.7)}
+input[type=range]::-moz-range-progress{height:9px;border-radius:99px;background:linear-gradient(180deg,rgba(255,255,255,.45),transparent 45%),linear-gradient(90deg,#8f1230,#ff8494)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.6);background:radial-gradient(circle at 34% 28%,#fff 0 12%,#f3e8ea 30%,#a8979c 68%,#4a3d42);box-shadow:0 2px 6px rgba(0,0,0,.75)}
+#volBox,#lcd{position:relative;overflow:hidden}
+#volBox::after,#lcd::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 46%),linear-gradient(105deg,transparent 40%,rgba(255,255,255,.2) 50%,transparent 60%);
+  background-size:100% 100%,260% 100%;background-position:0 0,130% 0;animation:shSweep 9s ease-in-out infinite}
+#lcd::after{opacity:.55;animation-delay:-4s}
+@keyframes shSweep{0%,55%{background-position:0 0,130% 0}100%{background-position:0 0,-60% 0}}
+@media (prefers-reduced-motion:reduce){#volBox::after,#lcd::after{animation:none}}
 @media (max-width:1000px),(pointer:coarse){#dRoseA,#dRoseB,#dRoseC,#dRoseD{animation:none}}
 @media (prefers-reduced-motion:reduce){#dRoseC,#dRoseD,#dRoseA,#dRoseB,#dFilmIn,#dFilmOut,#dPulse{animation:none}}
 </style>
@@ -1317,8 +1337,8 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1126e"></script>
-<script src="env.js?v=1126e"></script>
-<script src="table.js?v=1126e"></script>
+<script src="bank.js?v=1126f"></script>
+<script src="env.js?v=1126f"></script>
+<script src="table.js?v=1126f"></script>
 </body>
 </html>
