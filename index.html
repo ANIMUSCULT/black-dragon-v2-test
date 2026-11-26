@@ -566,6 +566,20 @@ body{font-size-adjust:.53}
 .st b{font-weight:600}.drawer h3,#pads h3{font-weight:700}
 /* only what has been measured or studied carries a mark; the tradition mark is gone everywhere */
 .tag.tradition{display:none!important}
+/* ---------- layout repairs after the sweep ----------
+   the action row stays on one line (it scrolls sideways if it must) so it never pushes the panels down */
+@media (min-width:1001px){
+ .acts{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;max-width:100%}.acts::-webkit-scrollbar{display:none}
+ .acts .pill{flex:none;padding:7px 9px}
+}
+@media (min-width:1001px) and (max-width:1700px){.acts .pill::before{display:none!important}.acts .pill{padding:7px 8px;letter-spacing:.06em}}
+/* short screens: a smaller dial so it never sits on the stones */
+@media (min-width:1001px) and (max-height:800px){#dial{width:min(34vh,30vw,360px)!important}}
+@media (min-width:1001px) and (max-height:700px){#dial{width:min(30vh,28vw,320px)!important}}
+/* short screens: the right column scrolls as one, so the Proof panel and the stone pads are always reachable */
+@media (min-width:1001px) and (max-height:820px){#shellR{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}#shellR>#proof{flex:none}#shellR>#pads{flex:none;min-height:150px;overflow:visible!important}#states{overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}#states .st{flex:none;min-height:27px}}
+/* narrow computer windows: the menu block slims down so it stays on screen */
+@media (min-width:1001px) and (max-width:1300px){.rside{width:240px!important;grid-template-columns:repeat(3,1fr)!important}.rside .pill{font-size:8px!important;padding:8px 2px!important}.deck{gap:10px!important}.knobs{transform-origin:left top}}
 </style>
 </head>
 <body>
@@ -577,7 +591,7 @@ body{font-size-adjust:.53}
 <p class="vh">In 1958 Brion Gysin closed his eyes on a bus to Marseille as the sun flickered through a row of trees, and saw blazing colours and patterns. With Ian Sommerville he built the Dreamachine: a slotted cylinder turning around a lamp, watched with the eyes shut. In 2021 Reeder's Ganzflicker brought it to the screen, and many who watch at about ten flickers a second see shapes, faces and scenes of their own. Close your eyes, face the screen, and let it come.</p>
 <div class="dmRow"><span>rate</span><button data-hz="-0.5">−</button><b><i id="dmHz">10.00</i> Hz</b><button data-hz="0.5">+</button></div>
 <div class="dmRow"><span>strength</span><input id="dmDepth" type="range" min=".05" max="1" step=".01" value=".45" aria-label="flicker strength"></div>
-<div class="dmRow"><span>light</span><button data-col="gold">gold</button><button data-col="white">white</button><button data-col="red">red</button></div>
+<div class="dmRow"><span>light</span><button data-col="gold">gold</button><button data-col="white">white</button><button data-col="amber">amber</button></div>
 <div class="dmRow"><span>with</span><button id="dmSeed">the clip beneath</button><button id="dmNoise">brown noise</button></div>
 <div class="dmRow"><span>for</span><button data-min="5">5 min</button><button data-min="10">10 min</button><button data-min="15">15 min</button></div>
 <div class="dmRow dmGo"><button id="dmEnter">enter</button><button id="dmLeave">leave</button></div>
@@ -986,6 +1000,7 @@ function noteOff(id,i){
 let pluck=0;
 
 /* ---------- keys ---------- */
+const typingInto=t=>!!(t&&t.matches&&t.matches('textarea,select,input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=button]):not([type=file])'));
 const KEYMAP="asdfghjkl;'";/* musical typing: the home row plays; z and x move the octave; c and v play softer and harder */
 const UPMAP='wetyuop';/* the row above plays the same scale one octave higher */
 let kOct=0,kVel=1;const kHeld={},scaleLen=()=>{try{return (TUN[tun][1]||STATES[S.state].scale).length}catch(_){return STATES[S.state].scale.length}};
@@ -998,7 +1013,7 @@ keysEl.addEventListener('pointermove',e=>{const id='p'+e.pointerId;if(keysEl[id]
   if(kk&&+kk.dataset.i!==keysEl[id]){noteOff(id,keysEl[id]);keysEl[id]=+kk.dataset.i;noteOn(id,keysEl[id])}});
 const up=e=>{const id='p'+e.pointerId;if(keysEl[id]!=null){noteOff(id,keysEl[id]);keysEl[id]=null}};
 keysEl.addEventListener('pointerup',up);keysEl.addEventListener('pointercancel',up);
-addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;const key=e.key.toLowerCase(),i=KEYMAP.indexOf(key),note=m=>{const el=$('#lcd');if(el)el.textContent=m};
+addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey||typingInto(e.target))return;const key=e.key.toLowerCase(),i=KEYMAP.indexOf(key),note=m=>{const el=$('#lcd');if(el)el.textContent=m};
   if(i>=0){e.preventDefault();if(kHeld[i]!=null)return;const d=i+kOct*scaleLen();kHeld[i]=d;noteOn('k'+i,d,kVel);return}
   {const j=UPMAP.indexOf(key);if(j>=0){e.preventDefault();const id='u'+j;if(kHeld[id]!=null)return;const d=j+(kOct+1)*scaleLen();kHeld[id]=d;noteOn('k'+id,d,kVel);return}}
   if(key==='z'||key==='x'){kOct=clamp(kOct+(key==='x'?1:-1),-2,2);note('keys · octave '+(kOct>0?'+':'')+kOct)}
@@ -1063,7 +1078,7 @@ function buildVox(){const el=$('#vox');let fam='',h='';VOX.forEach((v,i)=>{if(v.
   el.innerHTML='<p class="vh">'+VOX.length+' voices for the keyboard. Pick one, then play. The arrows beside the Keys button, or the [ and ] keys, step through them.</p>'+h+'</div>';el.onclick=e=>{const b=e.target.closest('.vb');if(b)setVoice(+b.dataset.i)};setVoice(S.voice)}
 $('#bVoice').onclick=e=>{e.stopPropagation();$('#vox').hidden=!$('#vox').hidden};
 
-addEventListener('keydown',e=>{if(/INPUT/.test(e.target.tagName))return;if(e.key==='[')setVoice(S.voice-1);if(e.key===']')setVoice(S.voice+1);if(e.key==='Escape')$('#vox').hidden=true});
+addEventListener('keydown',e=>{if(typingInto(e.target))return;if(e.key==='[')setVoice(S.voice-1);if(e.key===']')setVoice(S.voice+1);if(e.key==='Escape')$('#vox').hidden=true});
 $('#bBreath').onclick=()=>{S.breath=!S.breath;$('#bBreath').classList.toggle('on',S.breath);if(A.ctx)A.breathT0=A.ctx.currentTime;applyAll()};
 let hidePanels=false;$('#bHide').onclick=()=>{hidePanels=true;document.body.classList.add('idle')};
 let idleT;const wakeUI=()=>{if(hidePanels){hidePanels=false}document.body.classList.remove('idle');clearTimeout(idleT);idleT=setTimeout(()=>A.ctx&&document.body.classList.add('idle'),240000)};

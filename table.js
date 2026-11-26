@@ -719,7 +719,8 @@ void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uR
    falls as a soft sine at an exact rate; a faint layer of the clip lies under it to seed what appears.
    A plain seizure notice comes first and must be accepted. Any tap or key ends it, and it ends itself on its timer. */
 {const R=$('#dream'),cv=$('#dreamC'),x=cv.getContext('2d'),gate=$('#dreamGate'),v=$('#veil');
-  const COL={gold:[255,176,72],white:[255,246,232],red:[255,24,16]};
+  /* no saturated red: red flicker is the kind most likely to provoke a seizure. Deep amber stands in for it */
+  const COL={gold:[255,176,72],white:[255,246,232],amber:[255,128,44]};
   const D={hz:10,depth:.45,col:'gold',seed:true,noise:true,min:10};let run=null,nz=null;
   const b=document.createElement('button');b.className='pill';b.id='bDream';b.textContent='dreamachine';b.title='The Dreamachine: soft flicker for closed eyes, after Brion Gysin';$('#bTrans').after(b);
   const paint=()=>{gate.querySelector('#dmHz').textContent=D.hz.toFixed(2);gate.querySelector('#dmDepth').value=D.depth;

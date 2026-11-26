@@ -380,5 +380,5 @@ $('#bPresets').onclick=e=>{e.stopPropagation();openDr('presets')};
 $('#bCodex').onclick=e=>{e.stopPropagation();openDr('codex')};
 $('#bVoice').onclick=e=>{e.stopPropagation();openDr('vox')};
 addEventListener('pointerdown',e=>{if(e.target.classList.contains('hud')||e.target.closest('#core'))DR.forEach(d=>$('#'+d).hidden=true)});
-addEventListener('keydown',e=>{if(e.key==='Escape')DR.forEach(d=>$('#'+d).hidden=true);if(e.code==='Space'&&!e.repeat&&A.ctx&&!/INPUT|TEXTAREA/.test(e.target.tagName)){e.preventDefault();silence()}});
+addEventListener('keydown',e=>{if(e.key==='Escape')DR.forEach(d=>$('#'+d).hidden=true);if(e.code==='Space'&&!e.repeat&&A.ctx&&!typingInto(e.target)){e.preventDefault();silence()}});
 }
