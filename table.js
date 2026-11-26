@@ -811,3 +811,48 @@ void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uR
     else if(t.id==='dmSeed')D.seed=!D.seed;else if(t.id==='dmNoise')D.noise=!D.noise;else if(t.id==='dmLeave'){R.hidden=true;return}else if(t.id==='dmEnter'){begin();return}paint()});
   gate.querySelector('#dmDepth').addEventListener('input',e=>{D.depth=+e.target.value});
   addEventListener('resize',()=>{if(run)sizeC()})}
+
+/* ================= LOOPS: the grooves made for Varanus Salvation =================
+   Sixteen bars cut from the middle of each track at its measured tempo, crossfaded at the seam so they repeat without
+   a join. One plays at a time; a new one crossfades in. Haze closes a soft filter, squeezes the drum hits and sends the
+   groove into a dark echo, so the beat can be anything from present to far away. Off until chosen; never on the tone channel. */
+{const LP=[['dreamscape','Dreamscape',154.093,.1659],['aura-1','Aura I',167.795,.1917],['aura-2','Aura II',154.901,.1617],['dub-1','Dub I',171.429,.1854],['dub-2','Dub II',170.175,.184],
+    ['garden-1','Garden I',166.306,.1763],['garden-2','Garden II',165.624,.176],['liquid-1','Liquid I',139.206,.1735],['liquid-2','Liquid II',115.995,.1931],['nebula-1','Nebula I',86.079,.1679],
+    ['nebula-2','Nebula II',157.506,.1563],['pulse-1','Pulse I',116.346,.1382],['pulse-2','Pulse II',136.776,.1429],['temple','Temple',138.678,.2027],['velvet-1','Velvet I',162.609,.1807],['velvet-2','Velvet II',165.019,.1983]];
+  const L={cur:null,name:'',bpm:0,haze:.4,level:.5,lock:false,g:null,buf:new Map(),busy:0};
+  const d=document.createElement('div');d.className='jelly drawer';d.id='loops';d.hidden=true;$('#phantom').after(d);DR.push('loops');
+  d.innerHTML='<button class="pill dclose">close</button><h3>Loops</h3><p class="vh">Grooves made for Varanus Salvation, each cut to sixteen bars at its own tempo so it repeats without a join. One plays at a time; choosing another crossfades into it. Haze takes the beat from present to far away.</p>'
+    +'<div class="chips lpGrid">'+LP.map(([id,n,b])=>`<button class="chip" data-id="${id}" title="${Math.round(b)} beats a minute">${n}</button>`).join('')+'</div>'
+    +'<label class="mrow"><span>haze</span><input type="range" min="0" max="1" step=".01" value=".4" data-c="haze" aria-label="haze"></label>'
+    +'<label class="mrow"><span>level</span><input type="range" min="0" max="1" step=".01" value=".5" data-c="level" aria-label="loop level"></label>'
+    +'<div class="vg" style="margin-top:10px"><button class="vb" id="lpLock" title="Set the beat tone to a whole number of pulses in each bar of the loop">lock the beat to the loop</button> <button class="vb" id="lpStop">stop the loop</button></div><p class="vh" id="lpSt"></p>';
+  d.querySelector('.dclose').onclick=()=>{d.hidden=true};
+  const b=document.createElement('button');b.className='pill';b.id='bLoops';b.textContent='loops';$('.rside').insertBefore(b,$('#bPhantom'));b.onclick=e=>{e.stopPropagation();openDr('loops')};
+  const st=t=>{d.querySelector('#lpSt').textContent=t||''};
+  /* the chain: each loop's own fade, then the haze (filter, squeeze, dark echo), then the level, then the board */
+  const build=()=>{if(L.g)return L.g;const ctx=A.ctx,G={};G.in=gn(ctx,1);G.lp=bq(ctx,'lowpass',18000,.5);G.cmp=ctx.createDynamicsCompressor();G.cmp.attack.value=.003;G.cmp.release.value=.25;G.cmp.knee.value=6;
+    G.dry=gn(ctx,1);G.send=gn(ctx,0);G.d1=ctx.createDelay(2);G.d2=ctx.createDelay(2);G.d1.delayTime.value=.37;G.d2.delayTime.value=.53;G.fb=gn(ctx,.32);G.dk=bq(ctx,'lowpass',1400,.5);G.wet=gn(ctx,1);G.bus=gn(ctx,0);
+    G.in.connect(G.lp).connect(G.cmp).connect(G.dry).connect(G.bus);G.cmp.connect(G.send);G.send.connect(G.dk);G.dk.connect(G.d1);G.dk.connect(G.d2);G.d1.connect(G.fb);G.d2.connect(G.fb);G.fb.connect(G.dk);
+    G.d1.connect(G.wet);G.d2.connect(G.wet);G.wet.connect(G.bus);G.bus.connect(A.master);return L.g=G};
+  const applyHaze=()=>{if(!L.g)return;const G=L.g,t=A.ctx.currentTime,h=L.haze;G.lp.frequency.setTargetAtTime(18000*Math.pow(420/18000,Math.pow(h,.8)),t,.08);
+    G.cmp.threshold.setTargetAtTime(-6-30*h,t,.08);G.cmp.ratio.setTargetAtTime(1+11*h,t,.08);G.dry.gain.setTargetAtTime(1-.15*h+.35*h*h,t,.08);G.send.gain.setTargetAtTime(h*.5,t,.08);G.wet.gain.setTargetAtTime(.3+.3*h,t,.08)};
+  const applyLevel=()=>{if(!L.g||!L.cur)return;L.g.bus.gain.setTargetAtTime(L.level*2*(.072/L.cur.rms),A.ctx.currentTime,.1)};
+  const load=id=>{if(L.buf.has(id))return Promise.resolve(L.buf.get(id));return fetch('media/audio/loops/'+id+'.flac').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>A.ctx.decodeAudioData(a))
+    .then(x=>{L.buf.set(id,x);while(L.buf.size>3){const k=[...L.buf.keys()].find(k=>k!==id&&(!L.cur||k!==L.cur.id));if(!k)break;L.buf.delete(k)}return x})};
+  const fadeOut=(c,s)=>{if(!c)return;const t=A.ctx.currentTime;c.f.gain.cancelScheduledValues(t);c.f.gain.setValueAtTime(c.f.gain.value,t);c.f.gain.linearRampToValueAtTime(0,t+s);setTimeout(()=>{try{c.src.stop()}catch(_){}try{c.f.disconnect()}catch(_){}},s*1000+150)};
+  const lockBeat=()=>{if(!L.lock||!L.cur)return;const base=L.cur.bpm/240,k=Math.max(1,Math.round(S.beat/base)),nb=+(base*k).toFixed(3);S.beat=nb;paintDial();applyBeat();st(`${L.cur.name} · the beat tone is ${nb} Hz, ${k} pulses to each bar`)};
+  const paint=()=>{d.querySelectorAll('.lpGrid .chip').forEach(x=>x.classList.toggle('on',!!L.cur&&x.dataset.id===L.cur.id));d.querySelector('#lpLock').classList.toggle('on',L.lock)};
+  const play=id=>{if(!A.ctx)return say('enter first, then choose a loop');const row=LP.find(r=>r[0]===id),my=++L.busy;st('loading '+row[1]);
+    load(id).then(buf=>{if(my!==L.busy)return;const G=build(),ctx=A.ctx,src=ctx.createBufferSource(),f=gn(ctx,0);src.buffer=buf;src.loop=true;src.connect(f).connect(G.in);
+      const old=L.cur;L.cur={id,name:row[1],bpm:row[2],rms:row[3],src,f};src.start();f.gain.setValueAtTime(0,ctx.currentTime);f.gain.linearRampToValueAtTime(1,ctx.currentTime+(old?3:1.5));fadeOut(old,3);
+      applyHaze();applyLevel();paint();st(`${row[1]} · ${Math.round(row[2])} beats a minute · sixteen bars`);lockBeat();say('loop · '+row[1])})
+    .catch(()=>{if(my===L.busy)st('that loop would not load on this device')})};
+  const stop=()=>{L.busy++;fadeOut(L.cur,1.5);L.cur=null;paint();st('')};
+  d.addEventListener('click',e=>{const x=e.target.closest('button');if(!x)return;e.stopPropagation();
+    if(x.dataset.id){if(L.cur&&L.cur.id===x.dataset.id){stop();say('loop off')}else play(x.dataset.id)}
+    else if(x.id==='lpStop'){stop();say('loop off')}else if(x.id==='lpLock'){L.lock=!L.lock;paint();if(L.lock)lockBeat();else if(L.cur)st(`${L.cur.name} · ${Math.round(L.cur.bpm)} beats a minute`);say(L.lock?'beat locked to the loop':'beat unlocked')}});
+  d.addEventListener('input',e=>{const c=e.target.dataset.c;if(!c)return;L[c]=+e.target.value;if(c==='haze')applyHaze();else applyLevel();say(`${c} · ${Math.round(L[c]*100)}`)});
+  const baseLive2=liveList;liveList=function(){const R=baseLive2();if(L.cur)R.push(['loop · '+L.cur.name,stop]);return R};
+  const baseReset2=resetAll;resetAll=function(){if(L.cur)stop();return baseReset2.apply(this,arguments)};
+  /* the reset button held the first resetAll; point it at the current one so loops and phantoms stop with it too */
+  $('#bReset').onclick=()=>resetAll()}
