@@ -515,16 +515,16 @@ if(/[?&]diag\b/.test(location.search)){
  const s0=setEnv;setEnv=(id,start)=>{s0(id,start);if(ENV!=='universe'&&umbIsOn())setLayer('umbra',null)};
  buildPads();paintPads()}
 
-/* ================= the Keys bar: choose the keyboard's voice from the far left of the deck, above the dials =================
+/* ================= the Keys bar: choose the keyboard's voice from directly over the keyboard, centred =================
    The voice button used to sit among the menus on the right and got lost. It now lives here with a step back and a step forward.
    Pressing the name still opens the full list. On phones the bar sits directly above the keys. */
 {const bar=document.createElement('div'),v=$('#bVoice'),mk=(txt,title,step)=>{const b=document.createElement('button');b.className='pill kstep';b.textContent=txt;b.title=title;b.setAttribute('aria-label',title);
     b.onclick=e=>{e.stopPropagation();setVoice(S.voice+step)};return b};
  bar.id='keysBar';bar.append(mk('‹','Previous keyboard voice',-1),v,mk('›','Next keyboard voice',1));v.title='The voice the keyboard plays. Press to see all of them.';
- if(MOBILE)$('#keys').before(bar);else $('.knobwrap').prepend(bar);
+ $('#keys').before(bar);
  const st=document.createElement('style');st.textContent=`
   #keysBar{display:flex;gap:4px;align-items:stretch}
-  .knobwrap>#keysBar{padding-left:14px}.knobwrap>#keysBar #bVoice{flex:1;max-width:none}
+  @media (min-width:1001px) and (pointer:fine){.deck>#keysBar{grid-column:3;grid-row:1;align-self:start;justify-self:center;z-index:2}.deck>#keys{grid-column:3;grid-row:1;align-self:end;height:104px}}
   #keysBar #bVoice{min-width:190px;max-width:240px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 12px;min-height:26px;font-size:9px;border-color:rgba(255,190,110,.6)}
   #keysBar .kstep{padding:5px 11px;min-height:26px;font-size:13px;line-height:1}#keysBar .kstep::before{display:none!important}
   @media (max-width:1000px),(pointer:coarse){

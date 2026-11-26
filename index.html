@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Black Dragon II</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Cormorant+Garamond:ital,wght@1,600&family=Michroma&family=Chakra+Petch:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Grenze+Gotisch:wght@500;600;700&family=Texturina:ital,wght@0,400;0,500;0,600;1,400&family=Michroma&family=Cormorant+Garamond:ital,wght@1,600&family=Chakra+Petch:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --void:#040208; --ruby:#e0153f; --aqua:#2ff3d2; --uv:#8a4bff; --gold:#f4b942; --bone:#ece4d6;
@@ -533,6 +533,13 @@ body.idle .hud{transition:opacity 2.5s}
 #bFilmPrev{padding:7px 10px!important;font-size:15px!important}#bFilmPrev::before{display:none!important}
 #bBlank{--glow:#9fd8ff;font-weight:700;letter-spacing:.16em}
 @media (max-width:1000px){#bBlank{display:block!important;flex:0 0 auto;min-height:36px}.top .mark{font-size:19px}.top .pill{padding:8px 9px;font-size:9px}}
+/* ---------- GOTHIC FONT TRIAL (delete this block to go back) ----------
+   Names and titles in blackletter, buttons and text in a gothic book hand, numbers left technical so the readouts stay an instrument. */
+@font-face{font-family:"BDNum";src:url(https://fonts.gstatic.com/s/michroma/v21/PN_zRfy9qWD8fEagAPg9pTn5_PDb.woff2) format("woff2");unicode-range:U+30-39,U+2E,U+2C,U+25,U+2B,U+3A,U+D7;font-display:swap}
+:root{--serif:"Grenze Gotisch","Pirata One",serif;--tech:"BDNum","Texturina",Georgia,serif;--body:"BDNum","Texturina",Georgia,serif}
+body{font-size-adjust:.53}
+.mark,.st b,#proof h2,#bandN,#vox h4,.drawer h3,.drawer h4,#pads h3,#rBig,.prow b,.slot,.umbraBtn{font-style:normal!important;font-size-adjust:none;letter-spacing:.02em}
+.st b{font-weight:600}.drawer h3,#pads h3{font-weight:700}
 </style>
 </head>
 <body>
