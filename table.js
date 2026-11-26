@@ -361,94 +361,155 @@ let SLOTS=[null,null,null];try{const v=JSON.parse(localStorage.getItem('bd2-slot
     window.VMODE=Math.random()*6|0;paintKnobs();applyAll();say('dice · the vision is thrown')};
   const fz=mk('bFreeze','freeze','Hold the vision still');fz.onclick=()=>{window.FREEZE=!window.FREEZE;fz.classList.toggle('on',!!window.FREEZE);say(window.FREEZE?'freeze · the vision is held':'freeze off')}}
 
-/* ================= the cymatic sigil: a Chladni plate sung by the tone you hear =================
-   Carried over from Black Dragon 01's great screen and rebuilt to rise over the glass. In 1787 Ernst Chladni bowed
-   sand-strewn plates: the sand flees what moves and gathers on the nodal lines that stay still. Here the plate is
-   sung by the strongest tone measured on the tone channel; its pitch chooses the mode, the beat makes it breathe,
-   and the figure is read for its symmetry and named. Keep a sigil to save it as an image. */
+/* ================= the sand plate: cymatics in real grains, inside the centre dial =================
+   Rebuilt from Black Dragon 01's great screen. In 1787 Ernst Chladni bowed sand-strewn plates: the sand leaps where the
+   plate moves and comes to rest on the lines that stay still. Here every grain is its own body. The tone you hear (the key
+   you just played, else the strongest tone on the measured channel) chooses the figure; loudness shakes the grains, a note
+   kicks them into the air, silence lets them lie. Four plates, five tone recipes and fifteen visions, as on 01. */
 let TAP=null;const SL=new Float32Array(2048),SR=new Float32Array(2048);
 function sigilTap(){if(TAP)return TAP;if(!A.ctx||!A.toneBus)return null;
   const sp=A.ctx.createChannelSplitter(2),l=A.ctx.createAnalyser(),r=A.ctx.createAnalyser();l.fftSize=r.fftSize=2048;A.toneBus.connect(sp);sp.connect(l,0);sp.connect(r,1);return TAP={l,r}}
-{const c=$('#cym'),bar=$('#cymBar'),rd=$('#cymRead'),bShape=$('#cymShape'),bKeep=$('#cymKeep'),bClose=$('#cymX');
-  const gl=c.getContext('webgl',{alpha:true,premultipliedAlpha:true,antialias:false,preserveDrawingBuffer:false});
-  const SHP=['square','circle','hexagram','quasicrystal'],NAGA=['Ananta','Vasuki','Takshaka','Mucalinda','Virupaksha','Karkotaka','Shesha','Upananda','Nanda','Airavata','Padma','Mahapadma','Shankha','Kulika'];
-  let on=false,shape=1,mt=[2,0],mc=[2,0],hz=0,lvl=0,lastF=0,reading=null,keep=false,t0=performance.now(),rot=0;
-  const b=document.createElement('button');b.className='pill';b.id='bScope';b.textContent='cymatic sigil';
-  b.title='A Chladni plate rises over the glass, sung by the tone you hear: sand gathers on the still lines. Keep a sigil to save it.';$('#bTone').before(b);
-  const FS=`precision highp float;uniform vec2 uRes;uniform float uT,uM,uN,uQ,uBeat,uLvl,uRot;uniform int uShape;
-#define PI 3.14159265
-float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
-float bes(float n,float x){float s=0.;for(int i=0;i<24;i++){float t=(float(i)+.5)*PI/24.;s+=cos(n*t-x*sin(t));}return s/24.;}
-float circ1(vec2 p,float m,float n){float r=length(p),a=atan(p.y,p.x);return bes(n,(m+.5*n+.25)*PI*.9*r)*cos(n*a)*1.8;}
-float plate(vec2 p,float m,float n){
-  if(uShape==0){vec2 u=p*.5+.5;return cos(n*PI*u.x)*cos(m*PI*u.y)-cos(m*PI*u.x)*cos(n*PI*u.y);}
-  if(uShape==1){float n0=floor(n),fr=n-n0;float a=circ1(p,m,n0);if(fr<.001)return a;return mix(a,circ1(p,m,n0+1.),fr);}
-  if(uShape==2){float s=0.;for(int i=0;i<3;i++){float an=float(i)*PI/3.;vec2 d=vec2(cos(an),sin(an));s+=cos(m*PI*dot(p,d))-cos(n*PI*dot(p,vec2(-d.y,d.x))*.866);}return s/3.;}
-  float s=0.;for(int i=0;i<12;i++){if(float(i)>=uQ)break;float an=float(i)*PI/uQ;s+=cos(m*PI*.7*dot(p,vec2(cos(an),sin(an)))+uT*.12*mod(float(i),2.));}return s/(uQ*.5);}
-float field(vec2 p){float s=plate(p,uM,uN),w=1.;if(uShape!=1){s+=.42*plate(p,uM+1.,uN+1.);w+=.42;}s+=.18*plate(p,uM+2.,uN+(uShape==1?0.:2.));w+=.18;return s/w;}
-void main(){vec2 px=gl_FragCoord.xy;vec2 p=(px-.5*uRes)/(.5*min(uRes.x,uRes.y))*1.06;
-  p/=1.+.014*sin(6.2831*uBeat*uT)+uLvl*.025;float cs=cos(uRot),sn=sin(uRot);p=mat2(cs,-sn,sn,cs)*p;
-  float edge=uShape==0?max(abs(p.x),abs(p.y)):length(p);if(edge>1.03){gl_FragColor=vec4(0.);return;}
-  float f=field(p),sand=exp(-abs(f)*24.),core=exp(-abs(f)*80.);
-  float g=hash(floor(px/1.6)),gr=smoothstep(.25,1.,g);sand*=.45+.55*gr;core*=.6+.4*gr;
-  float a=atan(p.y,p.x),sheen=.5+.5*sin(a*2.+length(p)*5.-uT*.15);
-  vec3 amber=mix(vec3(1.,.58,.24),vec3(1.,.42,.36),sheen*.5),hot=vec3(1.,.94,.82);
-  vec3 col=amber*sand*1.05+hot*core*.95;
-  col+=vec3(.32,.16,.07)*smoothstep(.35,1.,abs(f))*.05;
-  float in_=smoothstep(1.005,.985,edge);col*=in_;col+=vec3(1.,.82,.55)*smoothstep(.014,0.,abs(edge-1.))*.4;
-  col+=hot*step(.996,g)*sand*.6*(.5+.5*sin(uT*3.+g*90.));
-  float al=clamp(max(col.r,max(col.g,col.b)),0.,1.);gl_FragColor=vec4(col,al);}`;
-  let P=null,U={};
+{const c=$('#cym'),bar=$('#cymBar');
+  const gl=c.getContext('webgl',{alpha:true,premultipliedAlpha:true,antialias:false,preserveDrawingBuffer:true});
+  const SHP=['square','circle','hexagram','quasicrystal'],TONES=['pure','glass','choir','bowl','tetractys'],TH=[1,3,3,4,4],
+    VISN=['plate','spiral','tunnel','kaleido','echo','hypnodisc','mandala','vortex','liquid','hyperspace','lotus','fractal','womb mandala','heptagram','kaen'],
+    TM=[[0,1,2,3,4,5,6,7],[0,2,4,6,8,10,12,14],[0,1,1,2,3,3,4,5],[0,2,4,6,9,12,15,19],[0,1,2,3,5,7,8,11]],
+    TN=[[0,1,2,3,4,5,6,7],[0,2,4,6,8,10,12,14],[0,0,1,1,2,2,3,3],[0,1,3,4,6,8,10,12],[0,1,1,2,3,4,4,6]],
+    NAGA=['Ananta','Vasuki','Takshaka','Mucalinda','Virupaksha','Karkotaka','Shesha','Upananda','Nanda','Airavata','Padma','Mahapadma','Shankha','Kulika'];
+  const PI=Math.PI,TAU=PI*2,N=MOBILE?9000:26000,G=MOBILE?128:160,E=1.3,SQ=.7071;
+  let on=false,big=false,shape=1,tone=0,vis=0,mode=null,hz=0,keyHz=0,keyT=0,kick=0,reading=null,keep=false,lastF=0,tint=[1,.7,.33],lastTint=0,T=0,sharp=27,
+    cBeat=0,cLvl=0,cRev=0,cZ=1,grid=null;
+  const pos=new Float32Array(N*2),seed=new Float32Array(N);
+  const scatter=i=>{if(shape===0&&vis===0){pos[i*2]=(Math.random()*2-1)*SQ;pos[i*2+1]=(Math.random()*2-1)*SQ}else{const r=Math.sqrt(Math.random()),a=Math.random()*TAU;pos[i*2]=r*Math.cos(a);pos[i*2+1]=r*Math.sin(a)}};
+  for(let i=0;i<N;i++){seed[i]=Math.random();const r=Math.sqrt(Math.random()),a=Math.random()*TAU;pos[i*2]=r*Math.cos(a);pos[i*2+1]=r*Math.sin(a)}
+  const b=document.createElement('button');b.className='pill';b.id='bScope';b.textContent='cymatics';
+  b.title='Sand on a plate inside the centre dial. The tone you hear gathers the grains into its figure; a note kicks them into the air.';$('#bTone').before(b);
+  bar.innerHTML='<span id="cymRead"></span><button id="cymShape" title="Change the plate"></button><span class="cymV"><button id="cymVp" title="Previous vision">‹</button><button id="cymVis" title="Change the vision"></button><button id="cymVn" title="Next vision">›</button></span><button id="cymTone" title="Change the tone recipe"></button><button id="cymBig" title="Lift the plate out of the dial, or set it back"></button><button id="cymKeep" title="Save this figure as an image">keep</button><button id="cymX" title="Close cymatics">close</button>';
+  const rd=$('#cymRead'),bShape=$('#cymShape'),bVis=$('#cymVis'),bTone=$('#cymTone'),bBig=$('#cymBig');
+  /* the grains are drawn as points */
+  let P=null,U={},bufP=null;
   if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
-    P=gl.createProgram();gl.attachShader(P,sh(gl.VERTEX_SHADER,'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));gl.attachShader(P,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(P);
-    const q=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,q);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
-    gl.useProgram(P);const l=gl.getAttribLocation(P,'p');gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0);
-    ['uRes','uT','uM','uN','uQ','uBeat','uLvl','uRot','uShape'].forEach(n=>U[n]=gl.getUniformLocation(P,n))}
-  /* the mode a pitch rings: m²+n² grows with frequency, as on Black Dragon 01's plate, set three times finer so each tone draws a fuller figure */
-  const modeFor=f=>{const T=(f<60?f*8:f)/7;let best=[2,1],be=1e9;for(let m=1;m<=16;m++)for(let n=(shape===0?1:0);n<m;n++){const e=Math.abs(m*m+n*n-T)+m*.001;if(e<be){be=e;best=[m,n]}}return best};
-  /* the CPU mirror of the plate, used only to read the figure's symmetry */
-  const besJ=(n,x)=>{let s=0;for(let i=0;i<40;i++){const t=(i+.5)*Math.PI/40;s+=Math.cos(n*t-x*Math.sin(t))}return s/40};
-  const plateCPU=(x,y,m,n)=>{const PI=Math.PI;if(shape===0){const u=x*.5+.5,v=y*.5+.5;return Math.cos(n*PI*u)*Math.cos(m*PI*v)-Math.cos(m*PI*u)*Math.cos(n*PI*v)}
-    if(shape===1){const r=Math.hypot(x,y),a=Math.atan2(y,x);return besJ(n,(m+.5*n+.25)*PI*.9*r)*Math.cos(n*a)*1.8}
+    P=gl.createProgram();
+    gl.attachShader(P,sh(gl.VERTEX_SHADER,`attribute vec2 p;attribute float s;uniform float uSize,uT,uKick;uniform vec3 uTint;varying vec3 vC;
+void main(){gl_Position=vec4(p.x*.985,-p.y*.985,0.,1.);float h=fract(s*7.13);
+  vec3 sand=mix(vec3(.96,.89,.77),vec3(1.,.72,.40),smoothstep(.5,1.,h));sand=mix(sand,uTint,step(.78,fract(s*3.7))*.6);
+  float br=.5+.5*fract(s*13.7);float tw=step(.955,s)*pow(.5+.5*sin(uT*(2.+h*7.)+h*80.),8.)*1.8;
+  vC=sand*(br+tw+uKick*.35);gl_PointSize=uSize*(.75+.65*fract(s*5.3));}`));
+    gl.attachShader(P,sh(gl.FRAGMENT_SHADER,`precision mediump float;varying vec3 vC;
+void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);float lit=1.-.55*smoothstep(0.,.55,length(q+vec2(.13,.13)));gl_FragColor=vec4(vC*lit*a,a);}`));
+    gl.linkProgram(P);gl.useProgram(P);
+    const bs=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bs);gl.bufferData(gl.ARRAY_BUFFER,seed,gl.STATIC_DRAW);const ls=gl.getAttribLocation(P,'s');gl.enableVertexAttribArray(ls);gl.vertexAttribPointer(ls,1,gl.FLOAT,false,0,0);
+    bufP=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bufP);gl.bufferData(gl.ARRAY_BUFFER,pos,gl.DYNAMIC_DRAW);const lp=gl.getAttribLocation(P,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
+    ['uSize','uT','uKick','uTint'].forEach(n=>U[n]=gl.getUniformLocation(P,n));gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA)}
+  /* Bessel functions of the first kind, tabled once per order: the round plate's rings */
+  const JT={},JDX=.04,JLEN=3600;
+  const besT=n=>{if(JT[n])return JT[n];const a=new Float32Array(JLEN);for(let i=0;i<JLEN;i++){const x=i*JDX;let s=0;for(let k=0;k<48;k++){const t=(k+.5)*PI/48;s+=Math.cos(n*t-x*Math.sin(t))}a[i]=s/48}return JT[n]=a};
+  const besJ=(tb,x)=>{const f=x/JDX,i=f|0;if(i>=JLEN-1)return 0;return tb[i]+(tb[i+1]-tb[i])*(f-i)};
+  const qOf=n=>clamp(Math.round(n)+4,5,12);
+  const plateCPU=(x,y,m,n)=>{if(shape===0){const u=x*.5+.5,v=y*.5+.5;return Math.cos(n*PI*u)*Math.cos(m*PI*v)-Math.cos(m*PI*u)*Math.cos(n*PI*v)}
+    if(shape===1){const r=Math.hypot(x,y),xx=(m+.5*n+.25)*PI*.9*r;return besJ(besT(n),xx)*Math.cos(n*Math.atan2(y,x))*Math.max(1,Math.sqrt(xx*1.57))*1.25}
     if(shape===2){let s=0;for(let i=0;i<3;i++){const an=i*PI/3,dx=Math.cos(an),dy=Math.sin(an);s+=Math.cos(m*PI*(x*dx+y*dy))-Math.cos(n*PI*(-x*dy+y*dx)*.866)}return s/3}
     const Q=qOf(n);let s=0;for(let i=0;i<Q;i++){const an=i*PI/Q;s+=Math.cos(m*PI*.7*(x*Math.cos(an)+y*Math.sin(an)))}return s/(Q*.5)};
-  const qOf=n=>clamp(Math.round(n)+4,5,12);
-  const read=(m,n)=>{let fold=1,mirror=false,grp;const TAU=Math.PI*2;
+  /* the plate's motion, laid on a grid whenever the figure changes; the grains read it as they move */
+  const build=()=>{if(!mode){grid=null;return}const [m,n]=mode,H=shape===1?Math.min(TH[tone],3):TH[tone];grid=grid||new Float32Array(G*G);let tot=0;const hs=[];
+    for(let h=0;h<H;h++){let w=Math.pow(.6,h);if(tone===1)w/=1+h*.3;tot+=w;hs.push([m+TM[tone][h]*(shape===3?.5:1),n+(shape===1||shape===3?0:TN[tone][h]),w])}
+    for(let j=0;j<G;j++){const y=(j/(G-1)*2-1)*E;for(let i=0;i<G;i++){const x=(i/(G-1)*2-1)*E;let s=0;for(let h=0;h<H;h++)s+=hs[h][2]*plateCPU(x,y,hs[h][0],hs[h][1]);grid[j*G+i]=s/tot}}
+    sharp=30-21*Math.min(1,H/8)};
+  const samp=(x,y)=>{let u=x/E*.5+.5,v=y/E*.5+.5;u-=Math.floor(u*.5)*2;if(u>1)u=2-u;v-=Math.floor(v*.5)*2;if(v>1)v=2-v;
+    const fx=u*(G-1),fy=v*(G-1);let ix=fx|0,iy=fy|0;if(ix>G-2)ix=G-2;if(iy>G-2)iy=G-2;const ax=fx-ix,ay=fy-iy,k=iy*G+ix;
+    const a=grid[k],b2=grid[k+1],c2=grid[k+G],d=grid[k+G+1];return a+(b2-a)*ax+(c2-a+(a-b2-c2+d)*ax)*ay};
+  const HX=new Float32Array(7),HY=new Float32Array(7);let par=0;const fr=x=>x-Math.floor(x),md=(x,m)=>x-Math.floor(x/m)*m,SEG=6,SPD=.25;
+  const segD=(px,py,ax,ay,bx,by)=>{const vx=bx-ax,vy=by-ay,wx=px-ax,wy=py-ay,h=clamp((wx*vx+wy*vy)/(vx*vx+vy*vy),0,1);return Math.hypot(wx-vx*h,wy-vy*h)};
+  /* the field a grain feels at a place: 01's fifteen visions, each a way of folding the plate */
+  const F=(x,y)=>{if(!grid)return 0;const t=T;let px=x*cZ,py=y*cZ;const sc=1/(1+.03*cBeat+cLvl*.03+cRev*.05*Math.sin(t*7));px*=sc;py*=sc;
+    let r=Math.hypot(px,py),a=Math.atan2(py,px);
+    if(cRev>.75){const sg=TAU/(6+Math.floor(cRev*6));let aa=md(a+t*.2,sg);aa=Math.abs(aa-sg*.5);const k=Math.min(1,(cRev-.75)*4);px+=(r*Math.cos(aa)-px)*k;py+=(r*Math.sin(aa)-py)*k;a=Math.atan2(py,px)}
+    let qx=px,qy=py,f;
+    switch(vis){
+      case 1:a+=r*3.2-t*.4;qx=r*Math.cos(a);qy=r*Math.sin(a);break;
+      case 2:case 6:case 9:{if(vis===6){const sg=TAU/SEG;a=md(a,sg);a=Math.abs(a-sg*.5)}
+        const lx=a/PI*SEG*.5,ly=vis===9?.35/(r+.02)+t*SPD*2:Math.log(r+1e-4)*1.1-t*SPD;qx=fr(lx)*2-1;qy=fr(ly)*2-1;break}
+      case 3:{const sg=TAU/SEG;a=md(a+t*.05,sg);a=Math.abs(a-sg*.5);const k=1+.25*Math.sin(t*.2);qx=r*Math.cos(a)*k;qy=r*Math.sin(a)*k;break}
+      case 7:a+=1.2*Math.sin(t*.3)/(r+.35);r+=.05*Math.sin(r*18-t*3);qx=r*Math.cos(a);qy=r*Math.sin(a);break;
+      case 8:for(let i=0;i<3;i++){const dx=.26*Math.sin(qy*2.7+t*.7+i),dy=.26*Math.cos(qx*2.3-t*.6+i*1.7);qx+=dx;qy+=dy}break;
+      case 10:{const k=SEG*.5,rr=r*(1+.35*Math.cos(SEG*a+t*.3))*1.2;qx=rr*Math.cos(a*k*.5);qy=rr*Math.sin(a*k*.5);break}
+      case 11:for(let i=0;i<4;i++){qx=Math.abs(qx)-.45;qy=Math.abs(qy)-.35;const an=t*.07*SPD+i*.6,cs=Math.cos(an),sn=Math.sin(an),nx=(cs*qx-sn*qy)*1.25;qy=(sn*qx+cs*qy)*1.25;qx=nx}break;
+      case 12:{const d=Math.max(Math.abs(px),Math.abs(py));if(r<.42){const sg=PI/4;let aa=md(a+t*.03,sg);aa=Math.abs(aa-sg*.5);const rr=r*(1+.35*Math.cos(8*a))*2.2;qx=rr*Math.cos(aa);qy=rr*Math.sin(aa)}
+        else{const side=Math.abs(px)>Math.abs(py)?py/d:px/d;qx=(fr(d*4-t*.05)*2-1)*1.1;qy=side*1.65}break}
+      case 13:{const sg=TAU/7;let aa=md(a+t*.04,sg);aa=Math.abs(aa-sg*.5);qx=r*Math.cos(aa)*1.35;qy=r*Math.sin(aa)*1.35;break}
+      case 14:{const fx=px*2.2,fy=py*2.2-t*(.6+SPD),n1=.5+.25*Math.sin(fx*1.7+1.3*Math.sin(fy*1.3+t*.2))+.25*Math.sin(fy*2.1+fx*.7);qx=px*1.15+(n1-.5)*.55;qy=py*1.15-n1*.45;break}}
+    if(vis===4){const c1=Math.cos(t*.1)*1.618,s1=Math.sin(t*.1)*1.618,c2=Math.cos(-t*.13)*2.618,s2=Math.sin(-t*.13)*2.618;
+      f=(samp(qx,qy)*.6+samp(c1*qx-s1*qy,s1*qx+c1*qy)*.3+samp(c2*qx-s2*qy,s2*qx+c2*qy)*.2)/1.1}
+    else f=samp(qx,qy);
+    if(vis===5){const v=3*a/TAU+2.4*Math.log(r+1e-3)-t*.5;f=f*.4+(Math.abs(fr(v)-.5)*2-.5)*.9}
+    else if(vis===13){let hp=1;for(let i=0;i<7;i++){const j=(i+3)%7,d=segD(px,py,HX[i],HY[i],HX[j],HY[j]);if(d<hp)hp=d}
+      hp=Math.min(hp,Math.abs(r-.86));f=Math.min(Math.abs(f),hp*7)}
+    return f};
+  /* the figure a pitch rings: m²+n² rises with frequency, as on 01's plate */
+  const modeFor=f=>{const Tq=(f<60?f*16:f)/18;let best=[2,1],be=1e9;for(let m=1;m<=14;m++)for(let n=(shape===0?1:0);n<m;n++){const e=Math.abs(m*m+n*n-Tq)+m*.001;if(e<be){be=e;best=[m,n]}}return best};
+  const read=(m,n)=>{let fold=1,mirror=false,grp;
     if(shape===1){fold=n===0?0:2*n;grp=n===0?'D∞':'D'+fold}else if(shape===3){const Q=qOf(n);fold=Q%2?2*Q:Q;grp='D'+fold}
-    else{const fld=(x,y)=>plateCPU(x,y,m,n)+.42*plateCPU(x,y,m+1,n+1)+.18*plateCPU(x,y,m+2,n+2),samp=[];for(let ri=1;ri<=5;ri++)for(let ai=0;ai<72;ai++)samp.push([ri/6*.9,ai/72*TAU]);
-      const fv=(r,a)=>fld(r*Math.cos(a),r*Math.sin(a)),base=samp.map(([r,a])=>fv(r,a)),e0=base.reduce((s,v)=>s+v*v,0)||1;
-      for(let k=12;k>=2;k--){let cc=0;samp.forEach(([r,a],i)=>cc+=base[i]*fv(r,a+TAU/k));if(Math.abs(cc)/e0>.97){fold=k;break}}
-      let mc2=0;samp.forEach(([r,a],i)=>mc2+=base[i]*fv(r,-a));mirror=Math.abs(mc2)/e0>.97;grp=(mirror?'D':'C')+fold}
-    return{m,n,grp,name:NAGA[(m*5+n*3+shape*7)%NAGA.length]}};
+    else{const samp2=[];for(let ri=1;ri<=5;ri++)for(let ai=0;ai<72;ai++)samp2.push([ri/6*.9,ai/72*TAU]);
+      const fv=(r,a)=>plateCPU(r*Math.cos(a),r*Math.sin(a),m,n),base=samp2.map(([r,a])=>fv(r,a)),e0=base.reduce((s,v)=>s+v*v,0)||1;
+      for(let k=12;k>=2;k--){let cc=0;samp2.forEach(([r,a],i)=>cc+=base[i]*fv(r,a+TAU/k));if(Math.abs(cc)/e0>.97){fold=k;break}}
+      let mc2=0;samp2.forEach(([r,a],i)=>mc2+=base[i]*fv(r,-a));mirror=Math.abs(mc2)/e0>.97;grp=(mirror?'D':'C')+fold}
+    return{m,n,grp,name:NAGA[(m*5+n*3+shape*7+tone*11)%NAGA.length]}};
+  const setHz=f=>{hz=f;const nm=modeFor(f);if(!mode||nm[0]!==mode[0]||nm[1]!==mode[1]){mode=nm;build();reading=read(nm[0],nm[1]);kick=Math.max(kick,.55)}};
+  const rebuild=()=>{if(hz){mode=modeFor(hz);build();reading=read(mode[0],mode[1])}kick=1;label()};
   /* the strongest tone on the tone channel, measured from the Proof analyser */
   const fb=new Float32Array(16384);
   const measure=()=>{if(!A.ctx||!A.anL)return 0;A.anL.getFloatFrequencyData(fb);const bw=A.ctx.sampleRate/A.anL.fftSize,a=Math.round(30/bw),z=Math.round(2000/bw);let k=a;
     for(let i=a;i<=z;i++)if(fb[i]>fb[k])k=i;if(fb[k]<-75)return 0;const y0=fb[k-1],y1=fb[k],y2=fb[k+1],d=(y0-y2)/(2*(y0-2*y1+y2)||1);return(k+clamp(d,-.5,.5))*bw};
-  let box={x:0,y:0,s:0};
-  const place=()=>{let cx=innerWidth/2,cy=innerHeight/2,s=Math.min(innerWidth,innerHeight)*.86;
-    if(MOBILE){const top=12,bot=bar.getBoundingClientRect().top-8||innerHeight;cy=(top+bot)/2;s=Math.min(innerWidth*.98,bot-top)}
-    else s=Math.min(s,innerHeight-150);
-    if(Math.abs(box.s-s)>1||Math.abs(box.x-cx)>1||Math.abs(box.y-cy)>1){box={x:cx,y:cy,s};const dp=Math.min(devicePixelRatio||1,MOBILE?1:1.25);
-      c.style.width=c.style.height=s+'px';c.style.left=(cx-s/2)+'px';c.style.top=(cy-s/2)+'px';c.width=c.height=Math.round(s*dp)}};
-  const label=()=>{if(!reading){rd.textContent=A.ctx?SHP[shape]+' plate · waiting for a tone':SHP[shape]+' plate · it wakes with the sound';return}
-    rd.textContent=`${SHP[shape]} plate · ${hz.toFixed(1)} Hz · mode ${reading.m},${reading.n} · ${reading.grp} · ${reading.name}`};
-  const draw=now=>{if(!on)return;requestAnimationFrame(draw);if(!gl)return;place();const t=(now-t0)/1000,dt=Math.min(.5,(now-(draw.l||now))/1000);draw.l=now;
-    if(now-lastF>180){lastF=now;const f=measure();if(f){hz=f;const nm=modeFor(f);if(nm[0]!==mt[0]||nm[1]!==mt[1]||!reading||reading.shape!==shape){mt=nm;reading=read(nm[0],nm[1]);reading.shape=shape}}else reading=null;label()}
-    const k=1-Math.exp(-dt*1.4);mc[0]+=(mt[0]-mc[0])*k;mc[1]+=(mt[1]-mc[1])*k;rot+=dt*.02;
-    if(TAP||sigilTap()){TAP.l.getFloatTimeDomainData(SL);let s=0;for(let i=0;i<2048;i+=4)s+=SL[i]*SL[i];lvl+=(Math.min(1,Math.sqrt(s/512)*4)-lvl)*.1}
-    gl.viewport(0,0,c.width,c.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);if(!reading&&!hz)return;
-    gl.uniform2f(U.uRes,c.width,c.height);gl.uniform1f(U.uT,t);gl.uniform1f(U.uM,mc[0]);gl.uniform1f(U.uN,mc[1]);gl.uniform1f(U.uQ,qOf(mc[1]));
-    gl.uniform1f(U.uBeat,S.beat||0);gl.uniform1f(U.uLvl,lvl);gl.uniform1f(U.uRot,rot);gl.uniform1i(U.uShape,shape);gl.drawArrays(gl.TRIANGLES,0,3);
-    if(keep){keep=false;const o=document.createElement('canvas');o.width=o.height=1080;const x=o.getContext('2d');x.fillStyle='#050406';x.fillRect(0,0,1080,1080);x.drawImage(c,90,60,900,900);
-      x.fillStyle='rgba(255,220,170,.92)';x.textAlign='center';x.font='40px "Pirata One"';x.fillText(reading?reading.name:'Black Dragon II',540,1005);
-      x.font='17px "Michroma"';x.fillText(rd.textContent.replace(' · '+(reading?reading.name:''),''),540,1045);
-      o.toBlob(bl=>{save(bl,'black-dragon-sigil-'+(reading?reading.name.toLowerCase()+'-':'')+hz.toFixed(1)+'hz.png');say('sigil kept · '+(reading?reading.name:'saved'))},'image/png')}};
-  /* on a phone the plate takes the whole glass: the panels step aside until it is closed or a tab is chosen */
-  const set=v=>{on=v;c.hidden=bar.hidden=!v;b.classList.toggle('on',v);document.body.classList.toggle('cymOpen',v&&MOBILE);
-    if(v){box.s=0;reading=null;hz=0;lastF=0;label();requestAnimationFrame(draw);say(gl?'cymatic sigil · the tone you hear draws in the sand':'this device cannot draw the plate')}else say('cymatic sigil off')};
-  b.onclick=()=>set(!on);bClose.onclick=()=>set(false);$('#tabs').addEventListener('click',()=>{if(on&&MOBILE)set(false)});
-  bShape.onclick=()=>{shape=(shape+1)%4;bShape.textContent='plate · '+SHP[shape];reading=null;lastF=0;say('plate · '+SHP[shape])};
-  bKeep.onclick=()=>{if(!reading)return say('play a tone first, then keep its sigil');keep=true}}
+  /* a key played takes the plate at once and holds it a few seconds; then the measured tone takes it back */
+  const cymNote0=noteOn;noteOn=(id,i,vel=1)=>{cymNote0(id,i,vel);if(!on||!A.ctx)return;const V=VOX[S.voice]||VOX[0],f=degFreq(i)*Math.pow(2,V.oct||0);if(!(f>0))return;
+    keyHz=f;keyT=performance.now();kick=Math.max(kick,.6+.4*Math.min(1,vel));setHz(f);label()};
+  const label=()=>{bShape.textContent='plate · '+SHP[shape];bVis.textContent=VISN[vis];bTone.textContent='tone · '+TONES[tone];bBig.textContent=big?'set in dial':'lift out';
+    rd.textContent=!A.ctx?'the sand wakes with the sound':!reading?'waiting for a tone':`${hz.toFixed(1)} Hz · figure ${reading.m},${reading.n} · ${reading.grp} · ${reading.name}`};
+  let box={x:0,y:0,s:0,v:false};
+  const place=()=>{let cx,cy,s,v=true;
+    if(big){cx=innerWidth/2;if(MOBILE){const top=12,bot=bar.getBoundingClientRect().top-8||innerHeight;cy=(top+bot)/2;s=Math.min(innerWidth*.96,bot-top)}else{s=Math.min(innerWidth*.8,innerHeight-236);cy=62+s/2}}
+    else{const d=$('#dial').getBoundingClientRect();v=d.width>40;cx=d.left+d.width/2;cy=d.top+d.height/2;s=d.width*.7;
+      if(!MOBILE&&v){const side=d.top-$('.acts').getBoundingClientRect().bottom<50;bar.classList.toggle('side',side);const bw=bar.offsetWidth,bh=bar.offsetHeight;
+        if(side){bar.style.left=(d.right+8)+'px';bar.style.top=Math.max(4,cy-bh/2)+'px'}else{bar.style.left=clamp(cx,bw/2+6,innerWidth-bw/2-6)+'px';bar.style.top=Math.max(4,d.top-bh-6)+'px'}}}
+    if(MOBILE){const sb=big||$('.hud').dataset.tab==='more';if(bar.hidden===sb)bar.hidden=!sb}
+    if(v!==box.v){box.v=v;c.style.visibility=v?'visible':'hidden'}
+    if(!v)return false;
+    if(Math.abs(box.s-s)>1||Math.abs(box.x-cx)>1||Math.abs(box.y-cy)>1){box.x=cx;box.y=cy;box.s=s;const dp=Math.min(devicePixelRatio||1,2);
+      c.style.width=c.style.height=s+'px';c.style.left=(cx-s/2)+'px';c.style.top=(cy-s/2)+'px';const px=Math.round(s*dp);if(c.width!==px)c.width=c.height=px}
+    return true};
+  const draw=now=>{if(!on)return;requestAnimationFrame(draw);tick(now)};
+  const tick=now=>{if(!gl)return;const dt=Math.min(.05,(now-(draw.l||now))/1000);draw.l=now;if(!place())return;T+=dt;
+    if(now-lastF>120){lastF=now;if(keyHz&&now-keyT>3200)keyHz=0;if(!keyHz){const f=measure();if(f)setHz(f)}label()}
+    if(now-lastTint>700){lastTint=now;const m=/#?([0-9a-f]{6})/i.exec(window.ENVCOL||getComputedStyle(document.documentElement).getPropertyValue('--b')||'');if(m){const v=parseInt(m[1],16);tint=[(v>>16)/255,(v>>8&255)/255,(v&255)/255]}}
+    /* how hard the plate is shaking: silence leaves the sand lying, loudness makes it dance, the beat rocks it */
+    const L=A.ctx?lvl:0,rev=window.REVV||0,beat=S.beat||0,wake=clamp((L-.004)/.04,0,1);kick*=Math.exp(-dt*5);
+    cLvl=L;cRev=rev;cBeat=beat<20?Math.sin(TAU*beat*T):0;cZ=shape===0&&vis===0?1/SQ:1;
+    const sq=shape===0&&vis===0,move=(wake*(.55+L*1.6)*(1+.45*cBeat*(beat<14?1:0))+kick*2.6+rev*1.2)*Math.min(2,dt*60),heat=sharp/(1+kick*5+rev*1.5+L*.6);
+    if(vis===13)for(let i=0;i<7;i++){const a1=-PI*.5+i*TAU/7+T*.04;HX[i]=.82*Math.cos(a1);HY[i]=.82*Math.sin(a1)}
+    const hv=vis===4||vis===8||vis===11||vis===13?2:1;par^=1;
+    if(move>.002)for(let i=hv>1?par:0;i<N;i+=hv){const k=i*2,x=pos[k],y=pos[k+1],f0=Math.abs(F(x,y)),st=((.004+.06*(f0>1?1:f0))*move+kick*.012)*(hv>1?1.5:1),
+        nx=x+(Math.random()*2-1)*st,ny=y+(Math.random()*2-1)*st;
+      if(sq?(nx>SQ||nx<-SQ||ny>SQ||ny<-SQ):(nx*nx+ny*ny>1))continue;
+      const f1=Math.abs(F(nx,ny));if(f1<=f0||Math.random()<Math.exp((f0-f1)*heat)){pos[k]=nx;pos[k+1]=ny}}
+    gl.viewport(0,0,c.width,c.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(P);gl.bindBuffer(gl.ARRAY_BUFFER,bufP);gl.bufferSubData(gl.ARRAY_BUFFER,0,pos);
+    gl.uniform1f(U.uSize,Math.max(1.3,c.width/(MOBILE?210:250)));gl.uniform1f(U.uT,T);gl.uniform1f(U.uKick,Math.min(1,kick));gl.uniform3f(U.uTint,tint[0],tint[1],tint[2]);gl.drawArrays(gl.POINTS,0,N);
+    if(keep){keep=false;const o=document.createElement('canvas');o.width=o.height=1080;const x=o.getContext('2d');x.fillStyle='#050406';x.fillRect(0,0,1080,1080);
+      x.beginPath();x.arc(540,500,452,0,TAU);x.fillStyle='#0b090d';x.fill();x.drawImage(c,90,50,900,900);
+      x.fillStyle='rgba(255,220,170,.92)';x.textAlign='center';x.font='600 44px "Grenze Gotisch"';x.fillText(reading?reading.name:'Black Dragon II',540,1010);
+      x.font='17px "Texturina"';x.fillText(`${SHP[shape]} plate · ${VISN[vis]} · ${TONES[tone]} · ${hz.toFixed(1)} Hz`,540,1048);
+      o.toBlob(bl=>{save(bl,'black-dragon-sand-'+(reading?reading.name.toLowerCase()+'-':'')+hz.toFixed(1)+'hz.png');say('figure kept · '+(reading?reading.name:'saved'))},'image/png')}};
+  const seat=()=>{c.classList.toggle('big',big);bar.classList.toggle('big',big);if(big)document.body.append(c);else $('#dial').before(c);document.body.classList.toggle('cymOpen',on&&big&&MOBILE);
+    if(big||MOBILE){bar.style.left='';bar.style.top='';bar.classList.remove('side')}box.s=0;box.v=null;label()};
+  const set=v=>{on=v;c.hidden=bar.hidden=!v;b.classList.toggle('on',v);document.body.classList.toggle('cymIn',v);big=v&&MOBILE;seat();
+    if(v){lastF=0;draw.l=0;kick=1;requestAnimationFrame(draw);say(gl?'cymatics · the tone you hear gathers the sand':'this device cannot draw the plate')}else say('cymatics off')};
+  b.onclick=()=>set(!on);$('#cymX').onclick=()=>set(false);$('#tabs').addEventListener('click',()=>{if(on&&big&&MOBILE){big=false;seat()}});
+  bShape.onclick=()=>{shape=(shape+1)%4;if(shape===0&&vis===0)for(let i=0;i<N;i++){const x=pos[i*2],y=pos[i*2+1];if(x>SQ||x<-SQ||y>SQ||y<-SQ)scatter(i)}rebuild();say('plate · '+SHP[shape])};
+  const stepVis=d=>{const was=shape===0&&vis===0;vis=(vis+d+VISN.length)%VISN.length;if(shape===0&&vis===0&&!was)for(let i=0;i<N;i++){const x=pos[i*2],y=pos[i*2+1];if(x>SQ||x<-SQ||y>SQ||y<-SQ)scatter(i)}kick=1;label();say('vision · '+VISN[vis])};
+  bVis.onclick=$('#cymVn').onclick=()=>stepVis(1);$('#cymVp').onclick=()=>stepVis(-1);
+  bTone.onclick=()=>{tone=(tone+1)%5;rebuild();say('tone · '+TONES[tone])};
+  bBig.onclick=()=>{big=!big;seat();if(MOBILE&&!big){const p=$('#tabs [data-t=play]');if(p)p.click()}say(big?'the plate is lifted out':MOBILE?'the plate is set in the dial · its controls wait under more':'the plate is set in the dial')};
+  $('#cymKeep').onclick=()=>{if(!reading)return say('play a tone first, then keep its figure');keep=true};
+  window.CYM={get on(){return on},set,tick,state:()=>({shape,tone,vis,mode,hz,kick,big,N})}}
 
 /* ================= the small screen in Proof: spectrum, figure, seal ================= */
 window.PEARL=0;

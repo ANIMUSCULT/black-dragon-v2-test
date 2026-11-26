@@ -44,14 +44,19 @@ button:focus-visible,.knob:focus-visible,#dial:focus-visible{outline:2px solid v
 #transBar button{font:inherit;letter-spacing:inherit;color:inherit;background:rgba(160,255,220,.06);border:1px solid rgba(160,255,220,.35);border-radius:99px;padding:7px 12px;cursor:pointer;margin:0 2px}
 #transBar button.on{background:#d8f5ea;color:#05140f;border-color:#fff}
 @media (max-width:1000px),(pointer:coarse){#transBar{bottom:calc(76px + env(safe-area-inset-bottom,0px))}#transBar button{min-height:36px}body.transOpen .hud{opacity:0;pointer-events:none}}
-/* the cymatic sigil: a Chladni plate sung by the tone you hear, risen over the glass */
-#cym{position:fixed;z-index:4;pointer-events:none;mix-blend-mode:screen}
-#cymBar{position:fixed;z-index:6;left:50%;bottom:150px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;max-width:94vw;
-  font:10px var(--tech,sans-serif);letter-spacing:.14em;color:#ffd9a0;background:rgba(0,0,0,.5);border:1px solid rgba(255,180,84,.35);border-radius:14px;padding:7px 8px 7px 14px;backdrop-filter:blur(10px)}
-#cymRead{margin-right:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60vw}
-#cymBar button{font:inherit;letter-spacing:inherit;color:inherit;background:rgba(255,180,84,.08);border:1px solid rgba(255,180,84,.4);border-radius:99px;padding:7px 12px;cursor:pointer}
+/* the sand plate: cymatics in real grains, seated in the centre dial or lifted out over the glass */
+#cym{position:fixed;pointer-events:none;border-radius:50%;background:radial-gradient(circle at 42% 34%,rgba(34,28,33,.9),rgba(8,6,10,.94) 62%,rgba(2,2,4,.96))}
+#cym.big{z-index:5;box-shadow:0 0 0 1px rgba(255,255,255,.22),0 0 70px rgba(0,0,0,.85)}
+#cymBar{position:fixed;z-index:6;left:50%;transform:translateX(-50%);display:flex;flex-wrap:nowrap;justify-content:center;align-items:center;gap:5px;max-width:94vw;white-space:nowrap;
+  font:10px var(--tech,sans-serif);letter-spacing:.1em;color:#ffd9a0;background:rgba(0,0,0,.55);border:1px solid rgba(255,180,84,.35);border-radius:14px;padding:5px 6px 5px 12px;backdrop-filter:blur(10px)}
+#cymBar.big{bottom:150px}
+#cymBar.side{flex-wrap:wrap;white-space:normal;width:214px;transform:none;padding:6px;gap:4px}#cymBar.side #cymRead{flex-basis:100%;max-width:none;text-align:center;margin:0 0 2px;line-height:1.5}#cymBar.side button{padding:5px 9px}
+#cymRead{margin-right:6px;overflow:hidden;text-overflow:ellipsis;max-width:38vw}
+#cymBar button{font:inherit;letter-spacing:inherit;color:inherit;background:rgba(255,180,84,.08);border:1px solid rgba(255,180,84,.4);border-radius:99px;padding:6px 10px;cursor:pointer}
 #cymBar button:hover{border-color:#ffb454}
-@media (max-width:1000px),(pointer:coarse){#cymBar{bottom:calc(76px + env(safe-area-inset-bottom,0px));padding:6px}#cymRead{flex-basis:100%;text-align:center;margin:2px 0 4px;max-width:none;white-space:normal}#cymBar button{min-height:36px}
+#cymBar .cymV{display:inline-flex;gap:2px}#cymBar .cymV button:first-child,#cymBar .cymV button:last-child{padding:6px 8px}#cymVis{min-width:96px}
+body.cymIn #dial #bandD,body.cymIn #dial #monadT{opacity:.0}
+@media (max-width:1000px),(pointer:coarse){#cymBar{flex-wrap:wrap;white-space:normal;left:3vw;right:3vw;transform:none;bottom:calc(76px + env(safe-area-inset-bottom,0px));padding:6px}#cymRead{flex-basis:100%;text-align:center;margin:2px 0 4px;max-width:none}#cymBar button{min-height:36px}
   body.cymOpen .hud{opacity:0;pointer-events:none}}
 .grain{position:fixed;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
