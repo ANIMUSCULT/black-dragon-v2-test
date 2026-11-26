@@ -835,9 +835,34 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
 {const R=$('#dream'),cv=$('#dreamC'),x=cv.getContext('2d'),gate=$('#dreamGate'),v=$('#veil');
   /* no saturated red: red flicker is the kind most likely to provoke a seizure. Deep amber stands in for it */
   const COL={gold:[255,176,72],white:[255,246,232],amber:[255,128,44]};
-  const D={hz:10,depth:.45,col:'gold',seed:true,noise:true,min:10};let run=null,nz=null;
+  const D={hz:10,depth:.45,col:'gold',seed:true,noise:true,min:10,lock:false,mult:1,phase:0};let run=null,nz=null;
+  /* the beat lock: the flicker can follow the beat tone itself, at ½, 1, 2, 3 or 4 times its rate, with a phase dial for
+     where the flash falls. The beat is heard, not assumed: in binaural mode the two ears drift into and out of step, and
+     that in-step moment is the peak; in monaural and isochronic modes the peak is the loudness swell. Both are measured
+     on the tone channel and followed by a slow phase-locked loop, so a journey that glides the beat carries the light with it. */
+  const MULTS=[.5,1,2,3,4],TB=new Float32Array(2048),TC=new Float32Array(2048),TRK={zr:0,zi:0,m:0,amp:0,n:0};
+  const track=()=>{const t=sigilTap();if(!t||!A.ctx||!(S.beat>0))return;t.l.getFloatTimeDomainData(TB);t.r.getFloatTimeDomainData(TC);let sig;
+    if(S.mode==='binaural'){let lr=0,ll=0,rr=0;for(let i=0;i<2048;i++){lr+=TB[i]*TC[i];ll+=TB[i]*TB[i];rr+=TC[i]*TC[i]}if(ll<1e-6||rr<1e-6)return;sig=lr/Math.sqrt(ll*rr)}
+    else{let q=0;for(let i=0;i<2048;i++)q+=TB[i]*TB[i];if(q<1e-6)return;sig=Math.sqrt(q/2048)}
+    TRK.m+=(sig-TRK.m)*(TRK.n++<30?.2:.004);const b=sig-TRK.m,tm=A.ctx.currentTime-1024/A.ctx.sampleRate,a=2*Math.PI*S.beat*tm,d=.993;
+    TRK.zr=TRK.zr*d+b*Math.cos(a);TRK.zi=TRK.zi*d+b*Math.sin(a);TRK.amp=TRK.amp*d+Math.abs(b)};
+  window.__dmTrack=TRK;
+  /* the rate the light runs at: free, or the beat times the chosen multiple, never above 14 Hz */
+  const rate=()=>{if(!D.lock)return{hz:D.hz,m:0};const f=S.beat||0;let m=D.mult;if(f*m>14){const ok=MULTS.filter(k=>f*k<=14);m=ok.length?ok[ok.length-1]:0}return{hz:f*m,m}};
   const b=document.createElement('button');b.className='pill';b.id='bDream';b.textContent='dreamachine';b.title='The Dreamachine: soft flicker for closed eyes, after Brion Gysin';$('#bTrans').after(b);
-  const paint=()=>{gate.querySelector('#dmHz').textContent=D.hz.toFixed(2);gate.querySelector('#dmDepth').value=D.depth;
+  /* the lock rows, added under the rate row */
+  {const r0=gate.querySelector('#dmHz').closest('.dmRow'),box=document.createElement('div');
+    box.innerHTML='<div class="dmRow"><span>follow</span><button id="dmFree">its own rate</button><button id="dmLock">the beat</button></div>'
+      +'<div class="dmRow" id="dmMultRow"><span>times</span>'+MULTS.map(k=>`<button data-mult="${k}">${k===.5?'½':k}×</button>`).join('')+'</div>'
+      +'<div class="dmRow" id="dmPhRow"><span>phase</span><input id="dmPhase" type="range" min="0" max="360" step="5" value="0" aria-label="flicker phase against the beat"><b style="min-width:64px"><i id="dmPhV">0</i>°</b></div>'
+      +'<p class="vh" id="dmLockNote" style="margin:2px 0 6px"></p>';
+    r0.after(...box.children)}
+  const paint=()=>{const R0=rate(),f=S.beat||0;gate.querySelector('#dmHz').textContent=(D.lock?R0.hz:D.hz).toFixed(2);
+    gate.querySelector('#dmFree').classList.toggle('on',!D.lock);gate.querySelector('#dmLock').classList.toggle('on',D.lock);
+    gate.querySelectorAll('[data-mult]').forEach(e=>{e.classList.toggle('on',D.lock&&+e.dataset.mult===D.mult);e.disabled=f*+e.dataset.mult>14;e.style.opacity=e.disabled?.3:''});
+    gate.querySelector('#dmMultRow').style.opacity=gate.querySelector('#dmPhRow').style.opacity=D.lock?1:.4;
+    gate.querySelectorAll('[data-hz]').forEach(e=>e.disabled=D.lock);gate.querySelector('#dmPhV').textContent=D.phase;
+    gate.querySelector('#dmLockNote').textContent=D.lock?(R0.m?`The beat is ${f.toFixed(2)} Hz, so the light runs at ${R0.hz.toFixed(2)} Hz. At 0° the flash meets the peak of the beat; at 180°, the hollow between.`:'Choose a beat tone first: the light has nothing to follow.'):'';gate.querySelector('#dmDepth').value=D.depth;
     gate.querySelectorAll('[data-col]').forEach(e=>e.classList.toggle('on',e.dataset.col===D.col));gate.querySelectorAll('[data-min]').forEach(e=>e.classList.toggle('on',+e.dataset.min===D.min));
     gate.querySelector('#dmSeed').classList.toggle('on',D.seed);gate.querySelector('#dmNoise').classList.toggle('on',D.noise)};
   const open=()=>{R.hidden=false;gate.hidden=false;cv.hidden=true;paint()};
@@ -852,17 +877,23 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
     x.fillStyle='#000';x.fillRect(0,0,W,H);
     if(D.seed&&v.readyState>=2&&v.videoWidth){const s=Math.max(W/v.videoWidth,H/v.videoHeight),w=v.videoWidth*s,h=v.videoHeight*s;x.globalAlpha=.16*env;x.drawImage(v,(W-w)/2,(H-h)/2,w,h);x.globalAlpha=1}
     /* the flicker: a sine, never a hard on/off, its phase taken from the clock so the rate stays exact */
-    const ph=Math.sin(2*Math.PI*D.hz*(now-run.t0)/1000),lv=D.depth*env*(.5+.5*ph),c=COL[D.col];
+    let ph;const R0=rate();
+    if(D.lock&&R0.m&&A.ctx){track();const th=A.ctx.currentTime-(A.ctx.outputLatency||A.ctx.baseLatency||0),theta=Math.atan2(TRK.zi,TRK.zr);
+      ph=Math.cos(R0.m*(2*Math.PI*S.beat*th-theta)-D.phase*Math.PI/180)}
+    else ph=Math.sin(2*Math.PI*(D.lock?(R0.hz||D.hz):D.hz)*(now-run.t0)/1000);
+    const lv=D.depth*env*(.5+.5*ph),c=COL[D.col];
     x.fillStyle=`rgba(${c[0]},${c[1]},${c[2]},${lv.toFixed(3)})`;x.fillRect(0,0,W,H)};
   const key=e=>{if(run&&!run.end){e.preventDefault();e.stopPropagation();stop('ended')}};
-  const begin=()=>{gate.hidden=true;cv.hidden=false;sizeC();run={t0:performance.now(),end:0};if(D.noise)noiseOn();document.addEventListener('keydown',key,true);requestAnimationFrame(draw);
-    say(`dreamachine · ${D.hz.toFixed(2)} hz · close your eyes`)};
+  const begin=()=>{gate.hidden=true;cv.hidden=false;sizeC();run={t0:performance.now(),end:0};Object.assign(TRK,{zr:0,zi:0,m:0,amp:0,n:0});if(D.noise)noiseOn();document.addEventListener('keydown',key,true);requestAnimationFrame(draw);
+    const R0=rate();say(`dreamachine · ${(D.lock?R0.hz:D.hz).toFixed(2)} hz${D.lock&&R0.m?' · locked to the beat':''} · close your eyes`)};
   b.onclick=e=>{e.stopPropagation();open()};
   cv.addEventListener('pointerdown',()=>{if(run&&!run.end)stop('ended')});
   gate.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
     if(t.dataset.col){D.col=t.dataset.col}else if(t.dataset.min){D.min=+t.dataset.min}else if(t.dataset.hz){D.hz=clamp(+(D.hz+ +t.dataset.hz).toFixed(2),4,14)}
+    else if(t.dataset.mult){D.mult=+t.dataset.mult;D.lock=true}else if(t.id==='dmFree')D.lock=false;else if(t.id==='dmLock')D.lock=true;
     else if(t.id==='dmSeed')D.seed=!D.seed;else if(t.id==='dmNoise')D.noise=!D.noise;else if(t.id==='dmLeave'){R.hidden=true;return}else if(t.id==='dmEnter'){begin();return}paint()});
   gate.querySelector('#dmDepth').addEventListener('input',e=>{D.depth=+e.target.value});
+  gate.querySelector('#dmPhase').addEventListener('input',e=>{D.phase=+e.target.value;paint()});
   addEventListener('resize',()=>{if(run)sizeC()})}
 
 /* ================= LOOPS: the grooves made for Varanus Salvation =================
