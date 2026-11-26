@@ -258,7 +258,7 @@ const PRESETS=[
  ['Forest dawn','nature','earth','flute',{birds:.5,wind:.25,stream:.3}],
  ['Summer night','nature','hypnagogia','kalimba',{crickets:.5,cicadas:.2,fire:.3}],
  ['Cave','nature','chamber','gong',{stream:.25,earth:.4}],
- ['Underworld','sleep','abyss','abyss choir',{underwater:.5,whale:.4}],
+ ['Orcus','sleep','abyss','abyss choir',{underwater:.5,whale:.4}],
  ['Clockwork','sleep','slumber','music box',{clock:.35,vinyl:.3,brown:.2}],
  ['Pond at night','sleep','slumber','ocarina',{frogs:.4,crickets:.3,owl:.4}],
  ['Deep tide','sleep','abyss','bowed metal',{ocean:.6,earth:.3}],

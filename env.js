@@ -249,7 +249,7 @@ $('#pads').addEventListener('click',e=>{const b=e.target.closest('.pad');if(b){c
 $('#pads').addEventListener('wheel',e=>{const b=e.target.closest('.pad');if(!b)return;e.preventDefault();const id=b.dataset.id,v=clamp((S.layers[id]==null?.3:S.layers[id])+(e.deltaY<0?.06:-.06),.05,1);setLayer(id,v)},{passive:false});
 
 /* ---------- make every control answer back ---------- */
-{const f0=setVoice;setVoice=i=>{f0(i);say('vox · '+VOICES[S.voice])};
+{const f0=setVoice;setVoice=i=>{f0(i);say('keys · '+VOICES[S.voice])};
  const f1=setLayer;setLayer=(id,v)=>{f1(id,v);if(BK[id])say(v==null?BK[id].n+' · off':`${BK[id].n} · ${Math.round(v*100)}`)};
  const f2=paintBank;paintBank=()=>{f2();paintPads()};
  const f3=setState;setState=(i,k)=>{f3(i,k);const s=STATES[S.state];say(`${s.name.toLowerCase()} · ${s.beat} hz · ${s.sub}`)};
