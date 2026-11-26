@@ -471,7 +471,7 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
     else{const d=$('#dial').getBoundingClientRect();v=d.width>40;cx=d.left+d.width/2;cy=d.top+d.height/2;s=d.width*.7;
       if(!MOBILE&&v){const side=d.top-$('.acts').getBoundingClientRect().bottom<50;bar.classList.toggle('side',side);const bw=bar.offsetWidth,bh=bar.offsetHeight;
         if(side){bar.style.left=(d.right+8)+'px';bar.style.top=Math.max(4,cy-bh/2)+'px'}else{bar.style.left=clamp(cx,bw/2+6,innerWidth-bw/2-6)+'px';bar.style.top=Math.max(4,d.top-bh-6)+'px'}}}
-    if(MOBILE){const sb=big||$('.hud').dataset.tab==='more';if(bar.hidden===sb)bar.hidden=!sb}
+    if(MOBILE){const sb=big||$('.hud').dataset.tab==='proof';if(bar.hidden===sb)bar.hidden=!sb}
     if(v!==box.v){box.v=v;c.style.visibility=v?'visible':'hidden'}
     if(!v)return false;
     if(Math.abs(box.s-s)>1||Math.abs(box.x-cx)>1||Math.abs(box.y-cy)>1){box.x=cx;box.y=cy;box.s=s;const dp=Math.min(devicePixelRatio||1,2);
@@ -507,7 +507,7 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
   const stepVis=d=>{const was=shape===0&&vis===0;vis=(vis+d+VISN.length)%VISN.length;if(shape===0&&vis===0&&!was)for(let i=0;i<N;i++){const x=pos[i*2],y=pos[i*2+1];if(x>SQ||x<-SQ||y>SQ||y<-SQ)scatter(i)}kick=1;label();say('vision · '+VISN[vis])};
   bVis.onclick=$('#cymVn').onclick=()=>stepVis(1);$('#cymVp').onclick=()=>stepVis(-1);
   bTone.onclick=()=>{tone=(tone+1)%5;rebuild();say('tone · '+TONES[tone])};
-  bBig.onclick=()=>{big=!big;seat();if(MOBILE&&!big){const p=$('#tabs [data-t=play]');if(p)p.click()}say(big?'the plate is lifted out':MOBILE?'the plate is set in the dial · its controls wait under more':'the plate is set in the dial')};
+  bBig.onclick=()=>{big=!big;seat();if(MOBILE&&!big){const p=$('#tabs [data-t=play]');if(p)p.click()}say(big?'the plate is lifted out':MOBILE?'the plate is set in the dial · its controls wait under proof':'the plate is set in the dial')};
   $('#cymKeep').onclick=()=>{if(!reading)return say('play a tone first, then keep its figure');keep=true};
   window.CYM={get on(){return on},set,tick,state:()=>({shape,tone,vis,mode,hz,kick,big,N})}}
 
@@ -856,3 +856,21 @@ void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uR
   const baseReset2=resetAll;resetAll=function(){if(L.cur)stop();return baseReset2.apply(this,arguments)};
   /* the reset button held the first resetAll; point it at the current one so loops and phantoms stop with it too */
   $('#bReset').onclick=()=>resetAll()}
+
+/* ================= the dial's engine-turning: guilloché, thin-film rim, a ripple on the beat =================
+   Watchmakers cut two rosettes over each other so the metal seems to move as it turns. Here the two rosettes turn
+   against each other under the ticks, the rim carries an oil-film sheen that drifts round, and a ring leaves the
+   lens on every pulse of the beat (every second or fourth pulse when the beat is fast, so it never flickers). */
+{const d=$('#dial'),NS='http://www.w3.org/2000/svg',mk=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e};
+  const defs=d.querySelector('defs');
+  defs.insertAdjacentHTML('beforeend','<linearGradient id="gFilm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".16" stop-color="#b9a7ff"/><stop offset=".33" stop-color="#1a1626"/><stop offset=".5" stop-color="#7fe3d6"/><stop offset=".66" stop-color="#f3d59a"/><stop offset=".82" stop-color="#241a2b"/><stop offset="1" stop-color="#ff9ad5"/></linearGradient>'
+    +'<radialGradient id="gHalo"><stop offset=".62" stop-color="#fff" stop-opacity="0"/><stop offset=".72" stop-color="#fff" stop-opacity=".16"/><stop offset=".86" stop-color="#fff" stop-opacity=".03"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>');
+  const g=mk('g',{id:'dTrip','pointer-events':'none'});
+  const rose=(id,n,rx,ry,op,sw)=>{const r=mk('g',{id,fill:'none',stroke:'url(#gFilm)','stroke-width':sw||.7,opacity:op});for(let i=0;i<n;i++)r.append(mk('ellipse',{rx,ry,transform:`rotate(${(i*180/n).toFixed(2)})`}));return r};
+  g.append(mk('circle',{r:163,fill:'url(#gHalo)'}),rose('dRoseC',12,133,50,.2,.8),rose('dRoseD',9,128,78,.12,.6),rose('dRoseA',16,166,141,.42),rose('dRoseB',20,164,143,.3),
+    mk('circle',{id:'dFilmIn',r:141.5,fill:'none',stroke:'url(#gFilm)','stroke-width':2.4,opacity:.75}),
+    mk('circle',{id:'dPulse',r:141,fill:'none',stroke:'var(--b)','stroke-width':2}));
+  $('#ticks').before(g);
+  const rim=mk('circle',{id:'dFilmOut',r:196,fill:'none',stroke:'url(#gFilm)','stroke-width':7,opacity:.5,'pointer-events':'none'});d.querySelector('circle').after(rim);
+  const paintDial0=paintDial;const tempo=()=>{let p=1/Math.max(.1,S.beat||6);while(p<.45)p*=2;$('#dPulse').style.animationDuration=Math.min(8,p).toFixed(3)+'s'};
+  paintDial=function(){const r=paintDial0.apply(this,arguments);tempo();return r};tempo()}

@@ -585,6 +585,19 @@ body{font-size-adjust:.53}
 @media (min-width:1001px) and (max-height:820px){#shellR{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}#shellR>#proof{flex:none}#shellR>#pads{flex:none;min-height:150px;overflow:visible!important}#states{overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}#states .st{flex:none;min-height:27px}}
 /* narrow computer windows: the menu block slims down so it stays on screen */
 @media (min-width:1001px) and (max-width:1300px){.rside{width:240px!important;grid-template-columns:repeat(3,1fr)!important}.rside .pill{font-size:8px!important;padding:8px 2px!important}.deck{gap:10px!important}.knobs{transform-origin:left top}}
+
+/* the dial's engine-turning: two rosettes turning against each other, an oil-film rim, a ripple on the beat */
+#dRoseA,#dRoseB,#dRoseC,#dRoseD,#dFilmIn,#dFilmOut,#dPulse{transform-box:view-box;transform-origin:50% 50%}
+#dRoseC{animation:dSpin 260s linear infinite}#dRoseD{animation:dSpin 170s linear infinite reverse}body.cymIn #dRoseC,body.cymIn #dRoseD{display:none}
+#dRoseA{animation:dSpin 140s linear infinite}#dRoseB{animation:dSpin 190s linear infinite reverse}
+#dFilmIn{animation:dSpin 36s linear infinite reverse;mix-blend-mode:screen}#dFilmOut{animation:dSpin 52s linear infinite;mix-blend-mode:overlay}
+#dial #dTrip ellipse{display:inline!important}
+#dPulse{animation:dRipple 1s cubic-bezier(.2,.6,.3,1) infinite;opacity:0}
+@keyframes dSpin{to{transform:rotate(360deg)}}
+@keyframes dRipple{0%{transform:scale(1);opacity:.55;stroke-width:2.2}100%{transform:scale(1.3);opacity:0;stroke-width:.4}}
+#dial #bHz{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--b) 55%,transparent))}
+@media (max-width:1000px),(pointer:coarse){#dRoseA,#dRoseB,#dRoseC,#dRoseD{animation:none}}
+@media (prefers-reduced-motion:reduce){#dRoseC,#dRoseD,#dRoseA,#dRoseB,#dFilmIn,#dFilmOut,#dPulse{animation:none}}
 </style>
 </head>
 <body>
@@ -1288,8 +1301,8 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1126b"></script>
-<script src="env.js?v=1126b"></script>
-<script src="table.js?v=1126b"></script>
+<script src="bank.js?v=1126c"></script>
+<script src="env.js?v=1126c"></script>
+<script src="table.js?v=1126c"></script>
 </body>
 </html>
