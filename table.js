@@ -396,7 +396,7 @@ void main(){gl_Position=vec4(p.x*.985,-p.y*.985,0.,1.);float h=fract(s*7.13);
   float br=.72+.28*fract(s*13.7);float tw=step(.955,s)*pow(.5+.5*sin(uT*(2.+h*7.)+h*80.),8.)*1.8;
   vC=sand*(br+tw+uKick*.35);gl_PointSize=uSize*(.75+.65*fract(s*5.3));}`));
     gl.attachShader(P,sh(gl.FRAGMENT_SHADER,`precision mediump float;varying vec3 vC;
-void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);float lit=1.-.55*smoothstep(0.,.55,length(q+vec2(.13,.13)));gl_FragColor=vec4(vC*lit*a,a);}`));
+void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);float lit=1.-.12*smoothstep(0.,.55,length(q+vec2(.13,.13)));gl_FragColor=vec4(vC*lit*a,a);}`));
     gl.linkProgram(P);gl.useProgram(P);
     const bs=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bs);gl.bufferData(gl.ARRAY_BUFFER,seed,gl.STATIC_DRAW);const ls=gl.getAttribLocation(P,'s');gl.enableVertexAttribArray(ls);gl.vertexAttribPointer(ls,1,gl.FLOAT,false,0,0);
     bufP=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bufP);gl.bufferData(gl.ARRAY_BUFFER,pos,gl.DYNAMIC_DRAW);const lp=gl.getAttribLocation(P,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
@@ -863,14 +863,15 @@ void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uR
    lens on every pulse of the beat (every second or fourth pulse when the beat is fast, so it never flickers). */
 {const d=$('#dial'),NS='http://www.w3.org/2000/svg',mk=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e};
   const defs=d.querySelector('defs');
-  defs.insertAdjacentHTML('beforeend','<linearGradient id="gFilm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".16" stop-color="#b9a7ff"/><stop offset=".33" stop-color="#1a1626"/><stop offset=".5" stop-color="#7fe3d6"/><stop offset=".66" stop-color="#f3d59a"/><stop offset=".82" stop-color="#241a2b"/><stop offset="1" stop-color="#ff9ad5"/></linearGradient>'
+  defs.insertAdjacentHTML('beforeend','<linearGradient id="gFilm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4eee6"/><stop offset=".2" stop-color="#cfc4e6"/><stop offset=".4" stop-color="#6d6377"/><stop offset=".6" stop-color="#bfd9d2"/><stop offset=".8" stop-color="#e6d6b8"/><stop offset="1" stop-color="#e3c3d3"/></linearGradient>'
     +'<radialGradient id="gHalo"><stop offset=".62" stop-color="#fff" stop-opacity="0"/><stop offset=".72" stop-color="#fff" stop-opacity=".16"/><stop offset=".86" stop-color="#fff" stop-opacity=".03"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>');
   const g=mk('g',{id:'dTrip','pointer-events':'none'});
   const rose=(id,n,rx,ry,op,sw)=>{const r=mk('g',{id,fill:'none',stroke:'url(#gFilm)','stroke-width':sw||.7,opacity:op});for(let i=0;i<n;i++)r.append(mk('ellipse',{rx,ry,transform:`rotate(${(i*180/n).toFixed(2)})`}));return r};
-  g.append(mk('circle',{r:163,fill:'url(#gHalo)'}),rose('dRoseC',12,133,50,.2,.8),rose('dRoseD',9,128,78,.12,.6),rose('dRoseA',16,166,141,.42),rose('dRoseB',20,164,143,.3),
-    mk('circle',{id:'dFilmIn',r:141.5,fill:'none',stroke:'url(#gFilm)','stroke-width':2.4,opacity:.75}),
-    mk('circle',{id:'dPulse',r:141,fill:'none',stroke:'var(--b)','stroke-width':2}));
+  g.append(mk('circle',{r:163,fill:'url(#gHalo)'}),rose('dRoseC',12,133,50,.2,.8),rose('dRoseD',9,128,78,.12,.6),rose('dRoseA',16,166,141,.3),rose('dRoseB',20,164,143,.22),
+    mk('circle',{id:'dFilmIn',r:141.5,fill:'none',stroke:'url(#gFilm)','stroke-width':1.6,opacity:.45}),
+    mk('circle',{id:'dPulse',r:141,fill:'none',stroke:'#fff','stroke-width':2}));
   $('#ticks').before(g);
-  const rim=mk('circle',{id:'dFilmOut',r:196,fill:'none',stroke:'url(#gFilm)','stroke-width':7,opacity:.5,'pointer-events':'none'});d.querySelector('circle').after(rim);
+  const rimG=mk('g',{'pointer-events':'none'});rimG.append(mk('circle',{id:'dFilmOut',r:196,fill:'none',stroke:'url(#gFilm)','stroke-width':5,opacity:.28}));d.querySelector('circle').after(rimG);
+  {const h=$('#handle').children;h[0].setAttribute('r',9);h[0].setAttribute('stroke','none');h[1].setAttribute('r',3.5)}
   const paintDial0=paintDial;const tempo=()=>{let p=1/Math.max(.1,S.beat||6);while(p<.45)p*=2;$('#dPulse').style.animationDuration=Math.min(8,p).toFixed(3)+'s'};
   paintDial=function(){const r=paintDial0.apply(this,arguments);tempo();return r};tempo()}

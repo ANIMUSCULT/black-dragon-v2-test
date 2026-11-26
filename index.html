@@ -596,6 +596,22 @@ body{font-size-adjust:.53}
 @keyframes dSpin{to{transform:rotate(360deg)}}
 @keyframes dRipple{0%{transform:scale(1);opacity:.55;stroke-width:2.2}100%{transform:scale(1.3);opacity:0;stroke-width:.4}}
 #dial #bHz{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--b) 55%,transparent))}
+/* the dial made soft: no box when it is pressed, no hard whites or black outlines, everything breathing */
+#dial:focus,#dial:focus-visible{outline:none!important}
+#dial:focus-visible #dFilmOut{opacity:.6}
+#dial>circle:nth-of-type(1){stroke:rgba(255,255,255,.26)!important;stroke-width:1.1}
+#dial>circle:nth-of-type(2){stroke:rgba(255,255,255,.12)!important}
+#dial>circle:nth-of-type(3){stroke:rgba(255,255,255,.14)!important}
+#ticks line{stroke-linecap:round;opacity:.26;stroke-width:.9}#ticks line[stroke-width="2"]{stroke-width:1.5;opacity:.42}
+#dial #ticks text{stroke:rgba(0,0,0,.28);stroke-width:1.6px;opacity:.62}
+#dial text{stroke:rgba(0,0,0,.34);stroke-width:2.2px}
+#dial #bHz{fill:rgba(255,250,244,.9);stroke:rgba(0,0,0,.22);stroke-width:1.6px}
+#dial #bandN{fill:rgba(255,250,244,.88)}
+#arc{stroke-width:2.2!important;opacity:.7;stroke-linecap:round}
+#handle circle:first-child{fill:rgba(255,248,240,.82)!important}#handle circle:last-child{opacity:.85}
+#dTrip{transform-box:view-box;transform-origin:50% 50%;animation:dBreathe 11s ease-in-out infinite}
+@keyframes dBreathe{0%,100%{transform:scale(.988)}50%{transform:scale(1.012)}}
+@keyframes dRipple{0%{transform:scale(1);opacity:.3;stroke-width:1.6}100%{transform:scale(1.3);opacity:0;stroke-width:.3}}
 @media (max-width:1000px),(pointer:coarse){#dRoseA,#dRoseB,#dRoseC,#dRoseD{animation:none}}
 @media (prefers-reduced-motion:reduce){#dRoseC,#dRoseD,#dRoseA,#dRoseB,#dFilmIn,#dFilmOut,#dPulse{animation:none}}
 </style>
@@ -1301,8 +1317,8 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1126c"></script>
-<script src="env.js?v=1126c"></script>
-<script src="table.js?v=1126c"></script>
+<script src="bank.js?v=1126d"></script>
+<script src="env.js?v=1126d"></script>
+<script src="table.js?v=1126d"></script>
 </body>
 </html>
