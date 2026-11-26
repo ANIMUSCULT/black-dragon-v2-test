@@ -23,6 +23,12 @@ button:focus-visible,.knob:focus-visible,#dial:focus-visible{outline:2px solid v
 #veil,#field{position:fixed;inset:0;width:100%;height:100%}
 #veil{object-fit:cover;opacity:.35;filter:saturate(1.3) contrast(1.1)}
 #field{mix-blend-mode:screen}
+/* the sigil scope: the tone channel drawn as a phosphor beam over the glass */
+#sigil{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;mix-blend-mode:screen}
+#sigilX{position:fixed;z-index:6;left:50%;top:calc(50% + min(42vh,42vw));transform:translateX(-50%);font:10px var(--tech,sans-serif);letter-spacing:.16em;color:#ffd9a0;
+  background:rgba(0,0,0,.45);border:1px solid rgba(255,180,84,.45);border-radius:99px;padding:8px 14px;cursor:pointer;backdrop-filter:blur(8px)}
+#sigilX:hover{border-color:#ffb454}
+@media (max-width:1000px),(pointer:coarse){#sigilX{top:auto;bottom:calc(84px + env(safe-area-inset-bottom,0px));min-height:38px}}
 .grain{position:fixed;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
 
@@ -529,6 +535,7 @@ body.idle .hud{transition:opacity 2.5s}
 <body>
 <video id="veil" muted loop playsinline></video>
 <canvas id="field"></canvas>
+<canvas id="sigil" hidden></canvas><button id="sigilX" hidden title="Close the sigil scope">sigil scope · close</button>
 <div class="grain"></div>
 
 <div id="gate">
@@ -1102,12 +1109,21 @@ const U={};['r','t','lvl','br','md','inten','spd','pk','fb','pv','m','ma','c1','
 const pr2=gl.createProgram();gl.attachShader(pr2,sh(gl.VERTEX_SHADER,'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}'));gl.attachShader(pr2,sh(gl.FRAGMENT_SHADER,FS2));gl.bindAttribLocation(pr2,al,'a');gl.linkProgram(pr2);
 const U2={};['s','r','t','lc','lr','ab','grn','lz'].forEach(k=>U2[k]=gl.getUniformLocation(pr2,k));let lens=[0,0,0],lensN=0;
 let fbo=[],cur=0;
-function mkT(){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,cv.width,cv.height,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+/* trails are kept at 16 bits a colour where the device allows it, so fades stay smooth and blacks stay clean */
+let deepT=null;if(!MOBILE){const hf=gl.getExtension('OES_texture_half_float'),hl=gl.getExtension('OES_texture_half_float_linear'),cb=gl.getExtension('EXT_color_buffer_half_float');if(hf&&hl&&cb)deepT=hf.HALF_FLOAT_OES}
+function mkT(){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,cv.width,cv.height,0,gl.RGBA,deepT||gl.UNSIGNED_BYTE,null);
   for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);
-  const f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);return {t,f}}
+  const f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);
+  if(deepT&&gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE){deepT=null;gl.deleteTexture(t);gl.deleteFramebuffer(f);return mkT()}
+  gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);return {t,f}}
 const rgb=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255);
-function size(){const s=MOBILE?.6:Math.min(devicePixelRatio||1,1.5)*.75;cv.width=innerWidth*s;cv.height=innerHeight*s;gl.viewport(0,0,cv.width,cv.height);fbo.forEach(o=>{gl.deleteTexture(o.t);gl.deleteFramebuffer(o.f)});fbo=[mkT(),mkT()]}
+/* computers draw at up to 1.7 times the page's pixels; if the machine cannot hold a smooth frame rate the picture steps back down by itself */
+const RS_FLOOR=Math.min(devicePixelRatio||1,1.5)*.75;let RS=Math.max(RS_FLOOR,Math.min(devicePixelRatio||1,2)*.85);
+function size(){const s=MOBILE?.6:RS;cv.width=innerWidth*s;cv.height=innerHeight*s;gl.viewport(0,0,cv.width,cv.height);fbo.forEach(o=>{gl.deleteTexture(o.t);gl.deleteFramebuffer(o.f)});fbo=[mkT(),mkT()]}
 addEventListener('resize',size);size();
+if(!MOBILE){let n=0,t0=performance.now(),slow=0;const watch=()=>{n++;const t=performance.now();if(t-t0>=2000){const fps=n*1000/(t-t0);n=0;t0=t;
+    /* under 12 a second means the page is in the background, not that the machine is slow, so that is ignored */
+    if(document.hidden||fps<12)slow=0;else if(fps<44&&RS>RS_FLOOR){if(++slow>=2){slow=0;RS=Math.max(RS_FLOOR,RS*.85);size()}}else slow=0}requestAnimationFrame(watch)};requestAnimationFrame(watch)}
 const vEl=$('#veil'),vTex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,vTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
 for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,k,v);
 function vidTex(){gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,vTex);if(vEl.readyState>=2&&vEl.videoWidth){try{gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,vEl)}catch(_){}}
