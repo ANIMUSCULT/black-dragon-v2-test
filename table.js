@@ -602,11 +602,12 @@ const PH={};
   d.innerHTML='<button class="pill dclose">close</button><h3>Phantoms</h3><p class="vh">Sounds the ear finishes for itself. Headphones bring them closest. Each runs until you stop it.</p>'
     +card('zwicker','The silence sings','In 1964 Eberhard Zwicker played rushing noise with a band cut out of it. When the noise stopped, his listeners heard a faint pure tone inside the missing band for several seconds, a tone with no source: the Zwicker tone, an afterimage in the ear. Here: twenty seconds of soft noise with that band cut out, the board hushes, then silence. Listen into it.','begin')
     +card('shepard','The endless descent','Roger Shepard built a scale in 1964 that seems to fall forever, and Jean-Claude Risset made it glide. Nine voices an octave apart sink together; each fades in at the top and out at the bottom, so the fall never arrives.','sink')
+    +card('minster','The nave of York Minster','Everything on the board rings in the nave of York Minster, the great Gothic cathedral of the north of England. The University of York recorded it from the centre of the nave, with the sound sent from beneath the tower twenty-four metres away; its echo takes nearly eight seconds to die. The measured tones stay dry in Proof. Impulse response: www.openairlib.net, Audiolab, University of York, Damian T. Murphy.','enter the nave')
     +card('orbit','The circling breath','A soft breath travels around your head, placed by the way the outer ear shapes sound arriving from each direction. On headphones it passes behind you and returns.','let it circle');
   d.querySelector('.dclose').onclick=()=>{d.hidden=true};
   const b=document.createElement('button');b.className='pill';b.id='bPhantom';b.textContent='phantoms';$('.rside').insertBefore(b,$('#bMixer'));b.onclick=e=>{e.stopPropagation();openDr('phantom')};
   const st=(k,txt)=>{const e=d.querySelector(`[data-s=${k}]`);if(e)e.textContent=txt||''};
-  const paint=()=>{d.querySelectorAll('button.vb[data-k]').forEach(x=>{const k=x.dataset.k,on=!!PH[k];x.classList.toggle('on',on);x.textContent=on?'stop':{zwicker:'begin',shepard:'sink',orbit:'let it circle'}[k]})};
+  const paint=()=>{d.querySelectorAll('button.vb[data-k]').forEach(x=>{const k=x.dataset.k,on=!!PH[k];x.classList.toggle('on',on);x.textContent=on?(k==='minster'?'leave the nave':'stop'):{zwicker:'begin',shepard:'sink',orbit:'let it circle',minster:'enter the nave'}[k]})};
   const fadeStop=(k,secs=1)=>{const p=PH[k];if(!p)return;delete PH[k];p.timers&&p.timers.forEach(clearTimeout);p.iv&&clearInterval(p.iv);if(p.end)p.end();
     const ctx=A.ctx,t=ctx.currentTime;p.out.gain.cancelScheduledValues(t);p.out.gain.setValueAtTime(p.out.gain.value,t);p.out.gain.linearRampToValueAtTime(0,t+secs);
     setTimeout(()=>{p.src.forEach(s=>{try{s.stop()}catch(_){}});try{p.out.disconnect()}catch(_){}},secs*1000+120);st(k,'');paint()};
@@ -636,10 +637,115 @@ const PH={};
     let a=0,last=performance.now();const pos=(x,y,z)=>{const t=ctx.currentTime;if(pn.positionX){pn.positionX.setTargetAtTime(x,t,.05);pn.positionY.setTargetAtTime(y,t,.05);pn.positionZ.setTargetAtTime(z,t,.05)}else pn.setPosition(x,y,z)};
     const step=()=>{const now=performance.now(),dt=Math.min(.2,(now-last)/1000);last=now;a+=dt*Math.PI*2/14;pos(Math.sin(a)*1.6,Math.sin(a*.5)*.35,-Math.cos(a)*1.6)};
     step();out.gain.setTargetAtTime(1.4,ctx.currentTime,.8);PH.orbit={src:[src,lf],out,iv:setInterval(step,40)};st('orbit','circling · one lap every fourteen seconds')};
-  const RUN={zwicker,shepard,orbit},NAME={zwicker:'the silence sings',shepard:'endless descent',orbit:'circling breath'};
+  /* the nave of York Minster: a send from the whole board into the measured nave, returned before the ceiling */
+  let IRB=null,IRP=null;const loadIR=()=>IRP||(IRP=fetch('media/audio/york-minster.wav').then(r=>r.arrayBuffer()).then(a=>A.ctx.decodeAudioData(a)).then(b=>IRB=b));
+  const minster=()=>{const ctx=A.ctx,wet=gn(ctx,0),cv=ctx.createConvolver(),p={src:[],out:wet,end:()=>{try{A.master.disconnect(cv)}catch(_){}}};PH.minster=p;st('minster','opening the doors');
+    loadIR().then(buf=>{if(PH.minster!==p)return;cv.buffer=buf;A.master.connect(cv);cv.connect(wet).connect(A.limTrim);wet.gain.setTargetAtTime(MINSTER_WET,ctx.currentTime,1.2);st('minster','the board rings in the nave')})
+      .catch(()=>{if(PH.minster===p){delete PH.minster;paint()}st('minster','the nave would not open on this device')})};
+  const MINSTER_WET=.15;
+  const RUN={zwicker,shepard,orbit,minster},NAME={zwicker:'the silence sings',shepard:'endless descent',orbit:'circling breath',minster:'york minster'};
   d.addEventListener('click',e=>{const x=e.target.closest('button.vb[data-k]');if(!x)return;e.stopPropagation();const k=x.dataset.k;
     if(PH[k]){fadeStop(k);say(NAME[k]+' · off');return}if(!A.ctx)return say('enter first, then call the phantoms');RUN[k]();paint();say(NAME[k])});
   /* each running phantom shows in "sounding now" with its own off switch */
   /* silence and reset stop them too */
   const hushAll=()=>Object.keys(NAME).forEach(k=>{if(PH[k])fadeStop(k,.6)});const baseReset=resetAll;resetAll=function(){hushAll();return baseReset.apply(this,arguments)};
   const baseLive=liveList;liveList=function(){const L=baseLive();Object.keys(NAME).forEach(k=>{if(PH[k])L.push([NAME[k],()=>fadeStop(k)])});return L}}
+
+/* ================= THE TRANSMUTATION DECK: the clips run through five machines of the video underground =================
+   A separate deck over the glass. It reads the playing clip as it is and passes it through emulations of
+   1970s image machines. The visualizer itself is untouched underneath. */
+{const c=$('#trans'),bar=$('#transBar'),nm=$('#transName'),v=$('#veil');
+  const gl=c.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:false});
+  const M=[['rutt-etra','The Rutt/Etra scan processor, 1972: the picture tube’s beam bent by brightness, so every scan line becomes a ridge of light and the image a relief of glowing wire.'],
+    ['magnet','Nam June Paik and Shuya Abe, 1970: magnets and coils on the picture tube, driven by sound, bend the raster; a colorizer paints each grey a new hue.'],
+    ['corridor','Video feedback: the camera turned on its own monitor, as Steina and Woody Vasulka worked it. Each frame falls into the last, an endless corridor.'],
+    ['stargate','Douglas Trumbull’s slit-scan for 2001, 1968: light through a moving slit smeared into walls rushing past. Here the slit is the clip.'],
+    ['droste','The Droste spiral after Escher’s Print Gallery, 1956: the picture curls into itself and repeats inward forever.']];
+  let on=false,mode=0,P=null,CP=null,U={},tex=null,fb=[],cur=0,t0=performance.now(),lvl=0,an=null;
+  const b=document.createElement('button');b.className='pill';b.id='bTrans';b.textContent='transmute';b.title='Open the Transmutation deck: the clip through five machines of 1970s video';($('#bOwn')||$('#bFilm')).after(b);
+  bar.querySelector('.tmodes').innerHTML=M.map(([k],i)=>`<button data-i="${i}">${k}</button>`).join('');
+  const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const FS=`precision highp float;uniform sampler2D uV,uP;uniform vec2 uRes,uVR;uniform float uT,uL;uniform int uM;
+#define PI 3.14159265
+float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
+vec2 cov(vec2 uv){float sa=uRes.x/uRes.y,va=uVR.x/max(uVR.y,1.);vec2 q=uv-.5;if(sa>va)q.y*=va/sa;else q.x*=sa/va;return vec2(q.x+.5,.5-q.y);}
+vec3 vid(vec2 uv){return texture2D(uV,cov(uv)).rgb;}
+vec3 vidW(vec2 uv){uv=abs(fract(uv*.5+.5)*2.-1.);return vid(uv);}
+vec3 pal(float x){return .5+.5*cos(6.2831*(x+vec3(0.,.33,.67)));}
+mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
+void main(){vec2 fc=gl_FragCoord.xy,uv=fc/uRes;vec2 p=(fc-.5*uRes)/min(uRes.x,uRes.y);float t=uT;vec3 col=vec3(0.);
+  if(uM==0){float L=max(uRes.y/90.,3.),A=uRes.y*.11*(1.+uL*.6);float y=fc.y,k0=floor((y-A*1.2)/L),acc=0.;vec3 tint=vec3(0.);
+    for(int i=0;i<40;i++){float k=k0+float(i);float yb=k*L;if(yb>y+L)break;vec2 su=vec2(uv.x,yb/uRes.y);vec3 cc=vid(su);float h=lum(cc);
+      float yd=yb+h*A;float d=abs(y-yd);float g=exp(-d*d/1.6)+.25*exp(-d*d/18.);acc+=g;tint+=g*mix(vec3(.55,1.,.85),cc*1.6+.15,.55);}
+    col=tint*.85;col+=vec3(.02,.04,.05)*smoothstep(1.,0.,length(p));}
+  else if(uM==1){vec2 q=p;float r=length(q-vec2(.18*sin(t*.21),.12*cos(t*.17)));float tw=(.35+uL*1.4)/(r+.35);q=rot(tw*.6*sin(t*.3))*q;
+    q.x+=sin(q.y*7.+t*1.3)*(.025+uL*.08);q.y+=sin(q.x*5.-t*.9)*.02;vec2 su=q*min(uRes.x,uRes.y)/uRes+.5;float g=lum(vidW(su));
+    col=pal(g*1.6+t*.03)*(.25+g*1.1);col*=.85+.15*sin(fc.y*PI*.5);}
+  else if(uM==2){vec2 q=rot(.012+uL*.02)*((uv-.5)*(.965-uL*.02))+.5;vec3 pr=texture2D(uP,q).rgb;pr=mix(pr,pr.gbr,.035);
+    vec3 cv=vid(uv);float key=smoothstep(.28,.5,lum(cv));col=max(cv*key,pr*.975);col=mix(col,cv,.04);}
+  else if(uM==3){float ay=abs(p.y),ax=abs(p.x);bool wall=ax*.75>ay;float d=wall?ax:ay;float z=.18/max(d,.002);float u=(wall?p.y:p.x)*z;float w=z*.9+t*(1.6+uL*2.);
+    vec3 s=vidW(vec2(fract(u*.22+.5),fract(w*.035)));vec3 hue=pal(w*.02+(wall?.33:0.));s=pow(s,vec3(.75));col=mix(s,s*hue*2.,.5)*(2.1+uL*1.5)*smoothstep(0.,.1,d)*min(1.,z*.05+.3);col+=hue*.05*smoothstep(.08,0.,d);}
+  else{float r=max(length(p),1e-4),a=atan(p.y,p.x);float r1=.18,r2=1.,sc=log(r2/r1),an=atan(sc/(2.*PI));vec2 lz=vec2(log(r),a);
+    lz=rot(an)*lz*cos(an);lz.x=mod(lz.x-t*.18,sc)+log(r1);vec2 q=exp(lz.x)*vec2(cos(lz.y),sin(lz.y));col=vid(q*.5+.5);col*=.9+.1*cos(lz.y*6.);}
+  gl_FragColor=vec4(col,1.);}`;
+  /* the glass of an old tube, laid over every machine: soft scan lines, a little colour fringe toward the edges, the corners falling dark */
+  const CF='precision mediump float;uniform sampler2D uP;uniform vec2 uRes;void main(){vec2 uv=gl_FragCoord.xy/uRes;vec2 d=(uv-.5)*.004;vec3 c=vec3(texture2D(uP,uv+d).r,texture2D(uP,uv).g,texture2D(uP,uv-d).b);vec2 p=(gl_FragCoord.xy-.5*uRes)/min(uRes.x,uRes.y);c*=.9+.1*sin(gl_FragCoord.y*2.07);c*=smoothstep(1.25,.35,length(p*vec2(.9,1.1)));gl_FragColor=vec4(c,1.);}';
+  const prog=(fs)=>{const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
+    const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs));gl.bindAttribLocation(pr,0,'p');gl.linkProgram(pr);return pr};
+  const mkFB=(w,h)=>{const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
+    [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR));[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
+    const f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.bindFramebuffer(gl.FRAMEBUFFER,null);return{t,f,w,h}};
+  if(gl){P=prog(FS);CP=prog(CF);const q=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,q);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+    ['uV','uP','uRes','uVR','uT','uL','uM'].forEach(n=>U[n]=gl.getUniformLocation(P,n));U.cP=gl.getUniformLocation(CP,'uP');U.cR=gl.getUniformLocation(CP,'uRes');
+    tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR));[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]))}
+  const size=()=>{const dp=Math.min(devicePixelRatio||1,MOBILE?1:1.25),w=Math.round(innerWidth*dp),h=Math.round(innerHeight*dp);if(c.width===w&&c.height===h&&fb.length)return;c.width=w;c.height=h;fb=[mkFB(w,h),mkFB(w,h)]};
+  const level=()=>{if(!A.ctx)return 0;if(!an){an=A.ctx.createAnalyser();an.fftSize=1024;A.master.connect(an)}const d=new Float32Array(1024);an.getFloatTimeDomainData(d);let s=0;for(let i=0;i<1024;i+=2)s+=d[i]*d[i];return Math.min(1,Math.sqrt(s/512)*5)};
+  const frame=now=>{if(!on)return;requestAnimationFrame(frame);if(!gl)return;size();lvl+=(level()-lvl)*.08;
+    gl.bindTexture(gl.TEXTURE_2D,tex);if(v.readyState>=2){try{gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,v)}catch(_){}}
+    const prev=fb[cur],next=fb[1-cur];gl.bindFramebuffer(gl.FRAMEBUFFER,next.f);gl.viewport(0,0,next.w,next.h);gl.useProgram(P);
+    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(U.uV,0);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,prev.t);gl.uniform1i(U.uP,1);
+    gl.uniform2f(U.uRes,next.w,next.h);gl.uniform2f(U.uVR,v.videoWidth||16,v.videoHeight||9);gl.uniform1f(U.uT,(now-t0)/1000);gl.uniform1f(U.uL,lvl);gl.uniform1i(U.uM,mode);gl.drawArrays(gl.TRIANGLES,0,3);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,c.width,c.height);gl.useProgram(CP);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,next.t);gl.uniform1i(U.cP,0);gl.uniform2f(U.cR,c.width,c.height);gl.drawArrays(gl.TRIANGLES,0,3);cur=1-cur};
+  const pick=i=>{mode=i;bar.querySelectorAll('.tmodes button').forEach((x,j)=>x.classList.toggle('on',j===i));nm.textContent=M[i][1];fb.forEach(f=>{gl.bindFramebuffer(gl.FRAMEBUFFER,f.f);gl.clear(gl.COLOR_BUFFER_BIT)});gl.bindFramebuffer(gl.FRAMEBUFFER,null)};
+  const set=x=>{if(x&&!gl)return say('this device cannot run the deck');on=x;c.hidden=bar.hidden=!x;b.classList.toggle('on',x);document.body.classList.toggle('transOpen',x&&MOBILE);
+    if(x){size();pick(mode);v.play&&v.play().catch(()=>{});requestAnimationFrame(frame);say('transmutation · '+M[mode][0])}else say('transmutation deck closed')};
+  b.onclick=e=>{e.stopPropagation();set(!on)};bar.querySelector('.tclose').onclick=()=>set(false);
+  bar.querySelector('.tmodes').onclick=e=>{const x=e.target.closest('button');if(!x)return;pick(+x.dataset.i);say('transmutation · '+M[mode][0])};
+  $('#tabs').addEventListener('click',()=>{if(on&&MOBILE)set(false)})}
+
+/* ================= THE DREAMACHINE: flicker watched through closed eyes =================
+   After Brion Gysin and Ian Sommerville's Dreamachine and the Ganzflicker studies. The whole screen swells and
+   falls as a soft sine at an exact rate; a faint layer of the clip lies under it to seed what appears.
+   A plain seizure notice comes first and must be accepted. Any tap or key ends it, and it ends itself on its timer. */
+{const R=$('#dream'),cv=$('#dreamC'),x=cv.getContext('2d'),gate=$('#dreamGate'),v=$('#veil');
+  const COL={gold:[255,176,72],white:[255,246,232],red:[255,24,16]};
+  const D={hz:10,depth:.45,col:'gold',seed:true,noise:true,min:10};let run=null,nz=null;
+  const b=document.createElement('button');b.className='pill';b.id='bDream';b.textContent='dreamachine';b.title='The Dreamachine: soft flicker for closed eyes, after Brion Gysin';$('#bTrans').after(b);
+  const paint=()=>{gate.querySelector('#dmHz').textContent=D.hz.toFixed(2);gate.querySelector('#dmDepth').value=D.depth;
+    gate.querySelectorAll('[data-col]').forEach(e=>e.classList.toggle('on',e.dataset.col===D.col));gate.querySelectorAll('[data-min]').forEach(e=>e.classList.toggle('on',+e.dataset.min===D.min));
+    gate.querySelector('#dmSeed').classList.toggle('on',D.seed);gate.querySelector('#dmNoise').classList.toggle('on',D.noise)};
+  const open=()=>{R.hidden=false;gate.hidden=false;cv.hidden=true;paint()};
+  const sizeC=()=>{const dp=MOBILE?1:Math.min(devicePixelRatio||1,1.25);cv.width=Math.round(innerWidth*dp);cv.height=Math.round(innerHeight*dp)};
+  /* brown noise in the ears, as in the 2024 Ganzflicker protocol; through the rites fader, off with its switch */
+  const noiseOn=()=>{if(!A.ctx||nz)return;const s=loopN(A.ctx,NB.brown),g=gn(A.ctx,0);s.connect(bq(A.ctx,'lowpass',900,.5)).connect(g).connect(MB('riteBus'));g.gain.setTargetAtTime(.5,A.ctx.currentTime,2);nz={s,g}};
+  const noiseOff=()=>{if(!nz)return;const n=nz;nz=null;n.g.gain.setTargetAtTime(0,A.ctx.currentTime,.8);setTimeout(()=>{try{n.s.stop()}catch(_){}},3500)};
+  const stop=why=>{if(!run)return;run.end=performance.now();run.why=why;noiseOff()};
+  const draw=now=>{if(!run)return;requestAnimationFrame(draw);const W=cv.width,H=cv.height,el=(now-run.t0)/1000,dur=D.min*60;
+    let env=Math.min(1,el/6);if(run.end)env*=Math.max(0,1-(now-run.end)/2500);else if(el>dur-6)env*=Math.max(0,(dur-el)/6);
+    if(el>=dur&&!run.end)stop('the time is done');if(run.end&&now-run.end>2600){const w=run.why;run=null;R.hidden=true;document.removeEventListener('keydown',key,true);say('dreamachine · '+w);return}
+    x.fillStyle='#000';x.fillRect(0,0,W,H);
+    if(D.seed&&v.readyState>=2&&v.videoWidth){const s=Math.max(W/v.videoWidth,H/v.videoHeight),w=v.videoWidth*s,h=v.videoHeight*s;x.globalAlpha=.16*env;x.drawImage(v,(W-w)/2,(H-h)/2,w,h);x.globalAlpha=1}
+    /* the flicker: a sine, never a hard on/off, its phase taken from the clock so the rate stays exact */
+    const ph=Math.sin(2*Math.PI*D.hz*(now-run.t0)/1000),lv=D.depth*env*(.5+.5*ph),c=COL[D.col];
+    x.fillStyle=`rgba(${c[0]},${c[1]},${c[2]},${lv.toFixed(3)})`;x.fillRect(0,0,W,H)};
+  const key=e=>{if(run&&!run.end){e.preventDefault();e.stopPropagation();stop('ended')}};
+  const begin=()=>{gate.hidden=true;cv.hidden=false;sizeC();run={t0:performance.now(),end:0};if(D.noise)noiseOn();document.addEventListener('keydown',key,true);requestAnimationFrame(draw);
+    say(`dreamachine · ${D.hz.toFixed(2)} hz · close your eyes`)};
+  b.onclick=e=>{e.stopPropagation();open()};
+  cv.addEventListener('pointerdown',()=>{if(run&&!run.end)stop('ended')});
+  gate.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+    if(t.dataset.col){D.col=t.dataset.col}else if(t.dataset.min){D.min=+t.dataset.min}else if(t.dataset.hz){D.hz=clamp(+(D.hz+ +t.dataset.hz).toFixed(2),4,14)}
+    else if(t.id==='dmSeed')D.seed=!D.seed;else if(t.id==='dmNoise')D.noise=!D.noise;else if(t.id==='dmLeave'){R.hidden=true;return}else if(t.id==='dmEnter'){begin();return}paint()});
+  gate.querySelector('#dmDepth').addEventListener('input',e=>{D.depth=+e.target.value});
+  addEventListener('resize',()=>{if(run)sizeC()})}
