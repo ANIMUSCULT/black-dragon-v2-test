@@ -1076,7 +1076,8 @@ const MASTW=`class MS extends AudioWorkletProcessor{constructor(){super();this.a
 registerProcessor('bd-master',MS);`;
 const A={};
 function initAudio(){
-  const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.025:'interactive'}),sr=ctx.sampleRate;
+  /* a buffer with room to breathe (2026-11-27): at the smallest buffer a brief spike, a burst of new sounds or a heavy frame, missed its deadline and crackled, on phones most of all. About 20 ms on a computer, 50 on a phone; keys still answer quickly. */
+  const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.05:.02}),sr=ctx.sampleRate;
   A.master=ctx.createGain();A.master.gain.value=0;A.master.gain.linearRampToValueAtTime(.8,ctx.currentTime+2.5);
   const lim=ctx.createDynamicsCompressor();lim.threshold.value=-12;lim.knee.value=9;lim.ratio.value=14;lim.attack.value=.002;lim.release.value=.22;
   /* a true ceiling: the compressor rides the level, then a soft curve guarantees nothing ever leaves above full scale */
@@ -1596,9 +1597,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127x"></script>
-<script src="env.js?v=1127x"></script>
-<script src="table.js?v=1127x"></script>
-<script src="luxuria.js?v=1127x"></script>
+<script src="bank.js?v=1127y"></script>
+<script src="env.js?v=1127y"></script>
+<script src="table.js?v=1127y"></script>
+<script src="luxuria.js?v=1127y"></script>
 </body>
 </html>
