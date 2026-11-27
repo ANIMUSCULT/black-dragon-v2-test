@@ -1048,6 +1048,28 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
   b.onclick=()=>{const nx=ORD[(ORD.indexOf(S.room||'hall')+1)%ORD.length];S.room=nx;label();if(A.setRoom)A.setRoom(nx);say('room · '+((A.ROOMS&&A.ROOMS[nx])||{}).n+(S.space<.05?' · turn up space to hear it':''))};
   setInterval(()=>{if(A.room&&A.room.id!==(S.room||'hall')&&A.setRoom)A.setRoom(S.room||'hall');label()},2000)}}
 
+/* ================= THE ASCENSION ENGINE: the same sound engine as Black Dragon: Ascension =================
+   ascension.dsp.js is Ascension's own audio processor, copied in unchanged (the plugin's C++ core is a sample-for-sample
+   port of it): 18 voices of band-limited morphing wavetables with unison, sub, breath and a ZDF filter, FM bells, chorus,
+   a tempo echo, an eight-line reverb with octave shimmer, drive and a safety limiter. Its own binaural bed, air hiss and
+   Monad drone are kept silent here: this instrument has its own beat engine, and nothing sounds until it is played.
+   Seven key voices play through it; the Dragon stone's chord spells use one instance each. */
+const ASC={url:'ascension.dsp.js?v=1127a',mod:null,quiet:{bin:0,air:0,rev:0,mute:0,master:.8,width:1}};
+ASC.load=()=>ASC.mod||(ASC.mod=(A.ctx&&A.ctx.audioWorklet&&window.AudioWorkletNode)?A.ctx.audioWorklet.addModule(ASC.url):Promise.reject(new Error('no worklet')));
+ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2]});n.port.postMessage({t:'setMany',v:Object.assign({},ASC.quiet,fx||{})});return n});
+{const KTRIM=1.7;/* set by measurement: one note of each voice at about 0.055, as the other key voices */
+  const ASCV=[['ascension lead','lead',0,1],['ascension vowel','lead',2.2,1.17],['ascension glass','lead',5,1],['ascension organ','lead',6,.95],['ascension pad','pad',1.3,1.28],['ascension choir','choir',2.2,2.2],['ascension bass','bass',.4,.43]];
+  ASCV.forEach(([n,p,sh,tr])=>{VOX.push({n,fam:'ascension',asc:p,sh,tr,oct:p==='bass'?-1:0});VOICES.push(n)});FAMS.push('ascension');buildVox();
+  let keys=null;const live={};
+  const engine=()=>keys||(keys=ASC.make({space:S.space,echo:.18,shimmer:.45,root:S.fc,carrier:S.fc}).then(n=>{const g=gn(A.ctx,KTRIM);n.connect(g).connect(A.master);A.asc=n;A.ascOut=g;return n}).catch(e=>{keys=null;throw e}));
+  const on0=noteOn,off0=noteOff;
+  noteOn=(id,i,vel=1)=>{const V=VOX[S.voice];if(!V||!V.asc)return on0(id,i,vel);if(!A.ctx||live[id])return;
+    const f=(KEYHZ[id]||degFreq(i))*Math.pow(2,V.oct||0);live[id]=1;flash(i,true);pluck=1;
+    engine().then(n=>{if(!live[id])return;n.port.postMessage({t:'setMany',v:{shape:V.sh,space:S.space,root:S.fc}});n.port.postMessage({t:'on',id:'k'+id,f,v:.85*vel*(V.tr||1),p:V.asc})})
+      .catch(()=>{delete live[id];flash(i,false);say('this device cannot run the Ascension engine')})};
+  noteOff=(id,i)=>{if(!live[id])return off0(id,i);delete live[id];flash(i,false);if(A.asc)A.asc.port.postMessage({t:'off',id:'k'+id})};
+  window.ASCKEYS={engine,live}}
+
 /* ================= CHORDS AND MAGIC CHORDS: the keyboard modes of Black Dragon: Ascension =================
    Notes plays one note a key. Chords builds a chord on each key from the scale (d, d+2, d+4). Magic makes every key play
    the chord the Dream is on at that moment (a chord spell in the Dragon stone), walking up through its inversions along

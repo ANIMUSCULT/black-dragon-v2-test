@@ -45,8 +45,11 @@ function prim(ctx,out,L,s){
       if(s.vib){const v=ctx.createOscillator(),vg=gn(ctx,f*.004);v.frequency.value=4.6+Math.random();v.connect(vg);vg.connect(o.frequency);vg.connect(o2.frequency);v.start(t);return{gg,os:[o,o2,v]}}
       return{gg,os:[o,o2]}};
     const free=(v,t)=>{v.gg.gain.cancelScheduledValues(t);v.gg.gain.setValueAtTime(v.gg.gain.value,t);v.gg.gain.linearRampToValueAtTime(0,t+s.rel);v.os.forEach(o=>o.stop(t+s.rel+.1))};
-    L.src.push({stop(){live.forEach(v=>v.os.forEach(o=>{try{o.stop()}catch(_){}}));if(window.DREAM&&window.DREAM.L===L)window.DREAM=null}});
+    let eng=null,dead=false;if(s.fx&&typeof ASC!=='undefined')ASC.make(s.fx).then(nd=>{if(dead)return;eng=nd;const eg=gn(ctx,g0*(s.eg||1));nd.connect(eg).connect(out);L.src.push({stop(){try{nd.port.postMessage({t:'panic'});nd.disconnect()}catch(_){}}})}).catch(()=>{});
+    L.src.push({stop(){dead=true;live.forEach(v=>v.os.forEach(o=>{try{o.stop()}catch(_){}}));if(window.DREAM&&window.DREAM.L===L)window.DREAM=null}});
     L.every(200,t=>{if(t<next)return;next=t+s.ev[0]+Math.random()*(s.ev[1]-s.ev[0]);live.forEach(v=>free(v,t));live=[];
+      if(eng){const ch=s.ch[ci++%s.ch.length];window.DREAM={ch,all:s.ch,ci:(ci-1)%s.ch.length,dg,n,L};eng.port.postMessage({t:'offPrefix',pre:'d'});
+        ch.forEach((d,i)=>eng.port.postMessage({t:'on',id:'d'+ci+'_'+i,f:dg(d,1),v:.8*(1-i*.08),p:s.patch||'pad'}));eng.port.postMessage({t:'on',id:'d'+ci+'_b',f:dg(ch[0],.5),v:.8,p:'bass'});return}
       const ch=s.ch[ci++%s.ch.length],k=ch.length+1;window.DREAM={ch,all:s.ch,ci:(ci-1)%s.ch.length,dg,n,L};
       ch.forEach((d,i)=>live.push(voice(dg(d,1),g0/k*(1-i*.08),t,s.w||'triangle',k>2?(i/(ch.length-1)-.5)*.9:0)));live.push(voice(dg(ch[0],.5),g0/k*1.1,t,'sine',0));
       if(s.spark){const m=Math.random()<.3?3:1,b0=7+(Math.random()*7|0);for(let j=0;j<m;j++){const f=dg(b0+j*2,2);ping(ctx,out,t+1.2+Math.random()*(next-t-3)+j*.18,f,f,3+Math.random()*3,g0*.07,Math.random()*1.6-.8,.4)}}});break}
@@ -193,10 +196,10 @@ const ENVS=[
  ['polar night',[D([55,55.2,82.5],.12,{trem:[.05,.5],lp:300}),B('pink',8000,.02,{ft:'highpass',lfo:[.04,.8]})]],['ice cave',[PI(.4,[900,2200],.12,.5,{drop:1.5,att:.004}),D([49,49.3],.5,{trem:[.04,.5]})]],
  ['frost',[BU(14,[6000,12000],[.002,.005],.3,{q:7})]],['slow heart',[HB(42,.9)]],['absolute zero',[D([27.5,27.55],.8),D([8000],.012,{trem:[.1,.9]})]]]},
 {id:'dragon',n:'Dragon',col:'#ff7a1e',line:'Fire, hoard and the wyrm beneath the mountain.',sig:[0,4,11],snd:[
- ['float',[CH('lucid',136.1,[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],[10,15],.21)]],
- ['choir',[CH('overtones',128,[[0,4,7],[2,5,9],[0,3,7],[4,7,11]],[12,18],.18,{w:'sine',vib:1,att:3.4})]],
- ['rise',[CH('timaeus',144,[[0,2,4,7],[1,4,6,8],[2,4,7,9],[3,5,7,10]],[7,10],.22,{att:1.8,rel:2.4})]],
- ['deep',[CH('hirajoshi',108,[[0,2,4],[-1,2,4],[0,3,5]],[18,26],.19,{w:'sine',att:4,rel:5})]],
+ ['float',[CH('lucid',136.1,[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],[10,15],.21,{eg:4,fx:{root:136.1,shape:1.3,bloom:.5,shimmer:.5,space:.72,echo:.18,drive:.2}})]],
+ ['choir',[CH('overtones',128,[[0,4,7],[2,5,9],[0,3,7],[4,7,11]],[12,18],.18,{w:'sine',vib:1,att:3.4,patch:'choir',eg:5.2,fx:{root:128,shape:2.2,bloom:.62,shimmer:.78,space:.9,echo:.1,drive:.15}})]],
+ ['rise',[CH('timaeus',144,[[0,2,4,7],[1,4,6,8],[2,4,7,9],[3,5,7,10]],[7,10],.22,{att:1.8,rel:2.4,eg:4,fx:{root:144,shape:5.2,bloom:.72,shimmer:.62,space:.66,echo:.38,drive:.3}})]],
+ ['deep',[CH('hirajoshi',108,[[0,2,4],[-1,2,4],[0,3,5]],[18,26],.19,{w:'sine',att:4,rel:5,eg:4.5,fx:{root:108,shape:.4,bloom:.22,shimmer:.35,space:1,echo:.06,drive:.1}})]],
  /* the twelve Dragon soundscapes of Black Dragon: Ascension, written in this stone's own terms */
  ['dragon breath',[B('brown',240,.4,{lfo:[.11,.32]}),B('pink',520,.12,{ft:'bandpass',q:.5,lfo:[.11,.1]})]],
  ['cave drip',[PI(.5,[900,2200],.5,.14,{drop:.6}),B('brown',100,.32)]],
