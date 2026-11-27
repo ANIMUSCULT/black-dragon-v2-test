@@ -320,7 +320,10 @@ function paintBank(){
 function showInfo(id){const b=BK[id];$('#binfo').innerHTML=(b.tag?`<span class="tag ${b.tag}">${b.tag}</span> `:'')+`<b>${b.n}</b>`+(b.info?`<br>${b.info}`:'')}
 function buildBank(){
   /* the held tones live in the healing table; their copies stay in BANK for presets and states but are not listed twice */
-  const HIDE=new Set(['solfeggio tones','planetary tones','chakra tones','bodywork tones','brainwave pulses']),SHOWN=BANK.filter(b=>!HIDE.has(b.cat));
+  const HIDE=new Set(['solfeggio tones','planetary tones','chakra tones','bodywork tones','brainwave pulses']);
+  /* a bank sound that has the same name as a stone layer shows once, in its stone; the copy stays in BANK for presets */
+  const STONE_N=new Set(BANK.filter(b=>/ stone$/.test(b.cat)).map(b=>b.n.toLowerCase()));
+  const SHOWN=BANK.filter(b=>!HIDE.has(b.cat)&&(/ stone$/.test(b.cat)||!STONE_N.has(b.n.toLowerCase())));
   const el=$('#bank');el.innerHTML=`<p class="vh">${SHOWN.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
     +group(SHOWN,b=>b.cat,b=>`<button class="vb lb" data-id="${b.id}">${b.n}</button>`)+'<button class="vb" id="bClear" style="margin-top:14px">clear the mix</button>';
   el.addEventListener('click',e=>{const b=e.target.closest('.lb'),off=e.target.dataset.off;if(off)return setLayer(off,null);if(e.target.id==='bClear')return clearLayers();
@@ -348,7 +351,7 @@ function buildCodex(){
   <p>The lens holds a magic square: a grid of the numbers from 1 upward in which every row, column and diagonal adds to the same total. Renaissance magicians gave one to each of the seven planets, from Saturn at 3 by 3 (total 15) to the Moon at 9 by 9 (total 369). The Sun's is 6 by 6; its rows add to 111 and the whole square to 666.</p>
   <p>Tap the lens to change planet. Hold it and the instrument walks the square in counting order, 1, 2, 3 and on, turning each position into a note. The line it draws is the kind of path from which planetary seals were made. The squares here are true magic squares built by standard methods; the row totals are exact.</p>
   <h4>The states</h4>`+STATES.map(s=>`<p>${tg(s.tag)} <b>${s.name}</b>, ${s.beat} Hz on ${s.fc} Hz. ${s.note}</p>`).join('')
-  +group(BANK,b=>b.cat,b=>`<p>${tg(b.tag)} <b>${b.n}</b>${b.info?'. '+b.info:''}</p>`).replace(/class="vg"/g,'')
+  +group(BANK.filter(b=>{const sn=new Set(BANK.filter(x=>/ stone$/.test(x.cat)).map(x=>x.n.toLowerCase()));return !['solfeggio tones','planetary tones','chakra tones','bodywork tones','brainwave pulses'].includes(b.cat)&&(/ stone$/.test(b.cat)||!sn.has(b.n.toLowerCase()))}),b=>b.cat,b=>`<p>${tg(b.tag)} <b>${b.n}</b>${b.info?'. '+b.info:''}</p>`).replace(/class="vg"/g,'')
   +`<h4>Volume</h4><p>Quiet works. Keep it at the level of a soft voice, and take the headphones off if your ears ring.</p>`;
 }
 

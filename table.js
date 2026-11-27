@@ -34,7 +34,7 @@ function healToggle(hz){const b=HBANKS[hbank];
 function paintHeal(){const b=HBANKS[hbank];$$('#heal .hb').forEach(x=>{const hz=+x.dataset.hz;x.classList.toggle('on',b.beat?Math.abs(S.beat-hz)<.005:hid(hz) in S.layers)});
   $$('#heal .bk').forEach((x,i)=>x.classList.toggle('on',i===hbank));$$('#heal .rc').forEach((x,i)=>x.classList.toggle('on',i===recipe))}
 function buildHeal(){const b=HBANKS[hbank],el=$('#heal'),keep=el.querySelector('.dclose');
-  el.innerHTML=`<h3>Healing table</h3>
+  el.innerHTML=`<h3>Healing table<span class="tag hTrad">tradition</span></h3>
   <div class="vg">${HBANKS.map((x,i)=>`<button class="vb bk" data-i="${i}">${x.n}</button>`).join('')}</div>
   <div class="hgrid">${b.t.map(([hz,nm])=>`<button class="hb" data-hz="${hz}"><b>${hz}</b><span>${nm}</span></button>`).join('')}</div>
   ${b.beat?'':`<h4>Tone recipe</h4><div class="vg">${RECIPES.map((r,i)=>`<button class="vb rc" data-i="${i}">${r[0]}</button>`).join('')}</div>`}
@@ -84,7 +84,7 @@ const BODY=[
   st:[[4,136.1,[6,3],'binaural',{breath:1,dim:.18,layers:{pink:.35},text:'Lie down.\nEyes closed.'}],[4,136.1,[3,1.5],'binaural',{dim:.08,layers:{pink:.45},text:'Sinking.'}],[4,111,[1.5,.8],'binaural',{dim:.03,layers:{pink:.5,bw1:.2},text:'Sleep.'}]]},
  {n:'Calm',tag:ST,why:'Breathing six times a minute is the best supported way to quiet the body: it makes the heart rhythm swing its widest. Alpha beat beneath, and a heartbeat at a resting sixty.',
   st:[[4,396,10,'binaural',{breath:1,layers:{heartbeat:.3},text:'Breathe with the ring.'}],[4,432,[10,8],'binaural',{breath:1,layers:{heartbeat:.3},text:'Longer out than in.'}],[4,528,[8,6],'binaural',{breath:1,text:'Nothing to do.'}]]},
- {n:'Focus',tag:ST,why:'Sound and light at 40 Hz drove matching brain rhythms in MIT trials, and 40 Hz beats sped reaction times in adults with ADHD symptoms in a 2026 study. White noise helped in that study as well.',
+ {n:'Focus',tag:ST,why:'Sound and light at 40 Hz drove matching brain rhythms in MIT trials. This plays a 40 Hz beat with a little white noise under it.',
   st:[[3,432,14,'isochronic',{text:'Settle on one task.'}],[3,528,18,'isochronic',{text:'Narrow.'}],[6,136.1,40,'isochronic',{tones:[40],layers:{white:.12},text:'Hold.'}]]},
  {n:'Vibro, 40 Hz',tag:ST,why:'Low-frequency sound felt through the body. Women with fibromyalgia reported large gains from 40 Hz sessions. Needs a subwoofer, a transducer cushion or strong headphones.',
   st:[[4,80,[10,6],'monaural',{tones:[40],breath:1,text:'Feel it in the chest.'}],[8,80,6,'monaural',{tones:[40,52],breath:1,text:'Let it move through.'}]]},
@@ -122,7 +122,7 @@ const TRANCE=[
   st:[[4,136.1,[12,7],'binaural',{vm:2,twist:.5,speed:.7,layers:{shepard:.3,'e:underworld:14':.4},script:['Is it rising\nor falling?','Follow both.','You cannot.','Stop trying.']}],[6,136.1,[7,4],'binaural',{breath:1,dim:.1,vm:4,script:['Stillness.','There is nothing\nto follow now.','Rest in it.']}]]}
 ];
 function buildProgs(id,title,intro,list){const el=$('#'+id),keep=el.querySelector('.dclose');
-  el.innerHTML=`<h3>${title}</h3>${intro?`<p class="vh">${intro}</p>`:''}<div class="vg" style="margin:8px 0 4px">${[[.5,'short'],[1,'full'],[2,'long']].map(([m,l])=>`<button class="vb pl${m===plen?' on':''}" data-m="${m}">${l}</button>`).join('')}</div>`
+  el.innerHTML=`<h3>${title}${id==='body'?'<span class="tag hTrad">tradition</span>':''}</h3>${intro?`<p class="vh">${intro}</p>`:''}<div class="vg" style="margin:8px 0 4px">${[[.5,'short'],[1,'full'],[2,'long']].map(([m,l])=>`<button class="vb pl${m===plen?' on':''}" data-m="${m}">${l}</button>`).join('')}</div>`
     +list.map((p,i)=>{const t=p.st.reduce((a,s)=>a+s[0],0);
       /* the healing programs show only their name and the numbers they play: the beat in hertz, then any held tones */
       if(id==='body'){const bs=[...new Set(p.st.flatMap(s=>Array.isArray(s[2])?s[2]:[s[2]]))],ts=[...new Set(p.st.flatMap(s=>(s[4]&&s[4].tones)||[]))];
@@ -1482,3 +1482,17 @@ document.addEventListener('click',e=>{if(e.target.closest('.drawer,.sideTab,#gat
   addEventListener('pointerup',off);addEventListener('pointercancel',off);addEventListener('blur',off)}
 setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElementById('keysBar');if(g&&kb){kb.appendChild(g);g.classList.add('kbSound');g.textContent='soundbar';const h=document.querySelector('#gSound h3');if(h)h.textContent='Soundbar'}},120);
 
+/* ================= ONE LIGHT WARNING, AT THE DOOR =================
+   The board flickers and floods the screen in several places (the Dreamachine, the flicker, the Ganzfeld), so the warning
+   lives at the entrance, shown once on a first visit and remembered, rather than inside any one room. */
+{const KEY='bd-light-ok',ok=()=>{try{return localStorage.getItem(KEY)==='1'}catch(_){return false}},gate=$('#gate'),go=gate&&gate.onclick;
+  if(gate&&go){const w=document.createElement('div');w.id='lightGate';w.hidden=true;
+    w.style.cssText='position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:20px';
+    w.innerHTML='<div style="width:min(520px,94vw);padding:24px 26px;border-radius:12px;background:rgba(14,10,10,.96);border:1px solid rgba(242,69,92,.45);color:var(--bone)">'
+      +'<h3 style="font-family:var(--serif);font-size:28px;font-weight:600;margin-bottom:12px">Before you enter</h3>'
+      +'<p style="font-size:15px;line-height:1.55;margin-bottom:18px">Black Dragon flickers and pulses light, and some rooms fill the whole screen with it. If you or anyone in your family has epilepsy or has ever had a seizure, keep the light features off. Stop at once if you feel unwell.</p>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap"><button id="lgEnter" class="pill">I understand · enter</button><button id="lgLeave" class="pill">not now</button></div></div>';
+    document.body.appendChild(w);
+    gate.onclick=e=>{if(ok())return go.call(gate,e);w.hidden=false};
+    w.querySelector('#lgEnter').onclick=e=>{e.stopPropagation();try{localStorage.setItem(KEY,'1')}catch(_){}w.hidden=true;go.call(gate,e)};
+    w.querySelector('#lgLeave').onclick=e=>{e.stopPropagation();w.hidden=true}}}

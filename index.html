@@ -415,7 +415,7 @@ body.idle .hud{transition:opacity 2.5s}
 #proof h2{font-size:18px;display:inline-block;margin-right:8px}#proof .tag{margin:0;vertical-align:3px;font-size:8px;padding:2px 7px}
 .read{margin-top:4px}.read dd{font-size:18px}.read dt{font-size:8px}
 #spec{height:36px;margin:6px 0}.seg{margin-bottom:0}.seg button{padding:7px 2px}
-#bTone{display:none}
+/* the test-tone download stays visible on every screen: a clean WAV of only the tones, to check in any analyser */
 #proof>p{display:none}
 .top .sp{display:none}
 #tonesOut{max-height:54px;overflow:hidden}
@@ -585,6 +585,7 @@ body{font-size-adjust:.53}
 .st b{font-weight:600}.drawer h3,#pads h3{font-weight:700}
 /* only what has been measured or studied carries a mark; the tradition mark is gone everywhere */
 .tag.tradition{display:none!important}
+.tag.hTrad{display:inline-block;color:#fff;border:1px solid rgba(255,255,255,.7);background:none;border-radius:3px;font-size:11px;padding:2px 8px;margin-left:10px;vertical-align:4px}
 /* ---------- layout repairs after the sweep ----------
    the action row stays on one line (it scrolls sideways if it must) so it never pushes the panels down */
 @media (min-width:1001px){
@@ -777,7 +778,6 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
 <canvas id="field"></canvas>
 <canvas id="cym" hidden></canvas><div id="dream" hidden><canvas id="dreamC" hidden></canvas><div id="dreamGate" class="jelly drawerish">
 <h3>Dreamachine</h3>
-<p class="dmNote"><b>Before you enter.</b> This room flickers light across the whole screen. If you or anyone in your family has epilepsy or has ever had a seizure, do not enter. Stop at once if you feel unwell. Any tap or key ends it.</p>
 <p class="vh">In 1958 Brion Gysin closed his eyes on a bus to Marseille as the sun flickered through a row of trees, and saw blazing colours and patterns. With Ian Sommerville he built the Dreamachine: a slotted cylinder turning around a lamp, watched with the eyes shut. In 2021 Reeder's Ganzflicker brought it to the screen, and many who watch at about ten flickers a second see shapes, faces and scenes of their own. Close your eyes, face the screen, and let it come.</p>
 <div class="dmRow"><span>rate</span><button data-hz="-0.5">−</button><b><i id="dmHz">10.00</i> Hz</b><button data-hz="0.5">+</button></div>
 <div class="dmRow"><span>strength</span><input id="dmDepth" type="range" min=".05" max="1" step=".01" value=".45" aria-label="flicker strength"></div>
@@ -792,7 +792,6 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
   <video id="gateVid" muted loop playsinline autoplay></video>
   <div class="gate-in">
     <h1 class="mark">Black Dragon<i>II</i></h1>
-    <p>Greetings beloved: an unfinished experience: a work in progress...just like you</p>
     <button id="enter" aria-label="Enter"><svg id="ring" viewBox="-118 -118 236 236" aria-hidden="true"><defs><path id="rp" d="M0,-100 A100,100 0 1 1 -0.1,-100"/></defs><circle r="112" fill="none" stroke="#fff" stroke-opacity=".35"/><circle r="88" fill="none" stroke="#fff" stroke-opacity=".35"/><text><textPath href="#rp">as above so below · α ε η ι ο υ ω · solve et coagula · α ε η ι ο υ ω ·</textPath></text></svg><span>enter</span></button>
   </div>
   <div class="gate-foot">
@@ -835,7 +834,7 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
       <circle id="pearl" cx="0" cy="-258" r="17" fill="url(#gScale)" stroke="#000"/>
       <circle id="pearlGlow" cx="0" cy="-258" r="7" fill="var(--b)" style="filter:blur(3px)"/>
     </svg>
-    <svg id="dial" viewBox="-200 -200 400 400" tabindex="0" role="slider" aria-label="Beat rate in hertz">
+    <svg id="dial" viewBox="-200 -200 400 400" tabindex="0" role="slider" aria-label="Beat rate in hertz" aria-valuemin="0.5" aria-valuemax="40">
       <defs>
         <linearGradient id="gChrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#6a728c"/><stop offset=".52" stop-color="#11121a"/><stop offset="1" stop-color="#dfe5f3"/></linearGradient>
         <radialGradient id="gLens"><stop offset="0" stop-color="#000" stop-opacity=".42"/><stop offset=".6" stop-color="#000" stop-opacity=".16"/><stop offset=".86" stop-color="#000" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".8"/></radialGradient>
@@ -903,7 +902,7 @@ const STATES=[
  {id:'hypnagogia',name:'Hypnagogia',sub:'the edge of dreaming',beat:6,fc:136.1,mode:'binaural',vis:1,scale:[1,9/8,5/4,45/32,3/2,27/16,15/8],cols:['#8a4bff','#e0153f','#2ff3d2'],tag:'studied',
   note:'Theta, 4 to 8 Hz, the band of the half-dream, where images rise on their own. The beat is measured here as it plays.'},
  {id:'gateway',name:'Gateway',sub:'the Monroe tapes',beat:4,fc:100,mode:'binaural',vis:0,scale:[1,9/8,5/4,3/2,5/3],cols:['#3a6adf','#101a4a','#9fd0ff'],tag:'tradition',
-  note:'In 1983 a US Army report assessed the Monroe Institute tapes, which used theta-range binaural beats like this one. The report was declassified in 2003.'},
+  note:'In 1983 a US Army report assessed the Monroe Institute tapes, which used theta-range binaural beats like this one. The report was declassified in 2003 and sits in the CIA reading room.'},
  {id:'journey',name:'Journey',sub:'the shaman drum',beat:4.5,fc:90,mode:'isochronic',drum:true,vis:0,scale:[1,6/5,4/3,3/2,9/5],cols:['#f4b942','#e0153f','#5a0a2a'],tag:'studied',
   note:'Drumming at 4 to 4.5 beats a second is the journey tempo across shamanic traditions. Stronger brain tracking of it went with deeper altered states. Give it 15 minutes.'},
  {id:'earth',name:'Earth',sub:'7.83, the Schumann tone',beat:7.83,fc:126.2,mode:'binaural',vis:3,scale:[1,9/8,5/4,3/2,5/3],cols:['#2f8f5a','#0a2a1a','#b8ffd0'],tag:'tradition',
@@ -921,7 +920,7 @@ const STATES=[
  {id:'solfeggio',name:'Solfeggio',sub:'528, by tradition',beat:8,fc:528,mode:'binaural',vis:2,scale:[1,9/8,5/4,3/2,5/3],cols:['#dfb23a','#2a1a05','#fff0b0'],tag:'tradition',
   note:'528 Hz is called the love tone, the repair tone, the miracle. It is the heart of the solfeggio set, tuned exactly.'},
  {id:'dread',name:'Velum',sub:'the ghost tone',beat:19,fc:76,mode:'monaural',vis:5,airLP:320,ghost:19,scale:[1,16/15,6/5,45/32,3/2],cols:['#a8102a','#2a0a2f','#ff3355'],tag:'studied',
-  note:'Near 19 Hz sits under hearing. In a 2003 concert, 17 Hz raised reports of unease by 22 percent. Use headphones or a subwoofer.'}
+  note:'Near 19 Hz sits under hearing. In a London concert experiment in 2003, 17 Hz played under the music raised reports of unease by 22 percent. Use headphones or a subwoofer.'}
 ];
 const BANDS=[[4,'Delta','deep sleep'],[8,'Theta','drowsy, dreamlike'],[13,'Alpha','calm, awake'],[30,'Beta','alert'],[99,'Gamma','sharp focus']];
 const S={vol:.8,echo:.5,att:.5,rel:.5,layers:{},env:'',speed:.4,twist:0,mirrors:0,warp:0,hue:0,split:.3,grain:.4,lens:.5,state:1,beat:6,fc:136.1,mode:'binaural',tone:.55,body:.5,air:0,close:0,space:.6,vision:.6,veil:.5,trails:.35,voice:0,breath:false,tide:true};
@@ -1041,7 +1040,7 @@ function setFilm(i){film=(i+FILMS.length)%FILMS.length;const v=$('#veil'),url='m
   /* if it has not started in six seconds, ask again past any stuck request */
   filmWatch=setTimeout(()=>{if(film===want&&v.readyState<2)go(url+'?r='+Date.now())},6000)}
 function nextFilm(){setFilm(film+1)}
-$('#gateVid').src='media/gate-serpent.mp4';setFilm(0);
+setFilm(0);
 $('#bFilm').onclick=()=>{nextFilm();$('#veil').play().catch(()=>{})};
 
 /* ---------- audio ---------- */
@@ -1073,13 +1072,14 @@ registerProcessor('bd-hall',H);`;
 /* the mastering chain, in front of the ceiling: a slow glue compressor so everything moves together, the bass below
    about 120 Hz folded to mono so the low end sits in the centre of the chest, the image above it opened a little, and a
    soft tape curve that rounds peaks and adds warmth. Level is matched by measurement to the chain without it. */
-const MASTW=`class MS extends AudioWorkletProcessor{constructor(){super();this.a=1-Math.exp(-6.283185307179586*120/sampleRate);this.s1=0;this.s2=0;this.d=[0,0,0,0];this.width=1.14;this.drive=1.25;this.trim=1;
+const MASTW=`class MS extends AudioWorkletProcessor{constructor(){super();this.a=1-Math.exp(-6.283185307179586*120/sampleRate);this.s1=0;this.s2=0;this.d=[0,0,0,0];this.width=1.14;this.drive=1.25;this.trim=1;this.hd=.4;
  this.port.onmessage=e=>{const m=e.data;for(const k in m)this[k]=m[k]}}
- process(ins,outs){const I=ins[0],O=outs[0];if(!I||!I[0])return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],a=this.a,dr=this.drive,nm=Math.tanh(dr),w=this.width,tr=this.trim,d=this.d;
+ process(ins,outs){const I=ins[0],O=outs[0];if(!I||!I[0])return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],a=this.a,dr=this.drive,hd=this.hd,nm=Math.tanh(dr)*hd,w=this.width,tr=this.trim,d=this.d;
   for(let i=0;i<l.length;i++){const m=(l[i]+r[i])*.5;let s=(l[i]-r[i])*.5;this.s1+=a*(s-this.s1);this.s2+=a*(this.s1-this.s2);s=(s-this.s2)*w;
-   let L=m+s,R=m-s;L=Math.tanh(L*dr)/nm;R=Math.tanh(R*dr)/nm;
+   let L=m+s,R=m-s;L=Math.tanh(L*dr*hd)/nm;R=Math.tanh(R*dr*hd)/nm;
    const yl=L-d[0]+.9995*d[1];d[0]=L;d[1]=yl;const yr=R-d[2]+.9995*d[3];d[2]=R;d[3]=yr;ol[i]=yl*tr;if(or!==ol)or[i]=yr*tr}return true}}
 registerProcessor('bd-master',MS);`;
+/* headroom (2026-11-27): the warmth curve sees the mix at 0.4 and is scaled back up, so a full chord over the start-up sound no longer squashes into it (it was bending peaks by a quarter and adding grit); the small-signal level is unchanged */
 const A={};
 function initAudio(){
   /* a buffer with room to breathe (2026-11-27): at the smallest buffer a brief spike, a burst of new sounds or a heavy frame, missed its deadline and crackled, on phones most of all. About 20 ms on a computer, 50 on a phone; keys still answer quickly. */
@@ -1603,9 +1603,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1128a"></script>
-<script src="env.js?v=1128a"></script>
-<script src="table.js?v=1128a"></script>
-<script src="luxuria.js?v=1128a"></script>
+<script src="bank.js?v=1128b"></script>
+<script src="env.js?v=1128b"></script>
+<script src="table.js?v=1128b"></script>
+<script src="luxuria.js?v=1128b"></script>
 </body>
 </html>
