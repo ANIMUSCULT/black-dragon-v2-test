@@ -1480,5 +1480,5 @@ document.addEventListener('click',e=>{if(e.target.closest('.drawer,.sideTab,#gat
 {const off=()=>document.body.classList.remove('peek');
   document.addEventListener('pointerdown',e=>{const k=e.target.closest('.knob');if(k&&k.dataset.b==='v')document.body.classList.add('peek')},true);
   addEventListener('pointerup',off);addEventListener('pointercancel',off);addEventListener('blur',off)}
-setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElementById('keysBar');if(g&&kb){kb.appendChild(g);g.classList.add('kbSound')}},120);
+setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElementById('keysBar');if(g&&kb){kb.appendChild(g);g.classList.add('kbSound');g.textContent='soundbar';const h=document.querySelector('#gSound h3');if(h)h.textContent='Soundbar'}},120);
 
