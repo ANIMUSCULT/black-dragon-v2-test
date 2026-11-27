@@ -386,9 +386,28 @@ function sigilTap(){if(TAP)return TAP;if(!A.ctx||!A.toneBus)return null;
   const scatter=i=>{if(shape===0&&vis===0){pos[i*2]=(Math.random()*2-1)*SQ;pos[i*2+1]=(Math.random()*2-1)*SQ}else{const r=Math.sqrt(Math.random()),a=Math.random()*TAU;pos[i*2]=r*Math.cos(a);pos[i*2+1]=r*Math.sin(a)}};
   for(let i=0;i<N;i++){seed[i]=Math.random();const r=Math.sqrt(Math.random()),a=Math.random()*TAU;pos[i*2]=r*Math.cos(a);pos[i*2+1]=r*Math.sin(a)}
   const b=document.createElement('button');b.className='pill';b.id='bScope';b.textContent='cymatics';
-  b.title='Sand on a plate inside the centre dial. The tone you hear gathers the grains into its figure; a note kicks them into the air.';$('#bTone').before(b);
+  b.title='Sand on a plate inside the Monad. The tone you hear gathers the grains into its figure; a note kicks them into the air.';$('#bTone').before(b);
   bar.innerHTML='<span id="cymRead"></span><button id="cymShape" title="Change the plate"></button><span class="cymV"><button id="cymVp" title="Previous vision">‹</button><button id="cymVis" title="Change the vision"></button><button id="cymVn" title="Next vision">›</button></span><button id="cymTone" title="Change the tone recipe"></button><button id="cymBig" title="Lift the plate out of the dial, or set it back"></button><button id="cymKeep" title="Save this figure as an image">keep</button><button id="cymX" title="Close cymatics">close</button>';
   const rd=$('#cymRead'),bShape=$('#cymShape'),bVis=$('#cymVis'),bTone=$('#cymTone'),bBig=$('#cymBig');
+  /* three ways to watch the sound, as the pearl of Black Dragon 01 had: the sand, a ring of the spectrum, and the scribble
+     the two ears draw against each other (left across, right up). The ring and the scribble read the whole mix. */
+  const VIEWS=['sand','ring','scribble'],bView=document.createElement('button');bView.id='cymView';bView.title='Sand, the ring of the spectrum, or the scribble of the two ears';rd.after(bView);
+  let view=0,an2=null,lv2=new Float32Array(72),pk2=.05;const c2=document.createElement('canvas');c2.id='cym2';c2.hidden=true;const x2=c2.getContext('2d'),
+    tl2=new Float32Array(2048),tr2=new Float32Array(2048),fd2=new Float32Array(1024);
+  const ans2=()=>{if(an2||!A.ctx||!A.out)return an2;const sp=A.ctx.createChannelSplitter(2),l=A.ctx.createAnalyser(),r=A.ctx.createAnalyser();l.fftSize=r.fftSize=2048;l.smoothingTimeConstant=.7;A.out.connect(sp);sp.connect(l,0);sp.connect(r,1);return an2={l,r}};
+  const draw2=dt=>{const W=c2.width;if(!W)return;const a=ans2(),tc=k=>`rgba(${Math.round(tint[0]*255)},${Math.round(tint[1]*255)},${Math.round(tint[2]*255)},${k})`;
+    x2.setTransform(1,0,0,1,0,0);x2.save();x2.beginPath();x2.arc(W/2,W/2,W/2,0,TAU);x2.clip();
+    if(view===1){x2.clearRect(0,0,W,W);x2.translate(W/2,W/2);if(a){a.l.getFloatFrequencyData(fd2)}const sr=A.ctx?A.ctx.sampleRate:48000,r1=W*.19;
+      x2.beginPath();x2.arc(0,0,r1*.94,0,TAU);x2.strokeStyle=tc(.35);x2.lineWidth=W*.004;x2.stroke();x2.lineCap='round';x2.lineWidth=W*.013;x2.shadowColor=tc(.8);x2.shadowBlur=W*.02;
+      for(let i=0;i<72;i++){const f=40*Math.pow(200,i/72),b=Math.min(1023,Math.round(f/(sr/2)*1024)),v=a?clamp((fd2[b]+96)/66,0,1):0;lv2[i]=Math.max(v,lv2[i]-dt*1.4);const u=lv2[i],an=i/72*TAU-PI/2,r2=r1+W*(.015+u*.27);
+        x2.beginPath();x2.moveTo(Math.cos(an)*r1,Math.sin(an)*r1);x2.lineTo(Math.cos(an)*r2,Math.sin(an)*r2);x2.strokeStyle=u>.6?`rgba(255,240,236,${.55+u*.4})`:tc(.45+u*.55);x2.stroke()}}
+    else{x2.globalCompositeOperation='destination-out';x2.fillStyle='rgba(0,0,0,.22)';x2.fillRect(0,0,W,W);x2.globalCompositeOperation='lighter';
+      if(a){a.l.getFloatTimeDomainData(tl2);a.r.getFloatTimeDomainData(tr2);let m=0;for(let i=0;i<2048;i++)m=Math.max(m,Math.abs(tl2[i]),Math.abs(tr2[i]));pk2=Math.max(m,pk2*Math.exp(-dt*.8),.02);
+        const g=W*.34/pk2;x2.translate(W/2,W/2);x2.rotate(-PI/4);x2.beginPath();for(let i=0;i<2048;i+=2){const x=tl2[i]*g,y=-tr2[i]*g;i?x2.lineTo(x,y):x2.moveTo(x,y)}
+        x2.strokeStyle=tc(.85);x2.lineWidth=Math.max(1,W/260);x2.shadowColor=tc(.9);x2.shadowBlur=W*.015;x2.stroke()}}
+    x2.restore()};
+  const setView=v=>{view=v;c.style.opacity=view?0:1;c2.hidden=!on||!view;x2.setTransform(1,0,0,1,0,0);x2.clearRect(0,0,c2.width,c2.height);label();say('cymatics · '+['the sand','the ring of the spectrum','the scribble of the two ears'][view])};
+  bView.onclick=()=>setView((view+1)%3);
   /* the grains are drawn as points */
   let P=null,U={},bufP=null;
   if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
@@ -466,22 +485,30 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
   /* a key played takes the plate at once and holds it a few seconds; then the measured tone takes it back */
   const cymNote0=noteOn;noteOn=(id,i,vel=1)=>{cymNote0(id,i,vel);if(!on||!A.ctx)return;const V=VOX[S.voice]||VOX[0],f=degFreq(i)*Math.pow(2,V.oct||0);if(!(f>0))return;
     keyHz=f;keyT=performance.now();kick=Math.max(kick,.6+.4*Math.min(1,vel));setHz(f);label()};
-  const label=()=>{bShape.textContent='plate · '+SHP[shape];bVis.textContent=VISN[vis];bTone.textContent='tone · '+TONES[tone];bBig.textContent=big?'set in dial':'lift out';
+  const label=()=>{bShape.textContent='plate · '+SHP[shape];bVis.textContent=VISN[vis];bTone.textContent='tone · '+TONES[tone];bBig.textContent=big?(MOBILE?'set in dial':'set in the Monad'):'lift out';bView.textContent='view · '+VIEWS[view];
     rd.textContent=!A.ctx?'the sand wakes with the sound':!reading?'waiting for a tone':`${hz.toFixed(1)} Hz · figure ${reading.m},${reading.n} · ${reading.grp} · ${reading.name}`};
   let box={x:0,y:0,s:0,v:false};
   const place=()=>{let cx,cy,s,v=true;
+    if(big&&bar.parentElement!==document.body){document.body.append(bar);bar.classList.remove('dock')}
     if(big){cx=innerWidth/2;if(MOBILE){const top=12,bot=bar.getBoundingClientRect().top-8||innerHeight;cy=(top+bot)/2;s=Math.min(innerWidth*.96,bot-top)}else{s=Math.min(innerWidth*.8,innerHeight-236);cy=62+s/2}}
+    else if(!MOBILE){/* on a computer the plate is set inside the Monad, and its controls wait in the panel beside the Proof */
+      const d=$('#monad').getBoundingClientRect();v=d.width>40;cx=d.left+d.width/2;cy=d.top+d.height/2;s=d.width*.82;const dk=$('#cymDock');
+      if(dk&&bar.parentElement!==dk){dk.append(bar);bar.classList.add('dock');bar.style.left=bar.style.top=''}
+      else if(!dk&&bar.parentElement!==document.body){document.body.append(bar);bar.classList.remove('dock')}
+      if(!dk){const bw=bar.offsetWidth,bh=bar.offsetHeight;bar.style.left=clamp(cx,bw/2+6,innerWidth-bw/2-6)+'px';bar.style.top=Math.max(4,d.top-bh-6)+'px'}}
     else{const d=$('#dial').getBoundingClientRect();v=d.width>40;cx=d.left+d.width/2;cy=d.top+d.height/2;s=d.width*.7;
       if(!MOBILE&&v){const side=d.top-$('.acts').getBoundingClientRect().bottom<50;bar.classList.toggle('side',side);const bw=bar.offsetWidth,bh=bar.offsetHeight;
         if(side){bar.style.left=(d.right+8)+'px';bar.style.top=Math.max(4,cy-bh/2)+'px'}else{bar.style.left=clamp(cx,bw/2+6,innerWidth-bw/2-6)+'px';bar.style.top=Math.max(4,d.top-bh-6)+'px'}}}
     if(MOBILE){const sb=big||$('.hud').dataset.tab==='proof';if(bar.hidden===sb)bar.hidden=!sb}
-    if(v!==box.v){box.v=v;c.style.visibility=v?'visible':'hidden'}
+    if(v!==box.v){box.v=v;c.style.visibility=c2.style.visibility=v?'visible':'hidden'}
     if(!v)return false;
     if(Math.abs(box.s-s)>1||Math.abs(box.x-cx)>1||Math.abs(box.y-cy)>1){box.x=cx;box.y=cy;box.s=s;const dp=Math.min(devicePixelRatio||1,2);
-      c.style.width=c.style.height=s+'px';c.style.left=(cx-s/2)+'px';c.style.top=(cy-s/2)+'px';const px=Math.round(s*dp);if(c.width!==px)c.width=c.height=px}
+      c.style.width=c.style.height=s+'px';c.style.left=(cx-s/2)+'px';c.style.top=(cy-s/2)+'px';const px=Math.round(s*dp);if(c.width!==px)c.width=c.height=px;
+      c2.style.width=c2.style.height=s+'px';c2.style.left=(cx-s/2)+'px';c2.style.top=(cy-s/2)+'px';if(c2.width!==px)c2.width=c2.height=px}
     return true};
   const draw=now=>{if(!on)return;requestAnimationFrame(draw);tick(now)};
   const tick=now=>{if(!gl)return;const dt=Math.min(.05,(now-(draw.l||now))/1000);draw.l=now;if(!place())return;T+=dt;
+    if(view){if(now-lastTint>700){lastTint=now;const m=/#?([0-9a-f]{6})/i.exec(window.ENVCOL||getComputedStyle(document.documentElement).getPropertyValue('--b')||'');if(m){const v=parseInt(m[1],16);tint=[(v>>16)/255,(v>>8&255)/255,(v&255)/255]}}draw2(dt);return}
     if(now-lastF>120){lastF=now;if(keyHz&&now-keyT>3200)keyHz=0;if(!keyHz){const f=measure();if(f)setHz(f)}label()}
     if(now-lastTint>700){lastTint=now;const m=/#?([0-9a-f]{6})/i.exec(window.ENVCOL||getComputedStyle(document.documentElement).getPropertyValue('--b')||'');if(m){const v=parseInt(m[1],16);tint=[(v>>16)/255,(v>>8&255)/255,(v&255)/255]}}
     /* how hard the plate is shaking: silence leaves the sand lying, loudness makes it dance, the beat rocks it */
@@ -501,11 +528,12 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
       x.fillStyle='rgba(255,205,210,.92)';x.textAlign='center';x.font='600 44px "Grenze Gotisch"';x.fillText(reading?reading.name:'Black Dragon II',540,1010);
       x.font='17px "Texturina"';x.fillText(`${SHP[shape]} plate · ${VISN[vis]} · ${TONES[tone]} · ${hz.toFixed(1)} Hz`,540,1048);
       o.toBlob(bl=>{save(bl,'black-dragon-sand-'+(reading?reading.name.toLowerCase()+'-':'')+hz.toFixed(1)+'hz.png');say('figure kept · '+(reading?reading.name:'saved'))},'image/png')}};
-  const seat=()=>{c.classList.toggle('big',big);bar.classList.toggle('big',big);if(big)document.body.append(c);else $('#dial').before(c);document.body.classList.toggle('cymOpen',on&&big&&MOBILE);
+  const seat=()=>{c.classList.toggle('big',big);bar.classList.toggle('big',big);const inM=!big&&!MOBILE;c.classList.toggle('inMon',inM);c2.classList.toggle('inMon',inM);c2.classList.toggle('big',big);
+    if(big)document.body.append(c);else if(inM)$('#monad').append(c);else $('#dial').before(c);c.after(c2);document.body.classList.toggle('cymOpen',on&&big&&MOBILE);
     if(big||MOBILE){bar.style.left='';bar.style.top='';bar.classList.remove('side')}box.s=0;box.v=null;label()};
-  const set=v=>{on=v;c.hidden=bar.hidden=!v;b.classList.toggle('on',v);document.body.classList.toggle('cymIn',v);big=v&&MOBILE;seat();
+  const set=v=>{on=v;c.hidden=bar.hidden=!v;c2.hidden=!v||!view;b.classList.toggle('on',v);document.body.classList.toggle('cymIn',v);big=v&&MOBILE;seat();
     if(v){lastF=0;draw.l=0;kick=1;requestAnimationFrame(draw);say(gl?'cymatics · the tone you hear gathers the sand':'this device cannot draw the plate')}else say('cymatics off')};
-  b.onclick=()=>set(!on);$('#cymX').onclick=()=>set(false);$('#tabs').addEventListener('click',()=>{if(on&&big&&MOBILE){big=false;seat()}});
+  b.onclick=()=>set(!on);$('#cymX').onclick=()=>set(false);$('#pads').addEventListener('click',e=>{if(e.target.closest('.cymGo')){e.stopPropagation();set(!on)}});$('#tabs').addEventListener('click',()=>{if(on&&big&&MOBILE){big=false;seat()}});
   bShape.onclick=()=>{shape=(shape+1)%4;if(shape===0&&vis===0)for(let i=0;i<N;i++){const x=pos[i*2],y=pos[i*2+1];if(x>SQ||x<-SQ||y>SQ||y<-SQ)scatter(i)}rebuild();say('plate · '+SHP[shape])};
   const stepVis=d=>{const was=shape===0&&vis===0;vis=(vis+d+VISN.length)%VISN.length;if(shape===0&&vis===0&&!was)for(let i=0;i<N;i++){const x=pos[i*2],y=pos[i*2+1];if(x>SQ||x<-SQ||y>SQ||y<-SQ)scatter(i)}kick=1;label();say('vision · '+VISN[vis])};
   bVis.onclick=$('#cymVn').onclick=()=>stepVis(1);$('#cymVp').onclick=()=>stepVis(-1);
@@ -1148,12 +1176,25 @@ EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');['e:lust:
   /* the notes of one key: a list of [degree, exact Hz or 0, level] */
   const build=(id,d)=>{const L=scaleLen();
     if(CM===1)return[0,2,4].map(k=>[d+k,0,1]);
-    const D=window.DREAM,n=D?D.n:L,fold=ch=>[...new Set(ch.map(c=>((c%n)+n)%n))].sort((a,b)=>a-b);
+    const D=window.DREAM;if(!D)return sweet(d);const n=D.n,fold=ch=>[...new Set(ch.map(c=>((c%n)+n)%n))].sort((a,b)=>a-b);
     let pc=fold(D?D.ch:FLOAT[0]);const m=pc.length;if(!D){const grp=Math.floor(d/m);pc=fold(FLOAT[((grp%FLOAT.length)+FLOAT.length)%FLOAT.length])}
     const s0=((d%m)+m)%m,o=Math.floor(d/m),out=[];for(let k=0;k<Math.min(3,m);k++){const ix=s0+k;out.push(pc[ix%m]+(Math.floor(ix/m)+o)*n)}out.push(out[0]+n);
     return out.map((g,k)=>[g,D?D.dg(g,2):0,k===3?.55:1])};
+  /* Magic with no Dream playing: every key plays the same sweet chord, pure just-intonation triads on the state's root, so
+     any keys held together agree. Each key plays the inversion whose lowest note sits at or just under the key's own pitch,
+     so the chord follows the keyboard's register. The chord moves on only when a new phrase starts (nothing held, a few
+     seconds since the last change), along a ring where each chord shares a note or two with the next: I iii vi IV in a
+     major mood, i III VI iv in a minor one, open fifths and fourths where the scale has no third. */
+  const PROG={maj:[[1,5/4,3/2],[5/4,3/2,15/8],[1,5/4,5/3],[1,4/3,5/3]],min:[[1,6/5,3/2],[6/5,3/2,9/5],[1,6/5,8/5],[1,4/3,8/5]],
+    open:[[1,3/2],[1,9/8,3/2],[1,4/3,3/2],[1,4/3,16/9]]};
+  let MCI=-1,MCT=-1e9;const mood=()=>{const sc=STATES[S.state].scale,has=x=>sc.some(v=>Math.abs(v/x-1)<.004);return has(5/4)?'maj':has(6/5)?'min':'open'};
+  const sweet=d=>{const P=PROG[mood()],ch=P[((MCI%P.length)+P.length)%P.length],f=degFreq(d);let base=S.fc*2;while(base<150)base*=2;while(base>330)base/=2;
+    const tones=[];for(let o=-3;o<5;o++)ch.forEach(r=>tones.push(base*r*Math.pow(2,o)));tones.sort((x,y)=>x-y);
+    let j=0;while(j+1<tones.length&&tones[j+1]<=f*1.03)j++;const out=[tones[j],tones[j+1],tones[j+2]];if(ch.length<3)out[2]=out[0]*2;
+    return out.map(hz=>[d,hz,1]).concat([[d,out[0]*2,.55]])};
   const on0=noteOn,off0=noteOff;
-  noteOn=(id,i,vel=1)=>{if(!CM||!isKey(id))return on0(id,i,vel);const notes=build(id,i),v=Math.min(1,vel/Math.sqrt(notes.length)*1.15),roll=CM===2?12:0;
+  noteOn=(id,i,vel=1)=>{if(!CM||!isKey(id))return on0(id,i,vel);
+    if(CM===2&&!window.DREAM){const now=performance.now();if(!Object.keys(timers).length&&now-MCT>3500){MCI++;MCT=now}}const notes=build(id,i),v=Math.min(1,vel/Math.sqrt(notes.length)*1.15),roll=CM===2?12:0;
     (timers[id]||[]).forEach(clearTimeout);timers[id]=[];
     notes.forEach(([g,hz,lv],k)=>{const nid=id+'~'+k,go=()=>{if(hz)KEYHZ[nid]=hz;else delete KEYHZ[nid];on0(nid,g,v*lv)};if(k&&roll)timers[id].push(setTimeout(go,k*roll));else go()})};
   noteOff=(id,i)=>{if(!isKey(id)||(!CM&&!timers[id]))return off0(id,i);(timers[id]||[]).forEach(clearTimeout);delete timers[id];for(let k=0;k<5;k++){off0(id+'~'+k,i);delete KEYHZ[id+'~'+k]}off0(id,i)};
@@ -1217,7 +1258,7 @@ class M extends AudioWorkletProcessor{constructor(){super();this.SR=sampleRate;t
   return true}}
 registerProcessor('bd-monad',M);`;
 {/* V2's stones mapped to Ascension's realms (0 Dream .. 13 Sand, Dragon = 12) */
-  const RLM={dream:0,nature:1,wet:2,breath:3,celestial:4,universe:4,magnetism:5,blood:6,animal:6,underworld:7,gold:8,freeze:9,lust:10,heat:12,dragon:12};
+  const RLM={dream:0,nature:1,wet:2,breath:3,celestial:4,universe:4,magnetism:5,blood:6,animal:6,underworld:7,gold:8,freeze:9,lust:10,heat:12,dragon:12,magic:11,sand:13,wyrm:7};
   let node=null,boot=null;const realm=()=>RLM[typeof ENV==='string'?ENV:(ENV&&ENV.id)]??0;
   const make=()=>boot||(boot=A.ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([MONW],{type:'application/javascript'}))).then(()=>{node=new AudioWorkletNode(A.ctx,'bd-monad',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2]});const g=gn(A.ctx,MONAD_TRIM);node.connect(g);g.connect(MB('monBus'));g.connect(A.verb);return node}));
   const MONAD_TRIM=.6;/* the full Monad sits at about 0.075 RMS, loud enough to be felt, under the ceiling */

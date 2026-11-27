@@ -18,7 +18,7 @@ const gn=(ctx,v)=>{const g=ctx.createGain();g.gain.value=v;return g};
 const lfo=(ctx,rate,depth,param)=>{const o=ctx.createOscillator(),g=gn(ctx,depth);o.frequency.value=rate;o.connect(g).connect(param);o.start();return o};
 function blip(ctx,out,t,f,q,dur,gain,pan){const s=ctx.createBufferSource(),b=bq(ctx,'bandpass',f,q),g=ctx.createGain(),p=ctx.createStereoPanner();s.buffer=NB.white;
   p.pan.value=pan==null?Math.random()*2-1:pan;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+.002);g.gain.exponentialRampToValueAtTime(.0005,t+dur);
-  s.connect(b).connect(g).connect(p).connect(out);s.start(t,Math.random()*3,dur+.03)}
+  s.loop=true;s.connect(b).connect(g).connect(p).connect(out);s.start(t,Math.random()*3,dur+.03)}
 function ping(ctx,out,t,f0,f1,dur,gain,pan,att,wave){const o=ctx.createOscillator(),g=ctx.createGain(),p=ctx.createStereoPanner();if(wave)o.type=wave;o.frequency.setValueAtTime(f0,t);
   if(f1!==f0)o.frequency.exponentialRampToValueAtTime(f1,t+dur);p.pan.value=pan==null?Math.random()*2-1:pan;
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+(att||dur*.15));g.gain.exponentialRampToValueAtTime(.0005,t+dur);o.connect(g).connect(p).connect(out);o.start(t);o.stop(t+dur+.03)}
@@ -165,7 +165,7 @@ const BK=Object.fromEntries(BANK.map(b=>[b.id,b]));
 const act={};
 /* from measuring every world sound: these peaked far above the rest, or sat mostly in the piercing range */
 const CALM={'e:underworld:8':.4,'e:gold:13':.4,thunder:.7,'e:blood:9':.7,'e:blood:14':.7,'e:blood:15':.7,womb:.75,'e:heat:10':.6,'e:animal:9':.6,'e:wet:8':.75,'e:underworld:2':.75,'e:nature:13':.65,'e:nature:6':.75,'e:heat:12':.75,'e:wet:2':.75,'e:wet:5':.8,'e:wet:1':.7,'e:freeze:15':.7,'e:freeze:12':.8};
-const EASE=new Set(['e:nature:6','e:nature:13','e:heat:10','e:heat:12','e:heat:7','e:wet:1','e:wet:2','e:wet:5','e:wet:12','e:animal:9','e:animal:13','e:celestial:5','e:celestial:14','e:magnetism:10','e:lust:2','e:gold:14','cicadas']);
+const EASE=new Set(['e:nature:0','e:nature:1','e:nature:2','e:nature:3','e:nature:5','e:nature:6','e:nature:8','e:dream:5','e:heat:10','e:heat:12','e:heat:7','e:wet:1','e:wet:2','e:wet:5','e:wet:12','e:animal:9','e:animal:13','e:celestial:5','e:celestial:14','e:magnetism:10','e:lust:2','e:gold:14','cicadas']);
 const lyrLvl=id=>(BK[id].lvl||1)*(CALM[id]||1);
 
 /* ---------- layers on and off ---------- */
