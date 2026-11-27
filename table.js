@@ -1432,7 +1432,7 @@ registerProcessor('bd-monad',M);`;
   const go=now=>{requestAnimationFrame(go);if(!m||document.hidden||now-last<33)return;const dt=Math.min(.1,(now-last)/1000);last=now;
     const L=typeof lvl==='number'?lvl:0;sm+=(Math.min(.08,L)-sm)*Math.min(1,dt*5);const bt=S.beat||0,ph=bt>0&&bt<16&&!calm?Math.sin(now/1000*Math.PI*2*bt):0;
     h=(h+dt*(calm?4:9+sm*1400))%360;m.style.setProperty('--mh',h.toFixed(1)+'deg');
-    m.style.setProperty('--ms',(1.5+sm*8+ph*.15).toFixed(2));m.style.setProperty('--mb',(.3+sm*1.4+ph*.025).toFixed(3));m.style.setProperty('--mr',(-h*1.7).toFixed(1)+'deg');m.style.setProperty('--mo',Math.min(.3,.07+sm*3.5).toFixed(3));m.style.setProperty('--mz',(1+ph*.035+sm*.6).toFixed(3))};
+    m.style.setProperty('--ms',(1.5+sm*8+ph*.15).toFixed(2));m.style.setProperty('--mb',(.3+sm*1.4+ph*.025).toFixed(3));m.style.setProperty('--mr',(-h*.9).toFixed(1)+'deg');m.style.setProperty('--mo',Math.min(.7,.38+sm*4).toFixed(3));m.style.setProperty('--mz',(1+ph*.035+sm*.6).toFixed(3))};
   requestAnimationFrame(go)}
 /* ================= THE DREAM SPELLS, as Ascension's Dream page =================
    Ascension's four spells (the chords that play themselves, in the Dragon stone) gathered in one guided drawer:

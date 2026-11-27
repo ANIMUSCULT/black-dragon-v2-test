@@ -742,19 +742,25 @@ body.hideL #shellL>*{opacity:0;transform:translateX(-26px);visibility:hidden;poi
 body.hideR #shellR>*{opacity:0;transform:translateX(26px);visibility:hidden;pointer-events:none;transition:opacity .45s ease,transform .45s ease,visibility 0s linear .45s}
 body.hideL #shellL,body.hideR #shellR{cursor:pointer}
 body.hideR #shellR{overflow:hidden!important}
-/* the Monad as clear glass that inverts whatever moves behind it: the hue keeps turning and the glass answers the sound and
-   the beat (the values come from table.js). The numbers and the engraved ring invert against it too. */
-/* dark and translucent (owner, 2026-11-27): the inverted picture shows only faintly through smoked glass */
-#monad{isolation:auto!important;border:1px solid rgba(255,255,255,.22)!important;background:radial-gradient(circle at 50% 40%,rgba(10,7,12,.38),rgba(0,0,0,.62) 72%)!important;
-  -webkit-backdrop-filter:invert(1) sepia(.5) saturate(var(--ms,1.6)) hue-rotate(var(--mh,0deg)) brightness(var(--mb,.34)) contrast(1.2) blur(1.5px);
-  backdrop-filter:invert(1) sepia(.5) saturate(var(--ms,1.6)) hue-rotate(var(--mh,0deg)) brightness(var(--mb,.34)) contrast(1.2) blur(1.5px)}
-#monad>span,#monad>b,#monad>i{color:rgba(240,234,240,.92)!important;text-shadow:0 0 10px rgba(0,0,0,.7)!important}
-/* inside the glass: soft colour bands that turn and rings that breathe with the beat, brighter as the sound rises */
-.monSwirl{position:absolute!important;inset:7%;border-radius:50%;z-index:1!important;pointer-events:none;opacity:var(--mo,.08);filter:blur(7px) saturate(1.1);
-  background:repeating-radial-gradient(circle,rgba(255,255,255,0) 0 9%,rgba(255,255,255,.35) 10.5%,rgba(255,255,255,0) 12%),
-    conic-gradient(from var(--mr,0deg),#ff2d73,#ffb347,#4dffc3,#3a8bff,#b04dff,#ff2d73);
-  transform:scale(var(--mz,1));mix-blend-mode:screen}
-#monad::after{background:radial-gradient(60% 45% at 34% 24%,rgba(255,255,255,.18),transparent 70%)!important;box-shadow:inset 0 0 22px rgba(255,255,255,.14),0 0 0 1px rgba(255,255,255,.12)!important}
+/* the Monad as translucent glass (owner, 2026-11-27): you look into it at the picture behind, dimmed and softened, and the
+   colour lies on the surface like a reflection of an oil slick: two iridescent wheels turning against each other break into
+   thin-film bands, gathered where light would catch the glass (the upper left and the rim), with clear glass in the middle.
+   The film turns slowly and brightens a little with the sound (values from table.js). */
+#monad{isolation:auto!important;border:1px solid rgba(255,255,255,.24)!important;
+  background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.035),rgba(4,3,6,.32) 62%,rgba(0,0,0,.55) 100%)!important;
+  -webkit-backdrop-filter:blur(2.5px) brightness(.58) saturate(1.2) contrast(1.08);backdrop-filter:blur(2.5px) brightness(.58) saturate(1.2) contrast(1.08)}
+#monad>span,#monad>b,#monad>i{color:rgba(242,236,242,.94)!important;text-shadow:0 0 10px rgba(0,0,0,.75)!important}
+.monSwirl{position:absolute!important;inset:2.5%;border-radius:50%;z-index:1!important;pointer-events:none;opacity:var(--mo,.4);
+  filter:blur(2.5px) saturate(1.7) brightness(1.05);mix-blend-mode:screen;
+  background:conic-gradient(from var(--mr,0deg) at 46% 44%,#ff3cac,#ffd23c,#3cffa5,#3c9bff,#b43cff,#ff3cac),
+    conic-gradient(from calc(var(--mr,0deg) * -1.7) at 58% 62%,#3cffd0,#ff5ab4,#ffe066,#5a7bff,#3cffd0);
+  background-blend-mode:difference;
+  -webkit-mask:radial-gradient(62% 48% at 32% 26%,#000 0%,rgba(0,0,0,.6) 42%,transparent 72%),radial-gradient(circle,transparent 60%,rgba(0,0,0,.75) 76%,rgba(0,0,0,.35) 88%,transparent 98%);
+  mask:radial-gradient(62% 48% at 32% 26%,#000 0%,rgba(0,0,0,.6) 42%,transparent 72%),radial-gradient(circle,transparent 60%,rgba(0,0,0,.75) 76%,rgba(0,0,0,.35) 88%,transparent 98%);
+  transform:scale(var(--mz,1)) rotate(calc(var(--mr,0deg) * .08))}
+/* the glass itself: a crisp highlight like a window caught in it, and a faint brighter rim */
+#monad::after{background:radial-gradient(38% 20% at 34% 20%,rgba(255,255,255,.32),rgba(255,255,255,.06) 60%,transparent 75%),radial-gradient(70% 40% at 66% 88%,rgba(255,255,255,.06),transparent 70%)!important;
+  box-shadow:inset 0 0 18px rgba(255,255,255,.12),inset 0 0 2px rgba(255,255,255,.35),0 0 0 1px rgba(255,255,255,.1)!important}
 /* recorded: a real place or thing, in plain silver */
 .tag.recorded{background:#d8d3dc;color:#111}
 #pads .cymGo{margin-top:8px;width:100%;padding:10px 12px;font-size:11px;letter-spacing:.18em}
@@ -1590,9 +1596,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127w"></script>
-<script src="env.js?v=1127w"></script>
-<script src="table.js?v=1127w"></script>
-<script src="luxuria.js?v=1127w"></script>
+<script src="bank.js?v=1127x"></script>
+<script src="env.js?v=1127x"></script>
+<script src="table.js?v=1127x"></script>
+<script src="luxuria.js?v=1127x"></script>
 </body>
 </html>
