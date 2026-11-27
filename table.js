@@ -297,7 +297,7 @@ function resetAll(){
   stopRun(true);revStop();if(possess)$('#bPossess').click();if(desc)stopDescent();if(silenced)silence(false);
   if(A.ctx){const t=A.ctx.currentTime;Object.keys(held).forEach(k=>{const h=held[k];h.g.gain.cancelScheduledValues(t);h.g.gain.setTargetAtTime(0,t,.05);h.os.forEach(o=>{try{o.stop(t+.4)}catch(_){}});delete held[k]});$$('.key.on').forEach(k=>k.classList.remove('on'))}
   if(ENV)setEnv(null);clearLayers();const vol=S.vol;Object.assign(S,DEF,{layers:{},vol});window.VMODE=null;FORGED=null;$('#seal').setAttribute('points','');$('#sealDot').setAttribute('opacity',0);
-  setState(STATES.findIndex(x=>x.id==='hypnagogia'));tun=0;kOct=0;kVel=1;if(window.CHORDS){CHORDS.mode=2;CHORDS.set('bass',false);CHORDS.set('spread',0);CHORDS.set('strum',0)}setVoice(window.DEFVOICE||0);$$('.tn').forEach((x,i)=>x.classList.toggle('on',!i));paintKnobs();applyAll();
+  setState(STATES.findIndex(x=>x.id==='hypnagogia'));tun=0;kOct=0;kVel=1;if(window.CHORDS){CHORDS.mode=0;CHORDS.set('bass',false);CHORDS.set('spread',0);CHORDS.set('strum',0)}setVoice(window.DEFVOICE||0);$$('.tn').forEach((x,i)=>x.classList.toggle('on',!i));paintKnobs();applyAll();
   $('#bBreath').classList.toggle('on',S.breath);$('#bTide').classList.toggle('on',S.tide);$('#bPresets').textContent='presets';paintHeal();DR.forEach(d=>$('#'+d).hidden=true);say('reset · the board is back to its starting places')}
 $('#bReset').onclick=resetAll;
 const volIn=$('#vol');volIn.value=S.vol;volIn.addEventListener('input',()=>{S.vol=+volIn.value;if(knobEls.vol)knobEls.vol.style.setProperty('--v',S.vol);if(A.ctx&&!silenced)A.vol.gain.setTargetAtTime(S.vol,A.ctx.currentTime,.03);say('volume · '+Math.round(S.vol*100))});
@@ -1201,7 +1201,7 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
    the keyboard, so a key can never land outside it. With no Dream playing, each group of keys takes the next chord of
    the Float spell in the state's own scale. Ported from Ascension's Performer.h (chordDegs, chordOn). */
 EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');['e:lust:6','e:freeze:3','e:magic:2','e:freeze:1','e:gold:7'].forEach(id=>EASE.add(id));/* the brightest of Ascension's realms */
-{let CM=2,paintM=()=>{};const CO={bass:false,spread:0,strum:0};const MODES=['one note','chords','magic'],FLOAT=[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],timers={};
+{let CM=0,paintM=()=>{};const CO={bass:false,spread:0,strum:0};const MODES=['one note','chords','magic'],FLOAT=[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],timers={};
   const voxSync=()=>{const v=$('#vox');if(v&&v._sync)v._sync()};
   const bar=$('#keysBar');if(bar){const b=document.createElement('button');b.className='pill kmode';b.id='bChordM';b.title='One note, chords or magic: magic keeps every key in one sweet chord, so whatever you press fits';
     const paint=()=>{b.textContent=MODES[CM];b.classList.toggle('on',CM>0);$('#keys')&&$('#keys').classList.toggle('magic',CM===2)};paint();paintM=paint;
@@ -1467,4 +1467,8 @@ registerProcessor('bd-monad',M);`;
     if(k==='lvl'){lvl0=v;const c=cur();if(c>=0)setLayer(id(c),v)}else if(k==='drift'){drift=v;window.DDRIFT=Math.pow(2,(.5-v)*2)}else{DOVR[k]=v;send()}});
   const br=resetAll;resetAll=function(){window.DOVR={};window.DDRIFT=1;drift=.5;lvl0=.5;return br.apply(this,arguments)};
   window.DREAMSP={cast,SP,get cur(){return cur()}}}
+/* the board opens on the Dragon stone, with opal keys on one note (owner, 2026-11-27); reset comes back here too.
+   A shared link that brings its own board is left as it is. */
+{const w=setInterval(()=>{if(!A.ctx)return;clearInterval(w);setTimeout(()=>{if(!ENV&&!location.hash.startsWith('#b='))setEnv('dragon')},600)},300);
+  const br=resetAll;resetAll=function(){const r=br.apply(this,arguments);setEnv('dragon');say('reset · the board is back to its starting places');return r}}
 
