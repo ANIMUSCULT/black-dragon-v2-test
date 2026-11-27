@@ -698,18 +698,11 @@ if(/[?&]diag\b/.test(location.search)){
   @keyframes umbraPulse{0%,100%{transform:scale(.6);opacity:.35}50%{transform:scale(1.15);opacity:.9}}
   @media (prefers-reduced-motion:reduce){.umbraBtn::before{animation:none}}`;document.head.appendChild(st);
  const umbIsOn=()=>'umbra' in S.layers;
- /* the Umbra journey: a love hypnosis in Umbra's own tone, about fourteen minutes. A countdown in from ten, sinking into
-    being held, drawing closer, a sensual rise and crest in the middle, an afterglow, and a count back up from one to five.
+ /* the Umbra journey: a love hypnosis in Umbra's own tone, about fourteen minutes, told in sound alone (the owner took the
+    words off the screen, 2026-11-27): sinking in, drawing closer, a sensual rise and crest in the middle, an afterglow, and back.
     Umbra itself never changes; the beat glides, the Lust stone's sounds and the Monad's voice rise and fall around it.
     When the journey ends, Umbra keeps playing until it is released. */
  const UJ={on:false,t0:0,iv:null,ti:0,added:new Set(),word:-1,mon:false};
- const WORDS=[[4,'Ten','let your eyes soften'],[9,'Nine','breathe out, slowly'],[14,'Eight','heavier now'],[19,'Seven','warmth beneath you'],[24,'Six','deeper'],
-   [29,'Five','nothing to hold up'],[34,'Four','sinking, softly'],[39,'Three','let go'],[44,'Two','almost'],[49,'One','held'],[55,'You are held',''],
-   [95,'Nothing to do','only be here'],[145,'Warm darkness','all around you'],[190,'Someone is close','you can feel them near'],
-   [232,'Closer','breath on breath'],[282,'Skin, warm','everywhere it is touched'],[330,'Slower','and deeper still'],
-   [378,'Let it rise','the heat in you'],[422,'Warmer','follow it down'],[466,'The pulse in you','beating with mine'],[510,'Give in to it','all of it'],[552,'Yes',''],
-   [602,'Melt','soft now'],[662,'Still held','always held'],[722,'Rest here','as long as you like'],
-   [790,'Coming back, slowly','bring the warmth with you'],[800,'One',''],[805,'Two',''],[810,'Three',''],[815,'Four',''],[820,'Five','open your eyes when you are ready']];
  const BEAT=[[0,1.4],[55,.9],[210,.9],[360,1.4],[540,2.6],[600,3.2],[780,.7],[830,.9]];
  /* [time, sound, level, seconds to fade]: level 0 lets the sound go */
  const CUES=[[210,'e:lust:1',.32,14],[215,'e:lust:3',.28,18],[360,'e:lust:0',.4,16],[372,'e:lust:8',.34,20],[420,'e:lust:7',.3,20],[460,'e:lust:9',.28,24],
@@ -721,9 +714,6 @@ if(/[?&]diag\b/.test(location.search)){
  const ujTick=()=>{if(!UJ.on)return;const s=(performance.now()-UJ.t0)/1000;
    S.beat=+beatAt(s).toFixed(3);if(typeof applyBeat==='function')applyBeat();paintDial();
    while(UJ.ti<CUES.length&&CUES[UJ.ti][0]<=s){const [,id,lv,sec]=CUES[UJ.ti++];lvlTo(id,lv,sec)}
-   let w=-1;for(let i=0;i<WORDS.length;i++)if(WORDS[i][0]<=s)w=i;
-   if(w!==UJ.word){UJ.word=w;if(w>=0){const [,big,hint]=WORDS[w];showHud(true);hudSet(big,hint,'')}}
-   if(w>=0&&s-WORDS[w][0]>10&&w<WORDS.length-1)hudSet('','','');
    /* the crest: the Monad's voice climbs under everything for twenty seconds, then sinks */
    if(!UJ.mon&&s>=540&&s<560){UJ.mon=true;try{monadStart()}catch(_){}}
    if(UJ.mon&&s>=560){UJ.mon=false;try{monadStop()}catch(_){}}
@@ -731,9 +721,9 @@ if(/[?&]diag\b/.test(location.search)){
    if(s>836){ujStop(true)}};
  const ujStart=()=>{ujStop(false);UJ.on=true;UJ.t0=performance.now();UJ.ti=0;UJ.word=-1;
    if(act.umbra){act.umbra.g.gain.setValueAtTime(.12*lyrLvl('umbra'),A.ctx.currentTime);act.umbra.g.gain.setTargetAtTime(.6*lyrLvl('umbra'),A.ctx.currentTime,14)}
-   UJ.iv=setInterval(ujTick,250);ujTick();say('umbra · breathe, and let me count you down')};
+   UJ.iv=setInterval(ujTick,250);ujTick();say('umbra · the journey begins')};
  const ujStop=done=>{if(!UJ.on&&!UJ.iv)return;UJ.on=false;clearInterval(UJ.iv);UJ.iv=null;if(UJ.mon){UJ.mon=false;try{monadStop()}catch(_){}}
-   hudSet('','','');showHud(false);if(!done){UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear()}else say('umbra · the journey is done · you are still held')};
+   hudSet('','','');showHud(false);if(!done){UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear()}else say('umbra · the journey is done')};
  $('#rStop').addEventListener('click',()=>{if(UJ.on)ujStop(false)});
  window.UMBRAJ=UJ;
 
@@ -745,7 +735,7 @@ if(/[?&]diag\b/.test(location.search)){
    setVoice(VOICES.indexOf('opium choir'));window.ENVCOL='#b1123c';paintDial();paintModes();paintKnobs();applyAll();setLayer('umbra',.6);ujStart()};
  const umbraOff=()=>{ujStop(false);UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear();setLayer('umbra',null);const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
  const umbPaint=()=>{const u=$('#bUmbra');if(u)u.classList.toggle('on',umbIsOn())};
- const b0=buildPads;buildPads=()=>{b0();if(ENV!=='universe')return;const u=document.createElement('button');u.id='bUmbra';u.className='umbraBtn';u.title='Umbra: a love hypnosis journey of about fourteen minutes, counted down from ten. Umbra stays when it ends. Press again to release it.';
+ const b0=buildPads;buildPads=()=>{b0();if(ENV!=='universe')return;const u=document.createElement('button');u.id='bUmbra';u.className='umbraBtn';u.title='Umbra: a love hypnosis journey of about fourteen minutes, in sound alone. Umbra stays when it ends. Press again to release it.';
     u.textContent='Umbra';u.onclick=()=>{umbIsOn()?umbraOff():umbraOn();umbPaint()};$('#pads h3').after(u);umbPaint()};
  const p0=paintPads;paintPads=()=>{p0();umbPaint()};
  const s0=setEnv;setEnv=(id,start)=>{s0(id,start);if(ENV!=='universe'&&umbIsOn())setLayer('umbra',null)};
