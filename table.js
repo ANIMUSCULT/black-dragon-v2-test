@@ -1081,15 +1081,18 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
   {const cur=VOICES[S.voice],ORD=['ascension','ascension realms'].concat(FAMS);FAMS.unshift('ascension','ascension realms');
     VOX.sort((a,b)=>ORD.indexOf(a.fam)-ORD.indexOf(b.fam));VOICES.length=0;VOX.forEach(v=>VOICES.push(v.n));
     S.voice=S.voice===0?0:Math.max(0,VOICES.indexOf(cur));buildVox();setVoice(S.voice)}
-  let keys=null;const live={};
-  const engine=()=>keys||(keys=ASC.make({space:S.space,echo:.18,shimmer:.45,root:S.fc,carrier:S.fc}).then(n=>{const g=gn(A.ctx,KTRIM*(typeof MIX==='object'&&MIX.keys!=null?MIX.keys*2:1));n.connect(g).connect(A.master);A.asc=n;A.ascOut=g;return n}).catch(e=>{keys=null;throw e}));
+  let keys=null,ready=null;const live={};
+  const engine=()=>keys||(keys=ASC.make({space:S.space,echo:.18,shimmer:.45,root:S.fc,carrier:S.fc}).then(n=>{const g=gn(A.ctx,KTRIM*(typeof MIX==='object'&&MIX.keys!=null?MIX.keys*2:1));n.connect(g).connect(A.master);A.asc=n;A.ascOut=g;ready=n;return n}).catch(e=>{keys=null;throw e}));
   const on0=noteOn,off0=noteOff;
   noteOn=(id,i,vel=1)=>{const V=VOX[S.voice];if(!V||!V.asc)return on0(id,i,vel);if(!A.ctx||live[id])return;
     const f=(KEYHZ[id]||degFreq(i))*Math.pow(2,V.oct||0);live[id]=1;flash(i,true);pluck=1;
-    engine().then(n=>{if(!live[id])return;n.port.postMessage({t:'setMany',v:{shape:V.sh,space:S.space,root:S.fc}});n.port.postMessage({t:'on',id:'k'+id,f,v:.85*vel*(V.tr||1),p:V.asc})})
+    const send=n=>{if(!live[id])return;n.port.postMessage({t:'setMany',v:{shape:V.sh,space:S.space,root:S.fc}});n.port.postMessage({t:'on',id:'k'+id,f,v:.85*vel*(V.tr||1),p:V.asc})};
+    if(ready){send(ready);return}engine().then(send)
       .catch(()=>{delete live[id];flash(i,false);say('this device cannot run the Ascension engine')})};
   noteOff=(id,i)=>{if(!live[id])return off0(id,i);delete live[id];flash(i,false);if(A.asc)A.asc.port.postMessage({t:'off',id:'k'+id})};
   const mix0=applyMix;applyMix=function(){mix0.apply(this,arguments);if(A.ascOut&&typeof MIX==='object')A.ascOut.gain.setTargetAtTime(KTRIM*MIX.keys*2,A.ctx.currentTime,.04)};
+  {const w=setInterval(()=>{if(!A.ctx)return;clearInterval(w);if(VOX[S.voice]&&VOX[S.voice].asc)engine().catch(()=>{})},400);
+    const sv0=setVoice;setVoice=function(i){const r=sv0.apply(this,arguments);if(A.ctx&&VOX[S.voice]&&VOX[S.voice].asc)engine().catch(()=>{});return r}}
   window.ASCKEYS={engine,live}}
 
 /* ================= CHORDS AND MAGIC CHORDS: the keyboard modes of Black Dragon: Ascension =================

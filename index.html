@@ -912,7 +912,7 @@ const MEDIA='https://animuscult.github.io/black-dragon-v2-media/';
 function audioFetch(p){return fetch(MEDIA+p).then(r=>{if(!r.ok)throw new Error(r.status);return r}).catch(()=>fetch('media/'+p))}
 const A={};
 function initAudio(){
-  const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.045:'interactive'}),sr=ctx.sampleRate;
+  const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.025:'interactive'}),sr=ctx.sampleRate;
   A.master=ctx.createGain();A.master.gain.value=0;A.master.gain.linearRampToValueAtTime(.8,ctx.currentTime+2.5);
   const lim=ctx.createDynamicsCompressor();lim.threshold.value=-12;lim.knee.value=9;lim.ratio.value=14;lim.attack.value=.002;lim.release.value=.22;
   /* a true ceiling: the compressor rides the level, then a soft curve guarantees nothing ever leaves above full scale */
@@ -922,7 +922,7 @@ function initAudio(){
   /* a look-ahead limiter between the trim and the ceiling: it sees each peak 5 ms early and turns it down smoothly, so the
      soft ceiling below is a safety net and loud moments stay clean instead of saturating. Stereo-linked, ceiling just under
      the curve's knee; if the browser cannot run it, the chain stays as it was */
-  if(ctx.audioWorklet){const src=`class L extends AudioWorkletProcessor{constructor(){super();this.la=Math.max(16,Math.round(sampleRate*.005));this.n=this.la+256;
+  if(ctx.audioWorklet){const src=`class L extends AudioWorkletProcessor{constructor(){super();this.la=Math.max(16,Math.round(sampleRate*.002));this.n=this.la+256;
       this.b=[new Float32Array(this.n),new Float32Array(this.n)];this.qv=new Float32Array(this.n);this.qi=new Int32Array(this.n);this.qh=0;this.qt=0;this.t=0;this.w=0;this.g=1;this.c=.24;
       this.att=1-Math.exp(-4/this.la);this.rel=1-Math.exp(-1/(sampleRate*.2))}
     process(i,o){const I=i[0],O=o[0];if(!I||!I.length)return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],n=this.n,la=this.la;
@@ -1390,9 +1390,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127f"></script>
-<script src="env.js?v=1127f"></script>
-<script src="table.js?v=1127f"></script>
-<script src="luxuria.js?v=1127f"></script>
+<script src="bank.js?v=1127g"></script>
+<script src="env.js?v=1127g"></script>
+<script src="table.js?v=1127g"></script>
+<script src="luxuria.js?v=1127g"></script>
 </body>
 </html>
