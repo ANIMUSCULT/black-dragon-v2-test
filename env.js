@@ -36,6 +36,20 @@ function prim(ctx,out,L,s){
     if(s.pan==='move'){p.pan.setValueAtTime(-.9*side,t);p.pan.linearRampToValueAtTime(.9*side,t+d)}else p.pan.value=s.pan==='alt'?side*.8:(s.pan||0);
     src.connect(f).connect(g).connect(p).connect(out);src.start(t,Math.random()*3,d+.05)});break}
   case 'pulse':{const gg=gn(ctx,g0);gg.connect(out);G.pulse(s.f,s.rate)(ctx,gg,L);break}
+  /* the Dream of Black Dragon: Ascension: chords that play themselves on a just scale, moving every few seconds, a bass an
+     octave under the root, and soft sparks of the scale above. Its tables come straight from Ascension's four spells. */
+  case 'chords':{const T=s.t,n=T.length,dg=(d,m)=>s.root*T[((d%n)+n)%n]*Math.pow(2,Math.floor(d/n))*m;let ci=0,next=0,live=[];
+    const voice=(f,g,t,w,pan)=>{const o=ctx.createOscillator(),o2=ctx.createOscillator(),lp=bq(ctx,'lowpass',Math.min(2200,f*4),.5),gg=ctx.createGain(),p=ctx.createStereoPanner();
+      o.type=w;o2.type='sine';o.frequency.value=f;o2.frequency.value=f*1.0035;o.connect(lp);o2.connect(lp);lp.connect(gg).connect(p).connect(out);p.pan.value=pan;
+      gg.gain.setValueAtTime(0,t);gg.gain.linearRampToValueAtTime(g,t+s.att);o.start(t);o2.start(t);
+      if(s.vib){const v=ctx.createOscillator(),vg=gn(ctx,f*.004);v.frequency.value=4.6+Math.random();v.connect(vg);vg.connect(o.frequency);vg.connect(o2.frequency);v.start(t);return{gg,os:[o,o2,v]}}
+      return{gg,os:[o,o2]}};
+    const free=(v,t)=>{v.gg.gain.cancelScheduledValues(t);v.gg.gain.setValueAtTime(v.gg.gain.value,t);v.gg.gain.linearRampToValueAtTime(0,t+s.rel);v.os.forEach(o=>o.stop(t+s.rel+.1))};
+    L.src.push({stop(){live.forEach(v=>v.os.forEach(o=>{try{o.stop()}catch(_){}}))}});
+    L.every(200,t=>{if(t<next)return;next=t+s.ev[0]+Math.random()*(s.ev[1]-s.ev[0]);live.forEach(v=>free(v,t));live=[];
+      const ch=s.ch[ci++%s.ch.length],k=ch.length+1;
+      ch.forEach((d,i)=>live.push(voice(dg(d,1),g0/k*(1-i*.08),t,s.w||'triangle',k>2?(i/(ch.length-1)-.5)*.9:0)));live.push(voice(dg(ch[0],.5),g0/k*1.1,t,'sine',0));
+      if(s.spark){const m=Math.random()<.3?3:1,b0=7+(Math.random()*7|0);for(let j=0;j<m;j++){const f=dg(b0+j*2,2);ping(ctx,out,t+1.2+Math.random()*(next-t-3)+j*.18,f,f,3+Math.random()*3,g0*.07,Math.random()*1.6-.8,.4)}}});break}
   case 'shep':{const N=7,os=[];for(let k=0;k<N;k++){const o=ctx.createOscillator(),g=gn(ctx,0);o.connect(g).connect(out);o.start();os.push({o,g});L.src.push(o)}
     const t0=ctx.currentTime;L.every(50,t=>{const ph=(t-t0)*.035*s.dir;os.forEach(({o,g},k)=>{const pos=((k+ph)%N+N)%N;o.frequency.setTargetAtTime(32*Math.pow(2,pos),t,.03);g.gain.setTargetAtTime(g0*Math.exp(-Math.pow(pos-N/2,2)/2.4),t,.05)})});break}
   }
@@ -44,6 +58,8 @@ const B=(n,f,g,o)=>({k:'bed',n,f,g,...o}),D=(f,g,o)=>({k:'drone',f,g,...o}),DRN=
   BU=(rate,f,d,g,o)=>({k:'burst',rate,f,d,g,...o}),GL=(ev,f,to,d,g,o)=>({k:'glide',ev,f,to,d,g,...o}),HB=(bpm,g,o)=>({k:'beat',bpm,f:70,g,pat:[0,.28],...o}),
   SW=(per,f,g,o)=>({k:'swell',per,f,g,...o}),PU=(f,rate,g)=>({k:'pulse',f,rate,g}),CIC={k:'bed',n:'white',ft:'bandpass',f:6200,q:9,g:3,am:112,lfo:[.05,.4]};
 
+const ASC_T={lucid:[1,9/8,5/4,45/32,3/2,5/3,15/8],timaeus:[1,9/8,81/64,4/3,3/2,27/16,243/128],overtones:[1,9/8,10/8,11/8,12/8,13/8,14/8,15/8],hirajoshi:[1,9/8,6/5,3/2,8/5],pythagorean:[1,9/8,81/64,3/2,27/16]};
+const CH=(t,root,ch,ev,g,o)=>({k:'chords',t:ASC_T[t],root,ch,ev,g,att:2.6,rel:3.2,...o});
 /* ---------- the ten environments. Each stone holds sixteen sounds; sig are the three that start with it ---------- */
 const ENVS=[
 {id:'dream',n:'Dream',col:'#f6b9dc',line:'The soft country behind the eyes.',sig:[1,2,8],snd:[
@@ -175,7 +191,24 @@ const ENVS=[
  ['frost forming',[BU(1.5,[1500,3500],[.15,.4],1.2,{q:4,n:2,gap:.2}),B('pink',1800,1,{ft:'bandpass',q:8,lfo:[.05,.6]})]],['still tone',[D([432,432.4],.25,{trem:[.05,.4]}),D([216],.2)]],
  ['ice crystal',[{k:'ping',rate:.9,deg:[7,14],oct:2,d:4,g:.1,att:.003,h:2.01}]],['footsteps in snow',[{k:'burst',rate:1,tick:900,f:[600,1400],d:[.09,.16],g:1.2,q:1.2,pan:0}]],
  ['polar night',[D([55,55.2,82.5],.12,{trem:[.05,.5],lp:300}),B('pink',8000,.02,{ft:'highpass',lfo:[.04,.8]})]],['ice cave',[PI(.4,[900,2200],.12,.5,{drop:1.5,att:.004}),D([49,49.3],.5,{trem:[.04,.5]})]],
- ['frost',[BU(14,[6000,12000],[.002,.005],.3,{q:7})]],['slow heart',[HB(42,.9)]],['absolute zero',[D([27.5,27.55],.8),D([8000],.012,{trem:[.1,.9]})]]]}
+ ['frost',[BU(14,[6000,12000],[.002,.005],.3,{q:7})]],['slow heart',[HB(42,.9)]],['absolute zero',[D([27.5,27.55],.8),D([8000],.012,{trem:[.1,.9]})]]]},
+{id:'dragon',n:'Dragon',col:'#2f9e6e',line:'The wyrm beneath the mountain and the spells it sleeps on.',sig:[0,4,6],snd:[
+ ['float',[CH('lucid',136.1,[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],[10,15],.21,{spark:1})]],
+ ['choir',[CH('overtones',128,[[0,4,7],[2,5,9],[0,3,7],[4,7,11]],[12,18],.18,{w:'sine',vib:1,att:3.4})]],
+ ['rise',[CH('timaeus',144,[[0,2,4,7],[1,4,6,8],[2,4,7,9],[3,5,7,10]],[7,10],.22,{spark:1,att:1.8,rel:2.4})]],
+ ['deep',[CH('hirajoshi',108,[[0,2,4],[-1,2,4],[0,3,5]],[18,26],.19,{w:'sine',att:4,rel:5})]],
+ ['dragon breath',[SW([7,10],[180,520,160],.9,{ft:'lowpass',q:.7,n:'brown',rise:.55,pan:'move'})]],
+ ['wyrm',[CH('pythagorean',96,[[0,2,4],[-1,1,3],[0,3,4],[-2,0,2]],[16,22],.2,{w:'sine',att:3.6,rel:4.5})]],
+ ['hoard cave',[D([48,48.25,72],.16,{trem:[.04,.4],lp:260}),B('brown',220,.1,{lfo:[.06,.5]})]],
+ ['dragon heart',[HB(36,.75,{f:52})]],
+ ['wingbeats',[SW([2.6,3.6],[260,700,220],2,{n:'pink',ft:'bandpass',q:.9,rise:.3,duty:.55,pan:'alt'})]],
+ ['embers',[BU(2.2,[600,1800],[.02,.06],.55,{q:3,n:2,gap:.05}),B('brown',380,.35,{lfo:[.09,.6]})]],
+ ['distant roar',[GL([14,10],[70,110],[.7,.5],[3,4.5],.7,{w:'sawtooth',form:.8})]],
+ ['molten',[D([64,64.4,96],.17,{w:'triangle',lp:340,trem:[.07,.5]})]],
+ ['the coil',[{k:'shep',dir:-1,g:.066}]],
+ ['scales',[{k:'ping',rate:.7,deg:[5,12],oct:1,d:3.5,g:.11,att:.35}]],
+ ['smoke',[B('pink',520,.7,{ft:'bandpass',q:.8,sw:[.03,220],lfo:[.04,.5],pan:.05})]],
+ ['tetractys',[DRN([1,2,3,4],.17,{trem:[.05,.35],lp:900})]]]}
 ];
 /* real recordings on the pads where synthesis sounds least real; the synth version is the fallback */
 const REAL={'e:lust:3':['lust-breath',1],'e:animal:0':['purr',1],'e:animal:3':['wolf',0],'e:breath:1':['breath',1],'e:wet:1':['rain',1],'e:heat:1':['fire',1],'e:underworld:0':['cave',1],'e:celestial:0':['choir',1]};
