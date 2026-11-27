@@ -1059,7 +1059,28 @@ ASC.load=()=>ASC.mod||(ASC.mod=(A.ctx&&A.ctx.audioWorklet&&window.AudioWorkletNo
 ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2]});n.port.postMessage({t:'setMany',v:Object.assign({},ASC.quiet,fx||{})});return n});
 {const KTRIM=1.7;/* set by measurement: one note of each voice at about 0.055, as the other key voices */
   const ASCV=[['ascension lead','lead',0,1],['ascension vowel','lead',2.2,1.17],['ascension glass','lead',5,1],['ascension organ','lead',6,.95],['ascension pad','pad',1.3,1.28],['ascension choir','choir',2.2,2.2],['ascension bass','bass',.4,.43]];
-  ASCV.forEach(([n,p,sh,tr])=>{VOX.push({n,fam:'ascension',asc:p,sh,tr,oct:p==='bass'?-1:0});VOICES.push(n)});FAMS.push('ascension');buildVox();
+  ASCV.forEach(([n,p,sh,tr])=>VOX.push({n,fam:'ascension',asc:p,sh,tr,oct:p==='bass'?-1:0}));
+  /* the thirteen realm voices Ascension made, in this instrument's own recipe format (Ascension's SOUND-SYSTEM-FOR-V2, section 4) */
+  VOX.push(
+  { n: 'opal keys', fam: 'ascension realms', osc: [['sine', 1, -3, .6], ['sine', 1, 3, .6], ['sine', 2, 0, .12]], fm: [2, .3, 1.6], parts: [[4, .05, 1.2]], lp: [5, .6, 1.5, .6], trem: [2.2, .05], a: .015, d: 3.6, s: .25, peak: .4, r: 2.8, trim: 0.93 },
+  { n: 'moss reed', fam: 'ascension realms', osc: [['triangle', 1, 0, .8], ['sine', 2, 0, .2]], noise: [[1, 4, .4, -.4]], parts: [[3.9, .12, .5]], lp: [4, .7, 2, .3], vib: [4.4, .004, .6], a: .04, peak: .4, r: 1.2, trim: 0.41 },
+  { n: 'tide glass', fam: 'ascension realms', osc: [['triangle', 1, 0, .8], ['sine', 2, 4, .25]], uni: 2, spread: 7, lp: [3, .8, 2.2, 1.8], beat: .3, parts: [[2, .2, 4]], trem: [.3, .12], a: .5, peak: .4, r: 4, trim: 0.59 },
+  { n: 'cloud flute', fam: 'ascension realms', oct: 1, osc: [['sine', 1, 0, .9], ['sine', 2, 0, .08]], noise: [[1, 2.5, .7, -.5], [2, 6, .2, -.5]], vib: [4.6, .004, .8], a: .2, peak: .34, r: 1.4, trim: 0.41 },
+  { n: 'star pad', fam: 'ascension realms', oct: 1, osc: [['sine', 1, 0, .7], ['sine', 2, 6, .22], ['sine', 3.01, -6, .08]], uni: 3, spread: 11, trem: [.17, .12], a: 2.2, peak: .26, r: 5.5, trim: 0.9 },
+  { n: 'arc lead', fam: 'ascension realms', osc: [['sawtooth', 1, 0, .7], ['square', 2, 0, .12]], uni: 3, spread: 10, fm: [1, .5, .8], lp: [5, 2, 2.5, .25], a: .02, d: 1.2, s: .5, peak: .34, r: .9, trim: 2.03 },
+  { n: 'heart strings', fam: 'ascension realms', oct: -1, osc: [['sawtooth', 1, 0, .8], ['triangle', 2, 0, .2]], uni: 3, spread: 9, sub: .2, lp: [4, .8, .6, 1.4], vib: [5.2, .005, .7], a: .35, peak: .4, r: 1.8, trim: 0.82 },
+  { n: 'ash organ', fam: 'ascension realms', oct: -1, osc: [['sine', 1, 0, .8], ['sine', 2, 0, .4], ['sine', 3, 0, .25], ['triangle', .5, 0, .5]], lp: [6, .6], trem: [5.4, .06], sub: .2, a: .08, peak: .36, r: 1.6, trim: 0.35 },
+  { n: 'sun brass', fam: 'ascension realms', osc: [['sawtooth', 1, 0, .8], ['triangle', 1, 0, .4]], uni: 3, spread: 8, lp: [2.6, 1.2, 1.9, .5], vib: [5, .003, .9], a: .12, peak: .38, r: 1.4, trim: 0.5 },
+  { n: 'frost bells', fam: 'ascension realms', oct: 1, parts: [[1, .9, 5], [2.76, .3, 3], [5.4, .1, 1.6], [8.93, .03, .7]], beat: .4, osc: [['sine', 1, 0, .2]], a: .006, d: 4, s: .05, peak: .32, r: 3.2, trim: 2.14 },
+  { n: 'velvet sigh', fam: 'ascension realms', osc: [['sawtooth', 1, 0, .55], ['triangle', 1, 0, .5]], uni: 3, spread: 12, sub: .25, form: ['ah', 'oo', 4], noise: [[1, 6, .5, -.6]], lp: [5, .6], vib: [4.4, .005, 1.2], a: .7, peak: .5, r: 3.2, trim: 0.46 },
+  { n: 'fairy glass', fam: 'ascension realms', oct: 1, osc: [['sine', 1, 0, .35], ['sine', 2, 5, .12]], parts: [[1, .8, 3.4], [3, .25, 2], [4.02, .14, 1.2], [6.8, .05, .6]], beat: .6, uni: 2, spread: 6, trem: [.5, .08], a: .006, d: 3, s: .2, peak: .32, r: 3, trim: 1.87 },
+  { n: 'dragon throat', fam: 'ascension realms', oct: -2, osc: [['sawtooth', 1, 0, 1], ['sawtooth', 1.5, 0, .3]], uni: 2, spread: 10, sub: .4, form: ['oo', 'oh', 6], noise: [[.5, 3, .5, -.8]], lp: [8, 3, .5, 2.5], trem: [1.3, .1], a: .5, peak: .5, r: 2.6, trim: 0.35 });
+  VOX.forEach(v=>{if(v.n==='whisper')v.trim=3.1});/* whisper sat too quiet: measured at one note, as Ascension also found */
+  /* the owner prefers Ascension's sound: its two groups lead the list and the keyboard starts on Ascension's lead;
+     every voice of this instrument stays, below them. Voices are chosen by name, so presets and saved sessions keep theirs. */
+  {const cur=VOICES[S.voice],ORD=['ascension','ascension realms'].concat(FAMS);FAMS.unshift('ascension','ascension realms');
+    VOX.sort((a,b)=>ORD.indexOf(a.fam)-ORD.indexOf(b.fam));VOICES.length=0;VOX.forEach(v=>VOICES.push(v.n));
+    S.voice=S.voice===0?0:Math.max(0,VOICES.indexOf(cur));buildVox();setVoice(S.voice)}
   let keys=null;const live={};
   const engine=()=>keys||(keys=ASC.make({space:S.space,echo:.18,shimmer:.45,root:S.fc,carrier:S.fc}).then(n=>{const g=gn(A.ctx,KTRIM);n.connect(g).connect(A.master);A.asc=n;A.ascOut=g;return n}).catch(e=>{keys=null;throw e}));
   const on0=noteOn,off0=noteOff;
