@@ -304,7 +304,7 @@ function paintPads(){
 function buildPads(){
   const e=ENVS.find(x=>x.id===ENV),el=$('#pads');
   if(!e){el.innerHTML='<div id="cymDock"></div><h3 class="cymH">Cymatics</h3><p class="vh cymH">Sand that gathers into the figure of the tone you hear, a ring of the spectrum, and the scribble the two ears draw, set inside the Monad. Press a stone below for its sounds.</p><button class="pill cymGo">open the cymatics</button>';return}
-  el.innerHTML=`<div id="cymDock"></div><h3>${e.n}</h3><p class="vh">${e.line} Press a pad to add it. Scroll on a pad to set its level.</p><div class="padg">`+e.snd.map(([n],i)=>`<button class="pad${REAL[`e:${e.id}:${i}`]?' rec':''}" data-id="e:${e.id}:${i}"><span>${n}</span></button>`).join('')+'</div>';
+  el.innerHTML=`<div id="cymDock"></div><h3>${e.n}</h3><p class="vh">${e.line} Press a pad to add it. Hold shift and scroll on a pad to set its level.</p><div class="padg">`+e.snd.map(([n],i)=>`<button class="pad${REAL[`e:${e.id}:${i}`]?' rec':''}" data-id="e:${e.id}:${i}"><span>${n}</span></button>`).join('')+'</div>';
 }
 function setEnv(id,start){
   const e=ENVS.find(x=>x.id===id),prev=ENV;
@@ -317,7 +317,7 @@ function setEnv(id,start){
 $('#stones').innerHTML=ENVS.map(e=>`<button class="stone" data-id="${e.id}" style="--c:${e.col}"><i></i><span>${e.n}</span></button>`).join('');
 $('#stones').onclick=e=>{const b=e.target.closest('.stone');if(b)setEnv(b.dataset.id)};
 $('#pads').addEventListener('click',e=>{const b=e.target.closest('.pad');if(b){const id=b.dataset.id;setLayer(id,id in S.layers?null:.5)}});
-$('#pads').addEventListener('wheel',e=>{const b=e.target.closest('.pad');if(!b)return;e.preventDefault();const id=b.dataset.id,v=clamp((S.layers[id]==null?.3:S.layers[id])+(e.deltaY<0?.06:-.06),.05,1);setLayer(id,v)},{passive:false});
+$('#pads').addEventListener('wheel',e=>{const b=e.target.closest('.pad');if(!b||!(e.shiftKey||e.altKey))return;e.preventDefault();const id=b.dataset.id,v=clamp((S.layers[id]==null?.3:S.layers[id])+(e.deltaY<0?.06:-.06),.05,1);setLayer(id,v)},{passive:false});
 
 /* ---------- make every control answer back ---------- */
 {const f0=setVoice;setVoice=i=>{f0(i);say('keys · '+VOICES[S.voice])};

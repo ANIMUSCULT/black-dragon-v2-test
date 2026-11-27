@@ -286,7 +286,8 @@ monadStart=()=>{MON.held=true;revStart()};monadStop=()=>{MON.held=false;revStop(
 const PHI=(1+Math.sqrt(5))/2,fold=x=>{while(x>=2)x/=2;while(x<1)x*=2;return x};
 const TUN=[['by state',null],['pythagorean',[1,9/8,81/64,3/2,27/16]],['tetractys',[1,4/3,3/2]],['overtones',[1,9/8,5/4,11/8,3/2,13/8,7/4,15/8]],['siamese 7',[0,1,2,3,4,5,6].map(k=>Math.pow(2,k/7))],
   ['hirajoshi',[1,9/8,6/5,3/2,8/5]],['phi spiral',[0,1,2,3,4].map(k=>fold(Math.pow(PHI,k))).sort((a,b)=>a-b)],['timaeus',[1,9/8,81/64,4/3,3/2,27/16,243/128]],['miyako-bushi',[1,16/15,4/3,3/2,8/5]]];
-let tun=0;
+/* the keys start on the pythagorean scale (owner, 2026-11-27) */
+const DEFTUN=Math.max(0,TUN.findIndex(t=>t[0]==='pythagorean'));let tun=DEFTUN;
 {const d0=degFreq;degFreq=i=>{const sc=TUN[tun][1];if(!sc)return d0(i);const n=sc.length;let base=S.fc*2;while(base<150)base*=2;while(base>330)base/=2;return base*sc[((i%n)+n)%n]*Math.pow(2,Math.floor(i/n))}}
 /* the scale the keys play: chosen in step 4 of the instruments page */
 function setTun(i){tun=clamp(i|0,0,TUN.length-1);const v=$('#vox');if(v&&v._sync)v._sync();say('scale · '+TUN[tun][0])}
@@ -297,7 +298,7 @@ function resetAll(){
   stopRun(true);revStop();if(possess)$('#bPossess').click();if(desc)stopDescent();if(silenced)silence(false);
   if(A.ctx){const t=A.ctx.currentTime;Object.keys(held).forEach(k=>{const h=held[k];h.g.gain.cancelScheduledValues(t);h.g.gain.setTargetAtTime(0,t,.05);h.os.forEach(o=>{try{o.stop(t+.4)}catch(_){}});delete held[k]});$$('.key.on').forEach(k=>k.classList.remove('on'))}
   if(ENV)setEnv(null);clearLayers();const vol=S.vol;Object.assign(S,DEF,{layers:{},vol});window.VMODE=null;FORGED=null;$('#seal').setAttribute('points','');$('#sealDot').setAttribute('opacity',0);
-  setState(STATES.findIndex(x=>x.id==='hypnagogia'));tun=0;kOct=0;kVel=1;if(window.CHORDS){CHORDS.mode=0;CHORDS.set('bass',false);CHORDS.set('spread',0);CHORDS.set('strum',0)}setVoice(window.DEFVOICE||0);$$('.tn').forEach((x,i)=>x.classList.toggle('on',!i));paintKnobs();applyAll();
+  setState(STATES.findIndex(x=>x.id==='hypnagogia'));tun=DEFTUN;kOct=0;kVel=1;if(window.CHORDS){CHORDS.mode=0;CHORDS.set('bass',false);CHORDS.set('spread',0);CHORDS.set('strum',0)}setVoice(window.DEFVOICE||0);$$('.tn').forEach((x,i)=>x.classList.toggle('on',!i));paintKnobs();applyAll();
   $('#bBreath').classList.toggle('on',S.breath);$('#bTide').classList.toggle('on',S.tide);$('#bPresets').textContent='presets';paintHeal();DR.forEach(d=>$('#'+d).hidden=true);say('reset · the board is back to its starting places')}
 $('#bReset').onclick=resetAll;
 const volIn=$('#vol');volIn.value=S.vol;volIn.addEventListener('input',()=>{S.vol=+volIn.value;if(knobEls.vol)knobEls.vol.style.setProperty('--v',S.vol);if(A.ctx&&!silenced)A.vol.gain.setTargetAtTime(S.vol,A.ctx.currentTime,.03);say('volume · '+Math.round(S.vol*100))});
@@ -626,7 +627,9 @@ applyMix();document.addEventListener('pointerdown',()=>setTimeout(applyMix,400),
       const t=(performance.now()-t0)/1000,ph=(t%7)/7;window.VMODE=order[Math.floor(t/7)%order.length];window.REVV=ph>.8?Math.max(0,1-Math.abs(ph-.9)/.1)*.75:.12+.1*Math.sin(t*.5)},60)}}
 
 /* ================= silence: empty the board so the sound is built up from nothing ================= */
-function blankAll(){resetAll();Object.assign(S,{tone:0,body:0,air:0,close:0,tide:false});paintKnobs();applyAll();$('#bTide').classList.toggle('on',false);if(typeof paintLive==='function')paintLive();
+/* silence puts everything away: no stone, no sounds chosen anywhere, no tone, body, air or closeness, no tide; the
+   keys still play. Pause only quiets the device; reset returns to how it sounds at start-up. */
+function blankAll(){window.BLANKING=true;try{resetAll()}finally{window.BLANKING=false}if(ENV)setEnv(null);clearLayers();Object.assign(S,{tone:0,body:0,air:0,close:0,tide:false});paintKnobs();applyAll();$('#bTide').classList.toggle('on',false);if(typeof paintLive==='function')paintLive();
   say('silence · the board is empty. add a stone, a tone or a dial, or just play')}
 $('#bBlank').onclick=blankAll;
 
@@ -1470,5 +1473,12 @@ registerProcessor('bd-monad',M);`;
 /* the board opens on the Dragon stone, with opal keys on one note (owner, 2026-11-27); reset comes back here too.
    A shared link that brings its own board is left as it is. */
 {const w=setInterval(()=>{if(!A.ctx)return;clearInterval(w);setTimeout(()=>{if(!ENV&&!location.hash.startsWith('#b='))setEnv('dragon')},600)},300);
-  const br=resetAll;resetAll=function(){const r=br.apply(this,arguments);setEnv('dragon');say('reset · the board is back to its starting places');return r}}
+  const br=resetAll;resetAll=function(){const r=br.apply(this,arguments);if(!window.BLANKING){setEnv('dragon');say('reset · the board is back to its starting places')}return r}}
+/* menus close with a click anywhere outside them (the keys bar is left out, so the instruments can be stepped through
+   with the instrument page open); vision dials let the picture show while they turn; the Sound group sits with the keys */
+document.addEventListener('click',e=>{if(e.target.closest('.drawer,.sideTab,#gate,#keysBar,#pads'))return;DR.forEach(d=>{const el=document.getElementById(d);if(el&&!el.hidden)el.hidden=true})});
+{const off=()=>document.body.classList.remove('peek');
+  document.addEventListener('pointerdown',e=>{const k=e.target.closest('.knob');if(k&&k.dataset.b==='v')document.body.classList.add('peek')},true);
+  addEventListener('pointerup',off);addEventListener('pointercancel',off);addEventListener('blur',off)}
+setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElementById('keysBar');if(g&&kb){kb.appendChild(g);g.classList.add('kbSound')}},120);
 

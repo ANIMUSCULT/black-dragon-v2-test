@@ -761,6 +761,12 @@ body.hideR #shellR{overflow:hidden!important}
 /* the glass itself: a crisp highlight like a window caught in it, and a faint brighter rim */
 #monad::after{background:radial-gradient(38% 20% at 34% 20%,rgba(255,255,255,.32),rgba(255,255,255,.06) 60%,transparent 75%),radial-gradient(70% 40% at 66% 88%,rgba(255,255,255,.06),transparent 70%)!important;
   box-shadow:inset 0 0 18px rgba(255,255,255,.12),inset 0 0 2px rgba(255,255,255,.35),0 0 0 1px rgba(255,255,255,.1)!important}
+/* turning a vision dial: everything but the dials fades away so the picture can be judged */
+body.peek .hud>*:not(.deck),body.peek .deck>*:not(.knobwrap),body.peek .drawer,body.peek .sideTab,body.peek #cym,body.peek #cym2{opacity:.04!important;transition:opacity .25s ease!important}
+body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
+.hud>*,.deck>*{transition:opacity .35s ease}
+/* the keys bar, a little larger, with the Sound group beside it */
+@media (min-width:1001px){#keysBar .pill,#keysBar button{font-size:11px!important;min-height:32px!important;padding:6px 14px!important}#keysBar .kbSound{margin-left:6px}}
 /* recorded: a real place or thing, in plain silver */
 .tag.recorded{background:#d8d3dc;color:#111}
 #pads .cymGo{margin-top:8px;width:100%;padding:10px 12px;font-size:11px;letter-spacing:.18em}
@@ -1597,9 +1603,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127y"></script>
-<script src="env.js?v=1127y"></script>
-<script src="table.js?v=1127y"></script>
-<script src="luxuria.js?v=1127y"></script>
+<script src="bank.js?v=1127z"></script>
+<script src="env.js?v=1127z"></script>
+<script src="table.js?v=1127z"></script>
+<script src="luxuria.js?v=1127z"></script>
 </body>
 </html>
