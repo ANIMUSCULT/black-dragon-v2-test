@@ -1082,13 +1082,14 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
     VOX.sort((a,b)=>ORD.indexOf(a.fam)-ORD.indexOf(b.fam));VOICES.length=0;VOX.forEach(v=>VOICES.push(v.n));
     S.voice=S.voice===0?0:Math.max(0,VOICES.indexOf(cur));buildVox();setVoice(S.voice)}
   let keys=null;const live={};
-  const engine=()=>keys||(keys=ASC.make({space:S.space,echo:.18,shimmer:.45,root:S.fc,carrier:S.fc}).then(n=>{const g=gn(A.ctx,KTRIM);n.connect(g).connect(A.master);A.asc=n;A.ascOut=g;return n}).catch(e=>{keys=null;throw e}));
+  const engine=()=>keys||(keys=ASC.make({space:S.space,echo:.18,shimmer:.45,root:S.fc,carrier:S.fc}).then(n=>{const g=gn(A.ctx,KTRIM*(typeof MIX==='object'&&MIX.keys!=null?MIX.keys*2:1));n.connect(g).connect(A.master);A.asc=n;A.ascOut=g;return n}).catch(e=>{keys=null;throw e}));
   const on0=noteOn,off0=noteOff;
   noteOn=(id,i,vel=1)=>{const V=VOX[S.voice];if(!V||!V.asc)return on0(id,i,vel);if(!A.ctx||live[id])return;
     const f=(KEYHZ[id]||degFreq(i))*Math.pow(2,V.oct||0);live[id]=1;flash(i,true);pluck=1;
     engine().then(n=>{if(!live[id])return;n.port.postMessage({t:'setMany',v:{shape:V.sh,space:S.space,root:S.fc}});n.port.postMessage({t:'on',id:'k'+id,f,v:.85*vel*(V.tr||1),p:V.asc})})
       .catch(()=>{delete live[id];flash(i,false);say('this device cannot run the Ascension engine')})};
   noteOff=(id,i)=>{if(!live[id])return off0(id,i);delete live[id];flash(i,false);if(A.asc)A.asc.port.postMessage({t:'off',id:'k'+id})};
+  const mix0=applyMix;applyMix=function(){mix0.apply(this,arguments);if(A.ascOut&&typeof MIX==='object')A.ascOut.gain.setTargetAtTime(KTRIM*MIX.keys*2,A.ctx.currentTime,.04)};
   window.ASCKEYS={engine,live}}
 
 /* ================= CHORDS AND MAGIC CHORDS: the keyboard modes of Black Dragon: Ascension =================
@@ -1116,3 +1117,73 @@ EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');
     notes.forEach(([g,hz,lv],k)=>{const nid=id+'~'+k,go=()=>{if(hz)KEYHZ[nid]=hz;else delete KEYHZ[nid];on0(nid,g,v*lv)};if(k&&roll)timers[id].push(setTimeout(go,k*roll));else go()})};
   noteOff=(id,i)=>{if(!isKey(id)||(!CM&&!timers[id]))return off0(id,i);(timers[id]||[]).forEach(clearTimeout);delete timers[id];for(let k=0;k<5;k++){off0(id+'~'+k,i);delete KEYHZ[id+'~'+k]}off0(id,i)};
   window.CHORDS={get mode(){return CM},set mode(v){CM=v}}}
+
+/* ================= THE MONAD'S VOICE, from Black Dragon: Ascension (MonadVoice.h, 2026-11-28) =================
+   Held, the Monad climbs for ever; let go, it sinks. Six octave-spaced layers of detuned saws on the root and its fifth
+   (no third), under a resonant low-pass that pumps like a slow wah, a steady sub felt in the chest, soft clipping, and a
+   character for the stone underneath. It replaces the clean stage tones and stage bells, which Ascension removed as too
+   sweet; the noise riser stays. A line-for-line port of the C++, run as its own audio processor. */
+const MONW=`const TAU=6.283185307179586;
+class M extends AudioWorkletProcessor{constructor(){super();this.SR=sampleRate;this.rev=0;this.root=136.1;this.realm=0;this.seed=0x9e3779b9;this.blip=Array.from({length:10},()=>({on:false}));
+ this.cb=[0,0,0,0];this.bc=[.1,1,0,.1,1,0];this.next=0;this.dub=-1;this.dubAmp=0;this.tt=0;this.brPh=0;this.humPh=0;this.humGate=0;this.humF=100;
+ this.lvl=0;this.pos=0;this.lfo=0;this.dir=1;this.lastRev=0;this.subPh=0;this.ph=new Float64Array(24);this.svf=[0,0,0,0];this.dcL=0;this.dcR=0;this.dcxL=0;this.dcxR=0;
+ this.port.onmessage=e=>{const m=e.data;if(m.rev!=null)this.rev=m.rev;if(m.root)this.root=m.root;if(m.realm!=null)this.realm=m.realm}}
+ rnd(){let s=this.seed;s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;this.seed=s;return (s&0xffffff)/16777216}
+ rr(a,b){return a+(b-a)*this.rnd()}
+ spawn(kind,f,secs,amp,slideTo=1,slideSecs=1,ratio=1,idx=0){for(const b of this.blip)if(!b.on){Object.assign(b,{on:true,kind,ph:0,mph:0,f,amp,dec:Math.exp(-1/(secs*this.SR)),fm:Math.pow(slideTo,1/(slideSecs*this.SR)),pan:this.rr(-.7,.7),ratio,idx});return}}
+ beat(a){this.spawn(0,64,.1,a,.55,.12);this.blip[0].pan*=.1}
+ bed(c1,q1,g1,c2,q2,g2){const S=this.SR;this.bc=[Math.tan(Math.PI*Math.min(c1,S*.4)/S),1/q1,g1,Math.tan(Math.PI*Math.min(c2,S*.4)/S),1/q2,g2]}
+ character(n,rev,root){const dt=n/this.SR;this.tt+=dt;this.next-=dt;this.humGate=0;const busy=.5+rev*1.5,due=this.next<=0,tt=this.tt,R=this.realm;
+  if(this.dub>=0){this.dub-=dt;if(this.dub<0)this.beat(this.dubAmp*.75)}
+  this.brPh+=dt*((R===12?.16:.28)+(R===12?.14:.3)*rev);if(this.brPh>=1)this.brPh-=1;const br=Math.pow(.5-.5*Math.cos(this.brPh*TAU),1.5),inb=this.brPh<.5?1:0;
+  switch(R){
+   case 0:this.bed(900+500*Math.sin(tt*.8),3,.5,2400+900*Math.sin(tt*.45+1),5,.25);break;
+   case 1:this.bed(3500,1.5,.1*(.6+.4*Math.sin(tt*9)),700,1,.12);if(due){this.spawn(0,this.rr(150,320),.05,.5,.93,.05);this.next=this.rr(.25,.9)/busy}break;
+   case 2:this.bed(420,.8,.32,1500,1,.06);if(due){this.spawn(0,this.rr(250,700),.07,.45,2.2,.07);this.next=this.rr(.05,.35)/busy}break;
+   case 3:this.bed(500+400*Math.sin(tt*1.3)+300*Math.sin(tt*.36),6,.6,1800,2,.15);break;
+   case 4:{const w=3000*Math.pow(2,-((tt*.05)%1)*2);this.bed(w,20,.12,150,1,.2);if(due){this.spawn(2,90,.09,.5,1,1,7.1,3);this.next=.5/(1+rev*3)}}break;
+   case 5:this.bed(5200,1,.06,120,2,.1);this.humGate=this.rnd()<.55+.3*rev?.22:0;if(due){this.spawn(1,this.rr(2500,6000),.012,.5);this.next=this.rr(.02,.25)/busy}break;
+   case 6:this.bed(140,1,.35,600,1,.04);if(due){this.dubAmp=.9;this.beat(.9);this.dub=.22;this.next=60/(50+rev*70)}break;
+   case 7:this.bed(90,1,.9,2200,8,.1*(.5+.5*Math.sin(tt*5.3)*Math.sin(tt*1.7)));if(due){this.spawn(2,root/2,2.5,.5,1,1,1.41,2.5);this.next=this.rr(2.5,5)/busy}break;
+   case 8:this.bed(5000,1,.04,300,1,.1);if(due){this.spawn(2,this.rr(900,1900),.25,.25,1,1,2.76,1.5);this.next=this.rr(.15,.8)/busy}break;
+   case 9:this.bed(6500,1,.15*(.6+.4*Math.sin(tt*.9)),900,4,.12);if(due){this.spawn(1,this.rr(1800,4200),.03,.6);if(this.rnd()<.4)this.spawn(0,this.rr(2500,3800),.5,.1);this.next=this.rr(.3,1.6)/busy}break;
+   case 10:this.bed(inb>0?1100:700,2.5,1*br,2600,3,.3*br);if(due){this.dubAmp=.35;this.beat(.35);this.dub=.24;this.next=60/(58+rev*50)}break;
+   case 11:{const iv=[1,1.414,1.5,2,2.828];this.bed(4200+1500*Math.sin(tt*5.6),9,.1,400,1,.05);if(due){this.spawn(0,root*8*iv[(this.rnd()*5|0)%5],.35,.16,.5,.4);this.next=this.rr(.08,.3)/busy}}break;
+   case 13:{const g=.5+.5*Math.sin(tt*.23)*Math.sin(tt*.61+1.3);this.bed(1700+1300*g,1.4,.06+.22*g,340,.9,.2+.12*g);if(due){if(this.rnd()<.3)this.spawn(0,46,.14,.5,.55,.14);this.spawn(1,this.rr(3500,7500),.008,.12+.2*g);this.next=this.rr(.04,.3)/busy}}break;
+   default:this.bed(inb>0?260:180,1.2,1.6*br,900,1,.25*br);if(due){this.spawn(1,this.rr(1500,4000),.015,.3);this.next=this.rr(.05,.4)/busy}}
+  this.humF=root}
+ static bp(s,i,x,g,k){const hp=(x-(k+g)*s[i]-s[i+1])/(1+k*g+g*g),b=g*hp+s[i];s[i]=g*hp+b;const lo=g*b+s[i+1];s[i+1]=g*b+lo;return b}
+ static lp(s,i,x,g,k){const hp=(x-(2*k+g)*s[i]-s[i+1])/(1+2*k*g+g*g),b=g*hp+s[i];s[i]=g*hp+b;const lo=g*b+s[i+1];s[i+1]=g*b+lo;return lo}
+ static blep(t,dt){if(t<dt){t/=dt;return t+t-t*t-1}if(t>1-dt){t=(t-1)/dt;return t*t+t+t+1}return 0}
+ saw(k,f){const dt=f/this.SR;let p=this.ph[k]+dt;if(p>=1)p-=1;this.ph[k]=p;return 2*p-1-M.blep(p,dt)}
+ charSample(){const nz=this.rnd()*2-1,bc=this.bc,b1=M.bp(this.cb,0,nz,bc[0],bc[1])*bc[2],b2=M.bp(this.cb,2,nz,bc[3],bc[4])*bc[5];let l=b1+.6*b2,r=.6*b1+b2;
+  if(this.humGate>0){this.humPh+=this.humF/this.SR;if(this.humPh>=1)this.humPh-=1;const h=(2*this.humPh-1)*this.humGate;l+=h;r+=h}
+  for(const b of this.blip)if(b.on){b.ph+=b.f/this.SR;if(b.ph>=1)b.ph-=1;b.f*=b.fm;b.amp*=b.dec;if(b.amp<1e-4){b.on=false;continue}let x;
+   if(b.kind===0)x=Math.sin(b.ph*TAU);else if(b.kind===1)x=(this.rnd()*2-1)*.7+Math.sin(b.ph*TAU)*.5;else{b.mph+=b.f*b.ratio/this.SR;if(b.mph>=1)b.mph-=1;x=Math.sin(b.ph*TAU+b.idx*b.amp*2*Math.sin(b.mph*TAU))}
+   x*=b.amp;l+=x*(1-b.pan)*.7;r+=x*(1+b.pan)*.7}return[l,r]}
+ process(ins,outs){const o=outs[0],L=o[0],R=o[1]||o[0],n=L.length,SR=this.SR,rev=this.rev,root=this.root;
+  const d=rev-this.lastRev;this.lastRev=rev;if(d>2e-5)this.dir=1;else if(d<-2e-5)this.dir=-1;if(rev<1e-4&&this.lvl<1e-4)return true;
+  const base=Math.max(10,root/8);this.character(n,rev,root);const rate=this.dir*(.035+.12*rev),wahHz=1.4+2.2*rev,drive=1.6+2.4*rev,cL=1-Math.exp(-1/(.09*SR)),hpC=1-TAU*18/SR,s=this.svf;
+  for(let i=0;i<n;i++){this.lvl+=(rev-this.lvl)*cL;this.pos+=rate/SR;if(this.pos>=1)this.pos-=1;else if(this.pos<0)this.pos+=1;this.lfo+=wahHz/SR;if(this.lfo>=1)this.lfo-=1;
+   const w0=.5-.5*Math.cos(this.lfo*TAU),wah=w0*Math.sqrt(w0);let sl=0,sr=0;
+   for(let k=0;k<6;k++){const x=(k+this.pos)/6,win=.5-.5*Math.cos(x*TAU),f=base*Math.pow(2,k+this.pos);if(f>SR*.2)continue;const g=win*win/(1+Math.pow(f/150,1.3));
+    const a=this.saw(k*4,f),b=this.saw(k*4+1,f*1.0045),c=this.saw(k*4+2,f*1.498),e=this.saw(k*4+3,f*1.498*.9962);sl+=g*(a+.55*c+.3*b);sr+=g*(b+.55*e+.3*a)}
+   const fc=Math.min(SR*.2,70*Math.pow(2,.4+wah*(2+1.6*rev))),gq=Math.tan(Math.PI*fc/SR),kq=1/(2.6+2.2*rev);sl=M.lp(s,0,sl,gq,kq);sr=M.lp(s,2,sr,gq,kq);
+   this.subPh+=root/4/SR;if(this.subPh>=1)this.subPh-=1;const sub=(Math.sin(this.subPh*TAU)+.5*Math.sin(this.subPh*2*TAU))*(.55+.45*w0);
+   const amp=this.lvl*Math.sqrt(this.lvl)*(.72+.28*w0),l=Math.tanh((sl*1.1+sub*.55)*drive)*amp*.2,r=Math.tanh((sr*1.1+sub*.55)*drive)*amp*.2;
+   this.dcL=l-this.dcxL+hpC*this.dcL;this.dcxL=l;this.dcR=r-this.dcxR+hpC*this.dcR;this.dcxR=r;
+   const [cl,cr]=this.charSample(),cg=this.lvl*Math.sqrt(this.lvl)*.46;L[i]=this.dcL+cl*cg;if(R!==L)R[i]=this.dcR+cr*cg}
+  return true}}
+registerProcessor('bd-monad',M);`;
+{/* V2's stones mapped to Ascension's realms (0 Dream .. 13 Sand, Dragon = 12) */
+  const RLM={dream:0,nature:1,wet:2,breath:3,celestial:4,universe:4,magnetism:5,blood:6,animal:6,underworld:7,gold:8,freeze:9,lust:10,heat:12,dragon:12};
+  let node=null,boot=null;const realm=()=>RLM[typeof ENV==='string'?ENV:(ENV&&ENV.id)]??0;
+  const make=()=>boot||(boot=A.ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([MONW],{type:'application/javascript'}))).then(()=>{node=new AudioWorkletNode(A.ctx,'bd-monad',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2]});const g=gn(A.ctx,MONAD_TRIM);node.connect(g);g.connect(MB('monBus'));g.connect(A.verb);return node}));
+  const MONAD_TRIM=.6;/* the full Monad sits at about 0.075 RMS, loud enough to be felt, under the ceiling */
+  let iv=null;const drive=()=>{if(!node)return;const r=window.REVV||0;node.port.postMessage({rev:r,root:hBase(),realm:realm()});if(!r&&!REV){clearInterval(iv);iv=null}};
+  const start0=revStart;revStart=function(){const was=!!REV;start0.apply(this,arguments);if(!REV||was||!A.ctx||!A.ctx.audioWorklet)return;
+    make().then(()=>{drive();if(!iv)iv=setInterval(drive,50)}).catch(()=>{})};
+  /* the stage tones and stage bells are no longer struck: the voice carries the rise */
+  revTick=function(){if(!REV)return;const el=(performance.now()-REV.t0)/1000,st=Math.min(4,Math.floor(el/1.8)),R=Math.min(1,el/9);window.REVV=R;pluck=Math.max(pluck,.35+R);
+    if(st>REV.st){REV.st=st;$('#monP').textContent=STAGES[st];say(`monad · ${STAGES[st]} · the number ${[1,2,3,4,10][st]}`)}$('#monN').textContent=Math.round(R*100)};
+  window.MONADV={get node(){return node},realm}}
