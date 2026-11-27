@@ -335,6 +335,7 @@ function buildPresets(){
   $('#presets').innerHTML=`<p class="vh">${PRESETS.length} presets. Each sets a state, a voice and a mix. Change anything after.</p>`+group(PRESETS.map((p,i)=>({p,i})),x=>x.p[1],x=>`<button class="vb pb" data-i="${x.i}">${x.p[0]}</button>`);
   $('#presets').onclick=e=>{const b=e.target.closest('.pb');if(b)applyPreset(+b.dataset.i)};
 }
+/* the Codex lists every tone family, the healing table's held tones included: the library hides those copies, the Codex never does */
 function buildCodex(){
   const tg=t=>t?`<span class="tag ${t}">${t}</span>`:'';
   $('#codex').innerHTML=`<h3>Codex</h3>
@@ -351,7 +352,7 @@ function buildCodex(){
   <p>The lens holds a magic square: a grid of the numbers from 1 upward in which every row, column and diagonal adds to the same total. Renaissance magicians gave one to each of the seven planets, from Saturn at 3 by 3 (total 15) to the Moon at 9 by 9 (total 369). The Sun's is 6 by 6; its rows add to 111 and the whole square to 666.</p>
   <p>Tap the lens to change planet. Hold it and the instrument walks the square in counting order, 1, 2, 3 and on, turning each position into a note. The line it draws is the kind of path from which planetary seals were made. The squares here are true magic squares built by standard methods; the row totals are exact.</p>
   <h4>The states</h4>`+STATES.map(s=>`<p>${tg(s.tag)} <b>${s.name}</b>, ${s.beat} Hz on ${s.fc} Hz. ${s.note}</p>`).join('')
-  +group(BANK.filter(b=>{const sn=new Set(BANK.filter(x=>/ stone$/.test(x.cat)).map(x=>x.n.toLowerCase()));return !['solfeggio tones','planetary tones','chakra tones','bodywork tones','brainwave pulses'].includes(b.cat)&&(/ stone$/.test(b.cat)||!sn.has(b.n.toLowerCase()))}),b=>b.cat,b=>`<p>${tg(b.tag)} <b>${b.n}</b>${b.info?'. '+b.info:''}</p>`).replace(/class="vg"/g,'')
+  +group(BANK.filter(b=>{const sn=new Set(BANK.filter(x=>/ stone$/.test(x.cat)).map(x=>x.n.toLowerCase()));return (/ stone$/.test(b.cat)||!sn.has(b.n.toLowerCase()))}),b=>b.cat,b=>`<p>${tg(b.tag)} <b>${b.n}</b>${b.info?'. '+b.info:''}</p>`).replace(/class="vg"/g,'')
   +`<h4>Volume</h4><p>Quiet works. Keep it at the level of a soft voice, and take the headphones off if your ears ring.</p>`;
 }
 
