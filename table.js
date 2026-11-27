@@ -1210,10 +1210,11 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
    the keyboard, so a key can never land outside it. With no Dream playing, each group of keys takes the next chord of
    the Float spell in the state's own scale. Ported from Ascension's Performer.h (chordDegs, chordOn). */
 EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');['e:lust:6','e:freeze:3','e:magic:2','e:freeze:1','e:gold:7'].forEach(id=>EASE.add(id));/* the brightest of Ascension's realms */
-{let CM=0;const MODES=['one note','chords','magic'],FLOAT=[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],timers={};
-  const bar=$('#keysBar');if(bar){const b=document.createElement('button');b.className='pill kmode';b.id='bChordM';b.title='One note, Chords or Magic: Magic plays the chord the Dream is on, so every key stays in it';
-    const paint=()=>{b.textContent=MODES[CM];b.classList.toggle('on',CM>0);$('#keys')&&$('#keys').classList.toggle('magic',CM===2)};paint();
-    b.onclick=()=>{CM=(CM+1)%3;paint();say('keys · '+MODES[CM]+(CM===2?(window.DREAM?' · on the Dream\'s chord':' · in the Float chords'):''))};bar.append(b)}
+{let CM=0,paintM=()=>{};const MODES=['one note','chords','magic'],FLOAT=[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],timers={};
+  const voxSync=()=>{const v=$('#vox');if(v&&v._sync)v._sync()};
+  const bar=$('#keysBar');if(bar){const b=document.createElement('button');b.className='pill kmode';b.id='bChordM';b.title='One note, chords or magic: magic keeps every key in one sweet chord, so whatever you press fits';
+    const paint=()=>{b.textContent=MODES[CM];b.classList.toggle('on',CM>0);$('#keys')&&$('#keys').classList.toggle('magic',CM===2)};paint();paintM=paint;
+    b.onclick=()=>{CM=(CM+1)%3;paint();voxSync();say('keys · '+MODES[CM]+(CM===2?(window.DREAM?' · on the Dream\'s chord':' · always in key'):''))};bar.append(b)}
   const st=document.createElement('style');st.textContent='#keys.magic .key{box-shadow:inset 0 0 18px rgba(255,190,140,.22)}#keys.magic .key.on{box-shadow:inset 0 0 26px rgba(255,210,170,.6),0 0 26px rgba(255,255,255,.3)}';document.head.append(st);
   const isKey=id=>typeof id==='string'&&/^[kpm]/.test(id)&&!id.includes('~');
   /* the notes of one key: a list of [degree, exact Hz or 0, level] */
@@ -1241,7 +1242,7 @@ EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');['e:lust:
     (timers[id]||[]).forEach(clearTimeout);timers[id]=[];
     notes.forEach(([g,hz,lv],k)=>{const nid=id+'~'+k,go=()=>{if(hz)KEYHZ[nid]=hz;else delete KEYHZ[nid];on0(nid,g,v*lv)};if(k&&roll)timers[id].push(setTimeout(go,k*roll));else go()})};
   noteOff=(id,i)=>{if(!isKey(id)||(!CM&&!timers[id]))return off0(id,i);(timers[id]||[]).forEach(clearTimeout);delete timers[id];for(let k=0;k<5;k++){off0(id+'~'+k,i);delete KEYHZ[id+'~'+k]}off0(id,i)};
-  window.CHORDS={get mode(){return CM},set mode(v){CM=v}}}
+  window.CHORDS={get mode(){return CM},set mode(v){CM=v;paintM();voxSync()}}}
 
 /* ================= THE MONAD'S VOICE, from Black Dragon: Ascension (MonadVoice.h, 2026-11-28) =================
    Held, the Monad climbs for ever; let go, it sinks. Six octave-spaced layers of detuned saws on the root and its fifth
