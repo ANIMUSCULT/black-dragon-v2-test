@@ -403,7 +403,7 @@ function sigilTap(){if(TAP)return TAP;if(!A.ctx||!A.toneBus)return null;
   const rd=$('#cymRead'),bShape=$('#cymShape'),bVis=$('#cymVis'),bTone=$('#cymTone'),bBig=$('#cymBig');
   /* three ways to watch the sound, as the pearl of Black Dragon 01 had: the sand, a ring of the spectrum, and the scribble
      the two ears draw against each other (left across, right up). The ring and the scribble read the whole mix. */
-  const VIEWS=['sand','ring','scribble'],bView=document.createElement('button');bView.id='cymView';bView.title='Sand, the ring of the spectrum, or the scribble of the two ears';rd.after(bView);
+  const VIEWS=['sand','ring','scribble'],bView=document.createElement('button');bView.id='cymView';bView.title='Sand, the ring of the spectrum, or the scribble of the two ears';rd.after(bView);const bCol=document.createElement('button');bCol.id='cymCol';bCol.title='Colour the sand from the film that is playing, or keep it white';bView.after(bCol);
   let view=0,an2=null,lv2=new Float32Array(72),pk2=.05;const c2=document.createElement('canvas');c2.id='cym2';c2.hidden=true;const x2=c2.getContext('2d'),
     tl2=new Float32Array(2048),tr2=new Float32Array(2048),fd2=new Float32Array(1024);
   const ans2=()=>{if(an2||!A.ctx||!A.out)return an2;const sp=A.ctx.createChannelSplitter(2),l=A.ctx.createAnalyser(),r=A.ctx.createAnalyser();l.fftSize=r.fftSize=2048;l.smoothingTimeConstant=.7;A.out.connect(sp);sp.connect(l,0);sp.connect(r,1);return an2={l,r}};
@@ -420,21 +420,30 @@ function sigilTap(){if(TAP)return TAP;if(!A.ctx||!A.toneBus)return null;
     x2.restore()};
   const setView=v=>{view=v;c.style.opacity=view?0:1;c2.hidden=!on||!view;x2.setTransform(1,0,0,1,0,0);x2.clearRect(0,0,c2.width,c2.height);label();say('cymatics · '+['the sand','the ring of the spectrum','the scribble of the two ears'][view])};
   bView.onclick=()=>setView((view+1)%3);
+  bCol.onclick=()=>{vm=vm?0:1;label();say(vm?'the sand takes the colours of the film':'the sand is white')};
   /* the grains are drawn as points */
-  let P=null,U={},bufP=null;
+  let P=null,U={},bufP=null,VT=null,vidT=0,vm=1,vmNow=0;
+  /* the sand takes its colour from the picture that is playing: the screen is shrunk to a 32 by 32 map a few times a second
+     and each grain wears the colour beneath it, the map turning and rippling slowly so the colour undulates */
+  const vsC=document.createElement('canvas');vsC.width=vsC.height=32;const vsX=vsC.getContext('2d',{willReadFrequently:false});
   if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
     P=gl.createProgram();
-    gl.attachShader(P,sh(gl.VERTEX_SHADER,`attribute vec2 p;attribute float s;uniform float uSize,uT,uKick;uniform vec3 uTint;varying vec3 vC;
-void main(){gl_Position=vec4(p.x*.985,-p.y*.985,0.,1.);float h=fract(s*7.13);
+    gl.attachShader(P,sh(gl.VERTEX_SHADER,`attribute vec2 p;attribute float s;uniform float uSize,uT,uKick;uniform vec3 uTint;varying vec3 vC;varying vec2 vP;
+void main(){gl_Position=vec4(p.x*.985,-p.y*.985,0.,1.);vP=p;float h=fract(s*7.13);
   vec3 sand=mix(vec3(1.),vec3(.93,.95,1.),h)+uTint*0.;
   float br=.72+.28*fract(s*13.7);float tw=step(.955,s)*pow(.5+.5*sin(uT*(2.+h*7.)+h*80.),8.)*1.8;
   vC=sand*(br+tw+uKick*.35);gl_PointSize=uSize*(.75+.65*fract(s*5.3));}`));
-    gl.attachShader(P,sh(gl.FRAGMENT_SHADER,`precision mediump float;varying vec3 vC;
-void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);float lit=1.-.12*smoothstep(0.,.55,length(q+vec2(.13,.13)));gl_FragColor=vec4(vC*lit*a,a);}`));
+    gl.attachShader(P,sh(gl.FRAGMENT_SHADER,`precision mediump float;varying vec3 vC;varying vec2 vP;uniform sampler2D uVid;uniform float uVm,uTf;
+void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);float lit=1.-.12*smoothstep(0.,.55,length(q+vec2(.13,.13)));
+  float an=uTf*.05+.35*sin(uTf*.13+length(vP)*3.);vec2 w=mat2(cos(an),-sin(an),sin(an),cos(an))*vP*.82;w+=.07*vec2(sin(uTf*.31+vP.y*4.),cos(uTf*.27+vP.x*4.));
+  vec3 f=texture2D(uVid,clamp(w*.5+.5,0.,1.)).rgb;float mc=max(max(f.r,f.g),f.b);vec3 hue=f/max(mc,.02);hue=mix(vec3(1.),hue,smoothstep(.04,.18,mc));vec3 col=mix(vec3(1.),hue,uVm);
+  gl_FragColor=vec4(vC*col*lit*a,a);}`));
     gl.linkProgram(P);gl.useProgram(P);
     const bs=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bs);gl.bufferData(gl.ARRAY_BUFFER,seed,gl.STATIC_DRAW);const ls=gl.getAttribLocation(P,'s');gl.enableVertexAttribArray(ls);gl.vertexAttribPointer(ls,1,gl.FLOAT,false,0,0);
     bufP=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bufP);gl.bufferData(gl.ARRAY_BUFFER,pos,gl.DYNAMIC_DRAW);const lp=gl.getAttribLocation(P,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
-    ['uSize','uT','uKick','uTint'].forEach(n=>U[n]=gl.getUniformLocation(P,n));gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA)}
+    ['uSize','uT','uKick','uTint','uVid','uVm','uTf'].forEach(n=>U[n]=gl.getUniformLocation(P,n));
+    VT=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,VT);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([255,255,255,255]));
+    [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA)}
   /* Bessel functions of the first kind, tabled once per order: the round plate's rings */
   const JT={},JDX=.04,JLEN=3600;
   const besT=n=>{if(JT[n])return JT[n];const a=new Float32Array(JLEN);for(let i=0;i<JLEN;i++){const x=i*JDX;let s=0;for(let k=0;k<48;k++){const t=(k+.5)*PI/48;s+=Math.cos(n*t-x*Math.sin(t))}a[i]=s/48}return JT[n]=a};
@@ -495,9 +504,29 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
   const measure=()=>{if(!A.ctx||!A.anL)return 0;A.anL.getFloatFrequencyData(fb);const bw=A.ctx.sampleRate/A.anL.fftSize,a=Math.round(30/bw),z=Math.round(2000/bw);let k=a;
     for(let i=a;i<=z;i++)if(fb[i]>fb[k])k=i;if(fb[k]<-75)return 0;const y0=fb[k-1],y1=fb[k],y2=fb[k+1],d=(y0-y2)/(2*(y0-2*y1+y2)||1);return(k+clamp(d,-.5,.5))*bw};
   /* a key played takes the plate at once and holds it a few seconds; then the measured tone takes it back */
-  const cymNote0=noteOn;noteOn=(id,i,vel=1)=>{cymNote0(id,i,vel);if(!on||!A.ctx)return;const V=VOX[S.voice]||VOX[0],f=degFreq(i)*Math.pow(2,V.oct||0);if(!(f>0))return;
+  /* every key leaves its own sigil: the figure its pitch rings on the plate, drawn faint in the Monad's glass, blooming and
+     fading over about two seconds. Each figure is drawn once and kept (at most twenty), and the glass only animates while
+     a sigil is fading, so it costs nothing at rest. */
+  const sg=document.createElement('canvas');sg.id='kSig';$('#monad').prepend(sg);const sx2=sg.getContext('2d'),SIGC=new Map(),live=[];let sgRun=false;
+  const sigImg=(m,n)=>{const k=shape+':'+m+':'+n;if(SIGC.has(k)){const im=SIGC.get(k);SIGC.delete(k);SIGC.set(k,im);return im}
+    const R0=128,o=document.createElement('canvas');o.width=o.height=R0;const x=o.getContext('2d'),id=x.createImageData(R0,R0),v=new Float32Array(R0*R0);let mx=1e-6;
+    for(let j=0;j<R0;j++)for(let i=0;i<R0;i++){const px=i/(R0-1)*2-1,py=j/(R0-1)*2-1,r=px*px+py*py;const f=r>1?0:plateCPU(px,py,m,n);v[j*R0+i]=f;if(r<=1)mx=Math.max(mx,Math.abs(f))}
+    for(let j=0;j<R0;j++)for(let i=0;i<R0;i++){const px=i/(R0-1)*2-1,py=j/(R0-1)*2-1,r=Math.sqrt(px*px+py*py);if(r>.98)continue;const a=1-clamp(Math.abs(v[j*R0+i])/mx/.11,0,1),q=(j*R0+i)*4;
+      id.data[q]=id.data[q+1]=id.data[q+2]=255;id.data[q+3]=Math.round(255*a*a*(1-Math.pow(r,6)))}
+    x.putImageData(id,0,0);SIGC.set(k,o);if(SIGC.size>20)SIGC.delete(SIGC.keys().next().value);return o};
+  const sgDraw=()=>{const now=performance.now();for(let i=live.length-1;i>=0;i--)if(now-live[i].t>2400)live.splice(i,1);
+    const W=sg.width;sx2.setTransform(1,0,0,1,0,0);sx2.globalCompositeOperation='source-over';sx2.clearRect(0,0,W,W);
+    if(!live.length){sgRun=false;return}requestAnimationFrame(sgDraw);
+    live.forEach(o=>{const age=(now-o.t)/1000,a=Math.min(1,age/.08)*Math.exp(-age*1.6)*o.g;sx2.save();sx2.translate(W/2,W/2);sx2.rotate(o.r+age*.12);const sc=W*(.98+age*.05);sx2.globalAlpha=a;sx2.drawImage(o.im,-sc/2,-sc/2,sc,sc);sx2.restore()});
+    sx2.globalAlpha=1;sx2.globalCompositeOperation='source-atop';const m=/#?([0-9a-f]{6})/i.exec(window.ENVCOL||getComputedStyle(document.documentElement).getPropertyValue('--b')||'');
+    sx2.fillStyle=m?'#'+m[1]:'#f2455c';sx2.fillRect(0,0,W,W);sx2.fillStyle='rgba(255,255,255,.3)';sx2.fillRect(0,0,W,W);sx2.globalCompositeOperation='source-over'};
+  const keySig=(id,i,vel)=>{if(window.KSIG===false)return;const V=VOX[S.voice]||VOX[0],f=(KEYHZ[id]||degFreq(i))*Math.pow(2,V.oct||0);if(!(f>0))return;
+    const r=$('#monad').getBoundingClientRect();if(r.width<40)return;const px=Math.min(320,Math.round(r.width*.76*Math.min(devicePixelRatio||1,2)));if(sg.width!==px)sg.width=sg.height=px;
+    const [m,n]=modeFor(f);live.push({im:sigImg(m,n),t:performance.now(),g:.32+.25*Math.min(1,vel),r:Math.random()*.4-.2});if(live.length>5)live.shift();if(!sgRun){sgRun=true;requestAnimationFrame(sgDraw)}};
+  /* called once per key press from the last hook on the keys (end of this file), so every voice reaches it, Ascension's too */
+  window.CYMKEY=(id,i,vel=1)=>{try{keySig(id,i,vel)}catch(_){}if(!on||!A.ctx)return;const V=VOX[S.voice]||VOX[0],f=degFreq(i)*Math.pow(2,V.oct||0);if(!(f>0))return;
     keyHz=f;keyT=performance.now();kick=Math.max(kick,.6+.4*Math.min(1,vel));setHz(f);label()};
-  const label=()=>{bShape.textContent='plate · '+SHP[shape];bVis.textContent=VISN[vis];bTone.textContent='tone · '+TONES[tone];bBig.textContent=big?(MOBILE?'set in dial':'set in the Monad'):'lift out';bView.textContent='view · '+VIEWS[view];
+  const label=()=>{bShape.textContent='plate · '+SHP[shape];bVis.textContent=VISN[vis];bTone.textContent='tone · '+TONES[tone];bBig.textContent=big?(MOBILE?'set in dial':'set in the Monad'):'lift out';bView.textContent='view · '+VIEWS[view];bCol.textContent=vm?'colour · film':'colour · white';
     rd.textContent=!A.ctx?'the sand wakes with the sound':!reading?'waiting for a tone':`${hz.toFixed(1)} Hz · figure ${reading.m},${reading.n} · ${reading.grp} · ${reading.name}`};
   let box={x:0,y:0,s:0,v:false};
   const place=()=>{let cx,cy,s,v=true;
@@ -534,7 +563,9 @@ void main(){vec2 q=gl_PointCoord-.5;float d=length(q),a=smoothstep(.5,.3,d);floa
       if(sq?(nx>SQ||nx<-SQ||ny>SQ||ny<-SQ):(nx*nx+ny*ny>1))continue;
       const f1=Math.abs(F(nx,ny));if(f1<=f0||Math.random()<Math.exp((f0-f1)*heat)){pos[k]=nx;pos[k+1]=ny}}
     gl.viewport(0,0,c.width,c.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(P);gl.bindBuffer(gl.ARRAY_BUFFER,bufP);gl.bufferSubData(gl.ARRAY_BUFFER,0,pos);
-    gl.uniform1f(U.uSize,Math.max(1.3,c.width/(MOBILE?210:250)));gl.uniform1f(U.uT,T);gl.uniform1f(U.uKick,Math.min(1,kick));gl.uniform3f(U.uTint,tint[0],tint[1],tint[2]);gl.drawArrays(gl.POINTS,0,N);
+    gl.uniform1f(U.uSize,Math.max(1.3,c.width/(MOBILE?210:250)));gl.uniform1f(U.uT,T);gl.uniform1f(U.uKick,Math.min(1,kick));gl.uniform3f(U.uTint,tint[0],tint[1],tint[2]);
+    if(now-vidT>140){vidT=now;/* the picture as it is on screen (the visualizer canvas, read in the same frame it was drawn), else the raw film */const fv=$('#field'),v=fv&&fv.width?fv:$('#veil');if(vm&&v&&(v===fv||(v.readyState>=2&&v.videoWidth))){try{vsX.drawImage(v,0,0,32,32);gl.bindTexture(gl.TEXTURE_2D,VT);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,vsC)}catch(_){}}}
+    vmNow+=(vm-vmNow)*Math.min(1,dt*2.5);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,VT);gl.uniform1i(U.uVid,0);gl.uniform1f(U.uVm,vmNow*.92);gl.uniform1f(U.uTf,T%1000);gl.drawArrays(gl.POINTS,0,N);
     if(keep){keep=false;const o=document.createElement('canvas');o.width=o.height=1080;const x=o.getContext('2d');x.fillStyle='#050406';x.fillRect(0,0,1080,1080);
       x.beginPath();x.arc(540,500,452,0,TAU);x.fillStyle='#0b090d';x.fill();x.drawImage(c,90,50,900,900);
       x.fillStyle='rgba(255,205,210,.92)';x.textAlign='center';x.font='600 44px "Grenze Gotisch"';x.fillText(reading?reading.name:'Black Dragon II',540,1010);
@@ -1375,3 +1406,5 @@ registerProcessor('bd-monad',M);`;
     const paint=()=>GROUPS.forEach(([,id])=>{const g=document.getElementById('b'+id),d=document.getElementById(id);if(g&&d)g.classList.toggle('on',!d.hidden)});
     document.addEventListener('click',()=>setTimeout(paint,0));paint()};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else setTimeout(build,0)}
+/* the last hook on the keys: one call per key press for the cymatics plate and the key sigils, whatever voice or mode */
+{const kOn=noteOn;noteOn=(id,i,vel=1)=>{kOn(id,i,vel);if(window.CYMKEY&&typeof id==='string'&&!id.includes('~'))CYMKEY(id,i,vel)}}
