@@ -637,6 +637,10 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
 
 /* on a phone every drawer's last row must clear the tab bar */
 @media (max-width:1000px),(pointer:coarse){.drawer{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))!important;scroll-padding-bottom:104px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}}
+
+/* the keys-mode button: plain lettering at the size of the voice button beside it */
+#keysBar .kmode{font-size:9px;letter-spacing:.14em;padding:5px 12px;min-height:26px;min-width:88px}
+@media (max-width:1000px),(pointer:coarse){#keysBar .kmode{font-size:11px;min-height:44px;min-width:96px}}
 </style>
 </head>
 <body>
@@ -764,7 +768,7 @@ const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const STATES=[
  {id:'abyss',name:'Abyss',sub:'sleep',beat:2,fc:108,mode:'binaural',vis:4,airLP:520,scale:[1,9/8,6/5,3/2,8/5],cols:['#2a1a8f','#0b2a6b','#2ff3d2'],tag:'studied',
   note:'Delta, 0.5 to 4 Hz, is the rhythm of deep sleep. Pink noise timed to slow waves deepened sleep in the lab (Ngo, 2013). Turn the air dial up and go under.'},
- {id:'slumber',name:'Sopor',sub:'pink noise, slow wave',beat:.8,fc:80,mode:'isochronic',vis:4,airLP:900,scale:[1,9/8,5/4,3/2,5/3],cols:['#1a2a6f','#0a1238','#8fa8ff'],tag:'studied',
+ {id:'slumber',name:'Sleep',sub:'pink noise, slow wave',beat:.8,fc:80,mode:'isochronic',vis:4,airLP:900,scale:[1,9/8,5/4,3/2,5/3],cols:['#1a2a6f','#0a1238','#8fa8ff'],tag:'studied',
   note:'Slow waves in deep sleep run near 0.8 a second. Pink noise timed to them deepened sleep and doubled word recall (Ngo, 2013). This is that sound; turn the air dial up.'},
  {id:'hypnagogia',name:'Hypnagogia',sub:'the edge of dreaming',beat:6,fc:136.1,mode:'binaural',vis:1,scale:[1,9/8,5/4,45/32,3/2,27/16,15/8],cols:['#8a4bff','#e0153f','#2ff3d2'],tag:'studied',
   note:'Theta, 4 to 8 Hz, the band of the half-dream, where images rise on their own. The beat is measured here as it plays.'},
@@ -910,6 +914,38 @@ $('#bFilm').onclick=()=>{nextFilm();$('#veil').play().catch(()=>{})};
 /* audio lives in its own repository (black-dragon-v2-media), so this one stays small; the site's own copy is the fallback */
 const MEDIA='https://animuscult.github.io/black-dragon-v2-media/';
 function audioFetch(p){return fetch(MEDIA+p).then(r=>{if(!r.ok)throw new Error(r.status);return r}).catch(()=>fetch('media/'+p))}
+/* the hall: Black Dragon: Ascension's own reverb, ported from ascension.dsp. A 22 ms pre-delay, four diffusers, eight
+   delay lines that each drift a few samples so the tail never rings, darkening on every pass, and an octave shimmer
+   fed back into its input. Everything sent to the space passes through it. */
+const HALLW=`const TAU=6.283185307179586;
+class Ln{constructor(n){this.b=new Float32Array(n);this.n=n;this.w=0}push(x){this.b[this.w]=x;this.w=(this.w+1)%this.n}tap(d){let r=this.w-d;while(r<0)r+=this.n;const i=Math.floor(r),f=r-i,a=this.b[i%this.n],b=this.b[(i+1)%this.n];return a+(b-a)*f}}
+class AP{constructor(n,g){this.l=new Ln(n);this.d=n-1;this.g=g}run(x){const v=this.l.tap(this.d),y=-this.g*x+v;this.l.push(x+this.g*y);return y}}
+class H extends AudioWorkletProcessor{constructor(){super();const SR=sampleRate,ms=x=>Math.round(x*SR/1000);this.space=.62;this.shimmer=.36;this.trim=1;
+ this.pre=new Ln(ms(40));this.dif=[142,107,379,277].map((n,i)=>new AP(Math.round(n*SR/29761),i<2?.72:.62));
+ this.fdn=[37.1,41.3,47.9,53.7,59.3,67.1,73.9,83.3].map(m=>({line:new Ln(ms(m*1.8)+64),base:ms(m),lp:0,ph:Math.random()*TAU,rate:.1+Math.random()*.5}));
+ this.outs=new Float32Array(8);this.sh=new Ln(4096);this.shPh=0;this.shOut=0;this.shHP=0;this.shLP=0;
+ this.port.onmessage=e=>{const m=e.data;if(m.space!=null)this.space=m.space;if(m.shimmer!=null)this.shimmer=m.shimmer;if(m.trim!=null)this.trim=m.trim}}
+ process(ins,outs){const I=ins[0],O=outs[0],L=O[0],R=O[1]||O[0],n=L.length,SR=sampleRate,il=I&&I[0],ir=I&&(I[1]||I[0]);
+  const sp=this.space,rt=1.6+sp*sp*16,size=.55+sp*.5,gains=this.fdn.map(d=>Math.pow(10,-3*(d.base*size)/(rt*SR))),damp=.25+(1-sp)*.25,shim=Math.min(.72,this.shimmer*.55),pd=Math.round(SR*.022),tr=this.trim;
+  for(let i=0;i<n;i++){const x0=il?(il[i]+ir[i])*.5:0;this.pre.push(x0+this.shOut*shim);let x=this.pre.tap(pd);for(const a of this.dif)x=a.run(x);
+   const o=this.outs;for(let k=0;k<8;k++){const d=this.fdn[k];d.ph+=TAU*d.rate/SR;o[k]=d.line.tap(d.base*size+8+Math.sin(d.ph)*7)}
+   let sum=0;for(let k=0;k<8;k++)sum+=o[k];sum*=.25;let wl=0,wr=0;
+   for(let k=0;k<8;k++){const d=this.fdn[k],y=o[k]-sum;d.lp+=(y-d.lp)*(1-damp);d.line.push(x*(k%2?.6:-.6)+d.lp*gains[k]);if(k%2)wr+=o[k]*(k&2?-1:1);else wl+=o[k]*(k&4?-1:1)}
+   wl*=.35;wr*=.35;
+   this.sh.push((wl+wr)*.5);this.shPh+=1/2048;if(this.shPh>=1)this.shPh-=1;const W=2048,p2=(this.shPh+.5)%1,d1=(1-this.shPh)*W+4,d2=(1-p2)*W+4,w1=Math.sin(this.shPh*Math.PI),w2=Math.sin(p2*Math.PI);
+   let so=this.sh.tap(d1)*w1*w1+this.sh.tap(d2)*w2*w2;this.shHP+=(so-this.shHP)*.02;so-=this.shHP;this.shLP+=(so-this.shLP)*.45;this.shOut=this.shLP;
+   L[i]=wl*1.6*tr;if(R!==L)R[i]=wr*1.6*tr}return true}}
+registerProcessor('bd-hall',H);`;
+/* the mastering chain, in front of the ceiling: a slow glue compressor so everything moves together, the bass below
+   about 120 Hz folded to mono so the low end sits in the centre of the chest, the image above it opened a little, and a
+   soft tape curve that rounds peaks and adds warmth. Level is matched by measurement to the chain without it. */
+const MASTW=`class MS extends AudioWorkletProcessor{constructor(){super();this.a=1-Math.exp(-6.283185307179586*120/sampleRate);this.s1=0;this.s2=0;this.d=[0,0,0,0];this.width=1.14;this.drive=1.25;this.trim=1;
+ this.port.onmessage=e=>{const m=e.data;for(const k in m)this[k]=m[k]}}
+ process(ins,outs){const I=ins[0],O=outs[0];if(!I||!I[0])return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],a=this.a,dr=this.drive,nm=Math.tanh(dr),w=this.width,tr=this.trim,d=this.d;
+  for(let i=0;i<l.length;i++){const m=(l[i]+r[i])*.5;let s=(l[i]-r[i])*.5;this.s1+=a*(s-this.s1);this.s2+=a*(this.s1-this.s2);s=(s-this.s2)*w;
+   let L=m+s,R=m-s;L=Math.tanh(L*dr)/nm;R=Math.tanh(R*dr)/nm;
+   const yl=L-d[0]+.9995*d[1];d[0]=L;d[1]=yl;const yr=R-d[2]+.9995*d[3];d[2]=R;d[3]=yr;ol[i]=yl*tr;if(or!==ol)or[i]=yr*tr}return true}}
+registerProcessor('bd-master',MS);`;
 const A={};
 function initAudio(){
   const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.025:'interactive'}),sr=ctx.sampleRate;
@@ -932,6 +968,11 @@ function initAudio(){
       return true}}registerProcessor('bd-look',L);`;
     ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'application/javascript'}))).then(()=>{
       const lk=new AudioWorkletNode(ctx,'bd-look',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2]});pre.disconnect(ceil);pre.connect(lk).connect(ceil);A.look=lk}).catch(()=>{})}
+  /* the mastering chain goes in front of the ceiling once its processor has loaded; until then the chain is as before */
+  if(ctx.audioWorklet){ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([MASTW],{type:'application/javascript'}))).then(()=>{
+    const glue=ctx.createDynamicsCompressor();glue.threshold.value=-22;glue.knee.value=12;glue.ratio.value=2;glue.attack.value=.03;glue.release.value=.28;
+    const ms=new AudioWorkletNode(ctx,'bd-master',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2],channelCount:2,channelCountMode:'explicit'});ms.port.postMessage({trim:MAST_TRIM});
+    A.master.disconnect(lim);A.master.connect(glue).connect(ms).connect(lim);A.glue=glue;A.mast=ms;A.limC=lim}).catch(()=>{})}
   A.toneBus=ctx.createGain();A.toneBus.connect(A.master);const split=ctx.createChannelSplitter(2);A.toneBus.connect(split);
   A.anM=ctx.createAnalyser();A.anM.fftSize=32768;A.anM.smoothingTimeConstant=.6;lim.connect(A.anM);A.bufM=new Float32Array(A.anM.frequencyBinCount);
   A.anL=ctx.createAnalyser();A.anR=ctx.createAnalyser();
@@ -941,9 +982,9 @@ function initAudio(){
      room, with its own early reflections and pre-delay; the cathedral is the measured nave of York Minster. A.verb is the
      send every voice already feeds; rooms crossfade behind it so changing one never clicks */
   A.verb=ctx.createGain();A.wet=ctx.createGain();A.wet.connect(A.master);A.room=null;
-  const ROOMS={hall:{n:'stone hall',rt:3.2,pre:.018,dark:.55,er:[9,.085],len:5.5},chamber:{n:'chamber',rt:1.15,pre:.007,dark:.75,er:[14,.035],len:2},
+  const ROOMS={hall:{n:'hall',fdn:1,rt:3.2,pre:.018,dark:.55,er:[9,.085],len:5.5},chamber:{n:'chamber',rt:1.15,pre:.007,dark:.75,er:[14,.035],len:2},
     cave:{n:'cave',rt:4.6,pre:.034,dark:.28,er:[6,.16],len:6.5},cathedral:{n:'cathedral',file:'media/audio/york-minster.wav'}};
-  A.ROOMS=ROOMS;
+  A.ROOMS=ROOMS;const HALL_TRIM=2.5,MAST_TRIM=.43;/* set by measurement so the hall sits where the old one did */
   const makeIR=R=>{const len=Math.min(R.len,MOBILE?3:R.len),n=sr*len|0,ir=ctx.createBuffer(2,n,sr),pd=R.pre*sr|0;
     for(let c=0;c<2;c++){const d=ir.getChannelData(c);let y=0,z=0;
       for(let i=pd;i<n;i++){const t=(i-pd)/sr,env=Math.exp(-6.91*t/R.rt),fc=Math.min(.95,(.55+.4*R.dark)*Math.exp(-t*(2.2-1.6*R.dark))),w=Math.random()*2-1;
@@ -951,8 +992,8 @@ function initAudio(){
       for(let e=0;e<R.er[0];e++){const at=pd+((.004+Math.random()*R.er[1])*sr|0);if(at<n)d[at]+=(Math.random()<.5?-1:1)*(.8-e*.6/R.er[0])*(c?.9:1)}}
     return ir};
   const irCache={};
-  const loadRoom=id=>irCache[id]||(irCache[id]=ROOMS[id].file?audioFetch(ROOMS[id].file.replace(/^media\//,'')).then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)):Promise.resolve(makeIR(ROOMS[id])));
-  A.setRoom=id=>{if(!ROOMS[id])id='hall';return loadRoom(id).then(buf=>{const cv=ctx.createConvolver(),g=ctx.createGain(),t=ctx.currentTime;cv.buffer=buf;g.gain.value=0;
+  const loadRoom=id=>irCache[id]||(irCache[id]=ROOMS[id].fdn&&ctx.audioWorklet?ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([HALLW],{type:'application/javascript'}))).then(()=>'FDN').catch(()=>makeIR(ROOMS[id])):ROOMS[id].file?audioFetch(ROOMS[id].file.replace(/^media\//,'')).then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)):Promise.resolve(makeIR(ROOMS[id])));
+  A.setRoom=id=>{if(!ROOMS[id])id='hall';return loadRoom(id).then(buf=>{const fdn=buf==='FDN',cv=fdn?new AudioWorkletNode(ctx,'bd-hall',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2],channelCount:2,channelCountMode:'explicit'}):ctx.createConvolver(),g=ctx.createGain(),t=ctx.currentTime;if(fdn){cv.port.postMessage({trim:HALL_TRIM});A.hall=cv}else cv.buffer=buf;g.gain.value=0;
       A.verb.connect(cv);cv.connect(g).connect(A.wet);g.gain.setTargetAtTime(1,t,.25);const old=A.room;A.room={id,cv,g};
       if(old){old.g.gain.setTargetAtTime(0,t,.25);setTimeout(()=>{try{A.verb.disconnect(old.cv)}catch(_){}try{old.g.disconnect()}catch(_){}},1800)}return id})
     .catch(()=>id==='hall'?null:A.setRoom('hall'))};
@@ -1390,9 +1431,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127h"></script>
-<script src="env.js?v=1127h"></script>
-<script src="table.js?v=1127h"></script>
-<script src="luxuria.js?v=1127h"></script>
+<script src="bank.js?v=1127i"></script>
+<script src="env.js?v=1127i"></script>
+<script src="table.js?v=1127i"></script>
+<script src="luxuria.js?v=1127i"></script>
 </body>
 </html>
