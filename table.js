@@ -1409,3 +1409,18 @@ registerProcessor('bd-monad',M);`;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else setTimeout(build,0)}
 /* the last hook on the keys: one call per key press for the cymatics plate and the key sigils, whatever voice or mode */
 {const kOn=noteOn;noteOn=(id,i,vel=1)=>{kOn(id,i,vel);if(window.CYMKEY&&typeof id==='string'&&!id.includes('~'))CYMKEY(id,i,vel)}}
+/* the side panels can be put away: a slim tab in the gutter beside each one hides it completely, so the picture shows
+   through. The tab, a click where the panel was, or reset brings it back. Computers only; phones already use tabs. */
+{const side=[['L','#shellL','hideL','states'],['R','#shellR','hideR','proof and stones']],tabs={};
+  const desk=()=>!MOBILE&&innerWidth>1000;
+  const place=()=>{side.forEach(([k,sel])=>{const t=tabs[k],sh=$(sel);if(!t||!sh)return;const r=sh.getBoundingClientRect(),ok=desk()&&r.height>40;t.hidden=!ok;if(!ok)return;
+    t.style.top=(r.top+r.height/2-22)+'px';t.style.left=(k==='L'?Math.max(2,r.left-15):Math.min(innerWidth-14,r.right+3))+'px'})};
+  const set=(k,v)=>{const sd=side.find(x=>x[0]===k);document.body.classList.toggle(sd[2],v);tabs[k].textContent=(k==='L')===v?'›':'‹';
+    tabs[k].title=(v?'Show the ':'Hide the ')+sd[3]+' panel';tabs[k].setAttribute('aria-pressed',v)};
+  side.forEach(([k,sel,cls,name])=>{const t=document.createElement('button');t.className='sideTab';t.dataset.k=k;document.body.append(t);tabs[k]=t;set(k,false);
+    t.onclick=e=>{e.stopPropagation();set(k,!document.body.classList.contains(cls));say(document.body.classList.contains(cls)?name+' put away · click the tab or the space to bring it back':name+' back')};
+    const sh=$(sel);if(sh)sh.addEventListener('click',e=>{if(document.body.classList.contains(cls)){e.stopPropagation();e.preventDefault();set(k,false);say(name+' back')}},true)});
+  $('#bReset')&&$('#bReset').addEventListener('click',()=>side.forEach(([k])=>set(k,false)));
+  addEventListener('resize',place);if(window.ResizeObserver){const ro=new ResizeObserver(place);side.forEach(([,sel])=>{const sh=$(sel);if(sh)ro.observe(sh)})}
+  setInterval(place,1500);setTimeout(place,300)}
+

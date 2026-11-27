@@ -728,6 +728,15 @@ body.cymIn .cymGo,body.cymIn #pads .cymH{display:none}
 /* the key sigils: faint figures in the Monad's glass, under the numbers, over the sand when cymatics is open */
 #kSig{position:absolute!important;left:12%;top:12%;width:76%;height:76%;z-index:2!important;pointer-events:none;border-radius:50%;mix-blend-mode:screen}
 body.cymIn #kSig{z-index:4!important}
+/* the side-panel tabs: slim, faint, in the gutter; the panel fades and slides away and its space waits for a click */
+.sideTab{position:fixed;z-index:7;width:12px;height:44px;padding:0;border-radius:7px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(180deg,rgba(40,38,46,.55),rgba(14,13,18,.55));
+  color:rgba(255,255,255,.7);font:12px/1 var(--body);cursor:pointer;opacity:.3;transition:opacity .25s,border-color .25s}
+.sideTab:hover,.sideTab:focus-visible{opacity:1;border-color:rgba(255,255,255,.55)}
+#shellL>*,#shellR>*{transition:opacity .45s ease,transform .45s ease,visibility 0s linear 0s}
+body.hideL #shellL>*{opacity:0;transform:translateX(-26px);visibility:hidden;pointer-events:none;transition:opacity .45s ease,transform .45s ease,visibility 0s linear .45s}
+body.hideR #shellR>*{opacity:0;transform:translateX(26px);visibility:hidden;pointer-events:none;transition:opacity .45s ease,transform .45s ease,visibility 0s linear .45s}
+body.hideL #shellL,body.hideR #shellR{cursor:pointer}
+body.hideR #shellR{overflow:hidden!important}
 /* recorded: a real place or thing, in plain silver */
 .tag.recorded{background:#d8d3dc;color:#111}
 #pads .cymGo{margin-top:8px;width:100%;padding:10px 12px;font-size:11px;letter-spacing:.18em}
@@ -1551,9 +1560,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127q"></script>
-<script src="env.js?v=1127q"></script>
-<script src="table.js?v=1127q"></script>
-<script src="luxuria.js?v=1127q"></script>
+<script src="bank.js?v=1127r"></script>
+<script src="env.js?v=1127r"></script>
+<script src="table.js?v=1127r"></script>
+<script src="luxuria.js?v=1127r"></script>
 </body>
 </html>
