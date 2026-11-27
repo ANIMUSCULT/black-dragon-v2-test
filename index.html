@@ -673,6 +673,20 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
 @keyframes stGlint{0%{left:-60%}60%,100%{left:130%}}
 @keyframes stGem{0%,100%{box-shadow:0 0 0 1px #000,0 0 10px var(--c)}50%{box-shadow:0 0 0 1px #000,0 0 22px var(--c),0 0 4px #fff}}
 @media (prefers-reduced-motion:reduce){#monad::before,#monad::after,.stone.on::before,.stone.on i,.stone:hover::before{animation:none}}
+
+/* the four groups */
+.grpRow{display:contents}
+.acts .grpBtn{font-family:var(--serif,"Grenze Gotisch",serif);font-size:15px;letter-spacing:.06em;text-transform:none;padding:6px 16px;min-width:92px;
+  background:radial-gradient(120% 140% at 50% 120%,color-mix(in srgb,var(--b,#f2455c) 22%,transparent),transparent 60%),linear-gradient(180deg,#2c2e33,#121316);
+  border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 3px 0 #000,0 8px 14px rgba(0,0,0,.5)}
+.acts .grpBtn.on{border-color:var(--b,#f2455c);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 3px 0 #000,0 0 18px color-mix(in srgb,var(--b,#f2455c) 45%,transparent)}
+.grpDr h3{margin-bottom:2px}
+.grpGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px}
+.grpGrid>.pill,.grpGrid>button{min-height:44px;font-size:10px;letter-spacing:.12em;white-space:normal;text-align:center;justify-content:center}
+.grpSlots{grid-column:1/-1;display:flex;gap:8px}.grpSlots .pill{flex:1;min-height:44px;font-size:13px}
+.rside.emptied{display:none!important}
+/* the stones on two rows, so every name can be read */
+@media (min-width:1001px){#stones{grid-template-columns:repeat(9,1fr)!important;gap:6px}.stone{height:36px;font-size:9px}}
 </style>
 </head>
 <body>
@@ -1463,9 +1477,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127j"></script>
-<script src="env.js?v=1127j"></script>
-<script src="table.js?v=1127j"></script>
-<script src="luxuria.js?v=1127j"></script>
+<script src="bank.js?v=1127k"></script>
+<script src="env.js?v=1127k"></script>
+<script src="table.js?v=1127k"></script>
+<script src="luxuria.js?v=1127k"></script>
 </body>
 </html>

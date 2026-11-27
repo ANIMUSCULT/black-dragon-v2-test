@@ -1298,3 +1298,27 @@ registerProcessor('bd-monad',M);`;
 
 /* the Monad's glow breathes at the beat: one swell per beat, slowed by whole octaves until it is calm enough to watch */
 {const setP=()=>{let p=1/Math.max(.2,S.beat||1);while(p<.9)p*=2;document.documentElement.style.setProperty('--beatP',p.toFixed(3)+'s')};const ab=applyBeat;applyBeat=function(){const r=ab.apply(this,arguments);setP();return r};setP()}
+
+/* ================= THE FOUR GROUPS: Vision, Sound, Rituals, Session =================
+   The thirty-odd buttons that were spread over the top row, the menu at the lower right and the dial tabs are gathered
+   into four panels. Each button is moved, not copied, so it keeps every behaviour it had. The top row keeps only the
+   visualizer, the four groups, and hide panels (so the way back is always in reach). */
+{const GROUPS=[
+   ['Vision','gVision','The picture: clips, your own video, the machines that transmute it, flicker, sand and the dice.',['bOwn','bTrans','bDream','bScope','bPossess','bDice','bFreeze']],
+   ['Sound','gSound','What plays: presets, the sound library, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
+   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
+   ['Session','gSession','Keep what you made: three quick slots, save and load a session, record sound or video.',['@slots','bSave','bLoad','bRec','bVid']]];
+  const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
+    const row=document.createElement('div');row.className='grpRow';
+    GROUPS.forEach(([name,id,line,ids])=>{
+      const d=document.createElement('div');d.className='jelly drawer grpDr';d.id=id;d.hidden=true;
+      d.innerHTML=`<button class="pill dclose">close</button><h3>${name}</h3><p class="vh">${line}</p><div class="grpGrid"></div>`;document.body.appendChild(d);DR.push(id);
+      d.querySelector('.dclose').onclick=()=>{d.hidden=true};const grid=d.querySelector('.grpGrid');
+      ids.forEach(bid=>{if(bid==='@slots'){const s=[...document.querySelectorAll('.acts .slot')];if(s.length){const w=document.createElement('div');w.className='grpSlots';s.forEach(x=>w.appendChild(x));grid.appendChild(w)}return}
+        const b=document.getElementById(bid);if(b)grid.appendChild(b)});
+      const g=document.createElement('button');g.className='pill grpBtn';g.id='b'+id;g.textContent=name;g.title=line;g.onclick=e=>{e.stopPropagation();openDr(id);paint()};row.appendChild(g)});
+    const film=document.getElementById('bFilm'),hide=document.getElementById('bHide');(film||acts.firstChild)&&acts.insertBefore(row,film?film.nextSibling:acts.firstChild);if(hide)acts.appendChild(hide);
+    const rs=document.querySelector('.rside');if(rs&&!rs.querySelector('button'))rs.classList.add('emptied');
+    const paint=()=>GROUPS.forEach(([,id])=>{const g=document.getElementById('b'+id),d=document.getElementById(id);if(g&&d)g.classList.toggle('on',!d.hidden)});
+    document.addEventListener('click',()=>setTimeout(paint,0));paint()};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else setTimeout(build,0)}
