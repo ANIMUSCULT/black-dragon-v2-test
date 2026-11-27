@@ -549,7 +549,7 @@ applyMix();document.addEventListener('pointerdown',()=>setTimeout(applyMix,400),
   place();addEventListener('resize',place);setTimeout(place,400);setTimeout(place,1500);
   if(!A.ctx){$('#veil').play().catch(()=>{});const order=[1,2,3,0,5,2],t0=performance.now();window.VMODE=order[0];
     let lastSwap=performance.now();
-    const demo=setInterval(()=>{if(A.ctx){clearInterval(demo);window.GATEBOX=null;window.VMODE=null;window.REVV=0;hintVis();return}
+    const demo=setInterval(()=>{if(A.ctx){clearInterval(demo);window.GATEBOX=null;window.VMODE=null;window.REVV=0;hintVis();RS_GRACE=performance.now()+12000;/* the instrument opens on the serpent, its signature, whatever the walk was showing */if(film!==0&&!($('#bOwn')&&$('#bOwn').classList.contains('on')))setFilm(0);return}
       /* walk through the visualizers too: a new one every four seconds, once the current one is actually playing */
       const v=$('#veil');if(performance.now()-lastSwap>4000&&v.readyState>=2&&!document.hidden){lastSwap=performance.now();setFilm(film+1)}
       const t=(performance.now()-t0)/1000,ph=(t%7)/7;window.VMODE=order[Math.floor(t/7)%order.length];window.REVV=ph>.8?Math.max(0,1-Math.abs(ph-.9)/.1)*.75:.12+.1*Math.sin(t*.5)},60)}}
@@ -1304,7 +1304,7 @@ registerProcessor('bd-monad',M);`;
    into four panels. Each button is moved, not copied, so it keeps every behaviour it had. The top row keeps only the
    visualizer, the four groups, and hide panels (so the way back is always in reach). */
 {const GROUPS=[
-   ['Vision','gVision','The picture: clips, your own video, the machines that transmute it, flicker, sand and the dice.',['bOwn','bTrans','bDream','bScope','bPossess','bDice','bFreeze']],
+   ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
    ['Sound','gSound','What plays: presets, the sound library, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
    ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, record sound or video.',['@slots','bSave','bLoad','bRec','bVid']]];
@@ -1317,7 +1317,7 @@ registerProcessor('bd-monad',M);`;
       ids.forEach(bid=>{if(bid==='@slots'){const s=[...document.querySelectorAll('.acts .slot')];if(s.length){const w=document.createElement('div');w.className='grpSlots';s.forEach(x=>w.appendChild(x));grid.appendChild(w)}return}
         const b=document.getElementById(bid);if(b)grid.appendChild(b)});
       const g=document.createElement('button');g.className='pill grpBtn';g.id='b'+id;g.textContent=name;g.title=line;g.onclick=e=>{e.stopPropagation();openDr(id);paint()};row.appendChild(g)});
-    const film=document.getElementById('bFilm'),hide=document.getElementById('bHide');(film||acts.firstChild)&&acts.insertBefore(row,film?film.nextSibling:acts.firstChild);if(hide)acts.appendChild(hide);
+    const film=document.getElementById('bFilm'),hide=document.getElementById('bHide');(film||acts.firstChild)&&acts.insertBefore(row,film?film.nextSibling:acts.firstChild);if(hide)acts.appendChild(hide);{const dice=document.getElementById('bDice');if(dice)acts.insertBefore(dice,row)}
     const rs=document.querySelector('.rside');if(rs&&!rs.querySelector('button'))rs.classList.add('emptied');
     const paint=()=>GROUPS.forEach(([,id])=>{const g=document.getElementById('b'+id),d=document.getElementById(id);if(g&&d)g.classList.toggle('on',!d.hidden)});
     document.addEventListener('click',()=>setTimeout(paint,0));paint()};

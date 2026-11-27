@@ -190,10 +190,11 @@ function startLayer(id,level){
   else{const sh=ctx.createBiquadFilter(),pk=ctx.createBiquadFilter(),hard=EASE.has(id);sh.type='highshelf';sh.frequency.value=hard?4200:5200;sh.gain.value=hard?-9:-3.5;
     pk.type='peaking';pk.frequency.value=3200;pk.Q.value=1;pk.gain.value=hard?-4:-2.5;L.g.connect(sh).connect(pk);pk.connect(MOBILE?phoneEQ():A.bankBus);if(b.verb)pk.connect(A.bankVerb);L.tail=pk}
   try{b.gen(ctx,L.g,L)}catch(e){console.error('layer',id,e);return}
-  L.g.gain.setTargetAtTime(level*lyrLvl(id),ctx.currentTime,.25);act[id]=L;
+  L.g.gain.setTargetAtTime(level*lyrLvl(id),ctx.currentTime,b.env?.6:.25);act[id]=L;
 }
 function setLayer(id,level){
-  if(level==null){delete S.layers[id];const L=act[id];if(L){delete act[id];L.g.gain.setTargetAtTime(0,A.ctx.currentTime,.08);setTimeout(()=>{L.stop();L.g.disconnect();if(L.tail)L.tail.disconnect()},500)}}
+  /* stone sounds leave the way they do in Ascension, over about two and a half seconds, instead of being cut */
+  if(level==null){delete S.layers[id];const L=act[id];if(L){delete act[id];const slow=!!(BK[id]&&BK[id].env),tc=slow?.75:.08;L.g.gain.cancelScheduledValues(A.ctx.currentTime);L.g.gain.setTargetAtTime(0,A.ctx.currentTime,tc);setTimeout(()=>{L.stop();L.g.disconnect();if(L.tail)L.tail.disconnect()},slow?3600:500)}}
   else{S.layers[id]=level;if(act[id])act[id].g.gain.setTargetAtTime(level*lyrLvl(id),A.ctx.currentTime,.08);else startLayer(id,level)}
   paintBank();
 }
