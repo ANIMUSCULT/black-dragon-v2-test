@@ -1047,3 +1047,29 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
   const label=()=>{b.textContent='room · '+((A.ROOMS&&A.ROOMS[S.room||'hall'])||{n:'stone hall'}).n};label();b.title='Choose the room the space dial opens onto';kt.append(b);
   b.onclick=()=>{const nx=ORD[(ORD.indexOf(S.room||'hall')+1)%ORD.length];S.room=nx;label();if(A.setRoom)A.setRoom(nx);say('room · '+((A.ROOMS&&A.ROOMS[nx])||{}).n+(S.space<.05?' · turn up space to hear it':''))};
   setInterval(()=>{if(A.room&&A.room.id!==(S.room||'hall')&&A.setRoom)A.setRoom(S.room||'hall');label()},2000)}}
+
+/* ================= CHORDS AND MAGIC CHORDS: the keyboard modes of Black Dragon: Ascension =================
+   Notes plays one note a key. Chords builds a chord on each key from the scale (d, d+2, d+4). Magic makes every key play
+   the chord the Dream is on at that moment (a chord spell in the Dragon stone), walking up through its inversions along
+   the keyboard, so a key can never land outside it. With no Dream playing, each group of keys takes the next chord of
+   the Float spell in the state's own scale. Ported from Ascension's Performer.h (chordDegs, chordOn). */
+EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');
+{let CM=0;const MODES=['notes','chords','magic'],FLOAT=[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],timers={};
+  const bar=$('#keysBar');if(bar){const b=document.createElement('button');b.className='pill kstep';b.id='bChordM';b.title='Notes, Chords or Magic: Magic plays the chord the Dream is on, so every key stays in it';
+    const paint=()=>{b.textContent=MODES[CM];b.classList.toggle('on',CM>0);$('#keys')&&$('#keys').classList.toggle('magic',CM===2)};paint();
+    b.onclick=()=>{CM=(CM+1)%3;paint();say('keys · '+MODES[CM]+(CM===2?(window.DREAM?' · on the Dream\'s chord':' · in the Float chords'):''))};bar.append(b)}
+  const st=document.createElement('style');st.textContent='#keys.magic .key{box-shadow:inset 0 0 18px rgba(255,190,140,.22)}#keys.magic .key.on{box-shadow:inset 0 0 26px rgba(255,210,170,.6),0 0 26px rgba(255,255,255,.3)}';document.head.append(st);
+  const isKey=id=>typeof id==='string'&&/^[kpm]/.test(id)&&!id.includes('~');
+  /* the notes of one key: a list of [degree, exact Hz or 0, level] */
+  const build=(id,d)=>{const L=scaleLen();
+    if(CM===1)return[0,2,4].map(k=>[d+k,0,1]);
+    const D=window.DREAM,n=D?D.n:L,fold=ch=>[...new Set(ch.map(c=>((c%n)+n)%n))].sort((a,b)=>a-b);
+    let pc=fold(D?D.ch:FLOAT[0]);const m=pc.length;if(!D){const grp=Math.floor(d/m);pc=fold(FLOAT[((grp%FLOAT.length)+FLOAT.length)%FLOAT.length])}
+    const s0=((d%m)+m)%m,o=Math.floor(d/m),out=[];for(let k=0;k<Math.min(3,m);k++){const ix=s0+k;out.push(pc[ix%m]+(Math.floor(ix/m)+o)*n)}out.push(out[0]+n);
+    return out.map((g,k)=>[g,D?D.dg(g,2):0,k===3?.55:1])};
+  const on0=noteOn,off0=noteOff;
+  noteOn=(id,i,vel=1)=>{if(!CM||!isKey(id))return on0(id,i,vel);const notes=build(id,i),v=Math.min(1,vel/Math.sqrt(notes.length)*1.15),roll=CM===2?12:0;
+    (timers[id]||[]).forEach(clearTimeout);timers[id]=[];
+    notes.forEach(([g,hz,lv],k)=>{const nid=id+'~'+k,go=()=>{if(hz)KEYHZ[nid]=hz;else delete KEYHZ[nid];on0(nid,g,v*lv)};if(k&&roll)timers[id].push(setTimeout(go,k*roll));else go()})};
+  noteOff=(id,i)=>{if(!isKey(id)||(!CM&&!timers[id]))return off0(id,i);(timers[id]||[]).forEach(clearTimeout);delete timers[id];for(let k=0;k<5;k++){off0(id+'~'+k,i);delete KEYHZ[id+'~'+k]}off0(id,i)};
+  window.CHORDS={get mode(){return CM},set mode(v){CM=v}}}

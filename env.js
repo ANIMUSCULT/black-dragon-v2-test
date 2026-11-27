@@ -45,9 +45,9 @@ function prim(ctx,out,L,s){
       if(s.vib){const v=ctx.createOscillator(),vg=gn(ctx,f*.004);v.frequency.value=4.6+Math.random();v.connect(vg);vg.connect(o.frequency);vg.connect(o2.frequency);v.start(t);return{gg,os:[o,o2,v]}}
       return{gg,os:[o,o2]}};
     const free=(v,t)=>{v.gg.gain.cancelScheduledValues(t);v.gg.gain.setValueAtTime(v.gg.gain.value,t);v.gg.gain.linearRampToValueAtTime(0,t+s.rel);v.os.forEach(o=>o.stop(t+s.rel+.1))};
-    L.src.push({stop(){live.forEach(v=>v.os.forEach(o=>{try{o.stop()}catch(_){}}))}});
+    L.src.push({stop(){live.forEach(v=>v.os.forEach(o=>{try{o.stop()}catch(_){}}));if(window.DREAM&&window.DREAM.L===L)window.DREAM=null}});
     L.every(200,t=>{if(t<next)return;next=t+s.ev[0]+Math.random()*(s.ev[1]-s.ev[0]);live.forEach(v=>free(v,t));live=[];
-      const ch=s.ch[ci++%s.ch.length],k=ch.length+1;
+      const ch=s.ch[ci++%s.ch.length],k=ch.length+1;window.DREAM={ch,all:s.ch,ci:(ci-1)%s.ch.length,dg,n,L};
       ch.forEach((d,i)=>live.push(voice(dg(d,1),g0/k*(1-i*.08),t,s.w||'triangle',k>2?(i/(ch.length-1)-.5)*.9:0)));live.push(voice(dg(ch[0],.5),g0/k*1.1,t,'sine',0));
       if(s.spark){const m=Math.random()<.3?3:1,b0=7+(Math.random()*7|0);for(let j=0;j<m;j++){const f=dg(b0+j*2,2);ping(ctx,out,t+1.2+Math.random()*(next-t-3)+j*.18,f,f,3+Math.random()*3,g0*.07,Math.random()*1.6-.8,.4)}}});break}
   case 'shep':{const N=7,os=[];for(let k=0;k<N;k++){const o=ctx.createOscillator(),g=gn(ctx,0);o.connect(g).connect(out);o.start();os.push({o,g});L.src.push(o)}
@@ -192,23 +192,24 @@ const ENVS=[
  ['ice crystal',[{k:'ping',rate:.9,deg:[7,14],oct:2,d:4,g:.1,att:.003,h:2.01}]],['footsteps in snow',[{k:'burst',rate:1,tick:900,f:[600,1400],d:[.09,.16],g:1.2,q:1.2,pan:0}]],
  ['polar night',[D([55,55.2,82.5],.12,{trem:[.05,.5],lp:300}),B('pink',8000,.02,{ft:'highpass',lfo:[.04,.8]})]],['ice cave',[PI(.4,[900,2200],.12,.5,{drop:1.5,att:.004}),D([49,49.3],.5,{trem:[.04,.5]})]],
  ['frost',[BU(14,[6000,12000],[.002,.005],.3,{q:7})]],['slow heart',[HB(42,.9)]],['absolute zero',[D([27.5,27.55],.8),D([8000],.012,{trem:[.1,.9]})]]]},
-{id:'dragon',n:'Dragon',col:'#2f9e6e',line:'The wyrm beneath the mountain and the spells it sleeps on.',sig:[0,4,6],snd:[
- ['float',[CH('lucid',136.1,[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],[10,15],.21,{spark:1})]],
+{id:'dragon',n:'Dragon',col:'#ff7a1e',line:'Fire, hoard and the wyrm beneath the mountain.',sig:[0,4,11],snd:[
+ ['float',[CH('lucid',136.1,[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],[10,15],.21)]],
  ['choir',[CH('overtones',128,[[0,4,7],[2,5,9],[0,3,7],[4,7,11]],[12,18],.18,{w:'sine',vib:1,att:3.4})]],
- ['rise',[CH('timaeus',144,[[0,2,4,7],[1,4,6,8],[2,4,7,9],[3,5,7,10]],[7,10],.22,{spark:1,att:1.8,rel:2.4})]],
+ ['rise',[CH('timaeus',144,[[0,2,4,7],[1,4,6,8],[2,4,7,9],[3,5,7,10]],[7,10],.22,{att:1.8,rel:2.4})]],
  ['deep',[CH('hirajoshi',108,[[0,2,4],[-1,2,4],[0,3,5]],[18,26],.19,{w:'sine',att:4,rel:5})]],
- ['dragon breath',[SW([7,10],[180,520,160],.9,{ft:'lowpass',q:.7,n:'brown',rise:.55,pan:'move'})]],
- ['wyrm',[CH('pythagorean',96,[[0,2,4],[-1,1,3],[0,3,4],[-2,0,2]],[16,22],.2,{w:'sine',att:3.6,rel:4.5})]],
- ['hoard cave',[D([48,48.25,72],.16,{trem:[.04,.4],lp:260}),B('brown',220,.1,{lfo:[.06,.5]})]],
- ['dragon heart',[HB(36,.75,{f:52})]],
- ['wingbeats',[SW([2.6,3.6],[260,700,220],2,{n:'pink',ft:'bandpass',q:.9,rise:.3,duty:.55,pan:'alt'})]],
- ['embers',[BU(2.2,[600,1800],[.02,.06],.55,{q:3,n:2,gap:.05}),B('brown',380,.35,{lfo:[.09,.6]})]],
- ['distant roar',[GL([14,10],[70,110],[.7,.5],[3,4.5],.7,{w:'sawtooth',form:.8})]],
- ['molten',[D([64,64.4,96],.17,{w:'triangle',lp:340,trem:[.07,.5]})]],
- ['the coil',[{k:'shep',dir:-1,g:.066}]],
- ['scales',[{k:'ping',rate:.7,deg:[5,12],oct:1,d:3.5,g:.11,att:.35}]],
- ['smoke',[B('pink',520,.7,{ft:'bandpass',q:.8,sw:[.03,220],lfo:[.04,.5],pan:.05})]],
- ['tetractys',[DRN([1,2,3,4],.17,{trem:[.05,.35],lp:900})]]]}
+ /* the twelve Dragon soundscapes of Black Dragon: Ascension, written in this stone's own terms */
+ ['dragon breath',[B('brown',240,.4,{lfo:[.11,.32]}),B('pink',520,.12,{ft:'bandpass',q:.5,lfo:[.11,.1]})]],
+ ['cave drip',[PI(.5,[900,2200],.5,.14,{drop:.6}),B('brown',100,.32)]],
+ ['heart of the beast',[HB(36,.5,{f:38,pat:[0,.2]}),DRN([.125],.07)]],
+ ['night flight',[B('pink',700,.2,{ft:'bandpass',q:.5,sw:[.06,500],lfo:[.08,.1]}),B('brown',320,.3,{lfo:[.5,.3]})]],
+ ['wingbeats',[GL([1.4,1.2],[70,150],[.6],[.7,1.2],.26,{lp:900}),B('pink',380,.22,{lfo:[.5,.22]})]],
+ ['hoard',[PI(1.6,[2500,5500],.2,.08,{h:2.76,att:.01}),D([126.22,189.33],.075,{trem:[.05,.4]})]],
+ ['embers',[BU(6,[1500,4500],[.01,.04],.12,{q:3}),B('brown',300,.25,{lfo:[.3,.1]})]],
+ ['deep cavern',[DRN([.25,.2505],.08),B('brown',80,.3,{lfo:[.03,.1]}),PI(.1,[300,600],3,.05,{drop:.8})]],
+ ['growl',[GL([5,6],[45,80],[.95],[2,4],.2,{w:'sawtooth',lp:600}),B('brown',160,.25,{lfo:[.09,.2]})]],
+ ['purr',[D([27.5,55],.16,{w:'sawtooth',lp:220,trem:[24,.9]}),DRN([.25,.375],.07,{lp:300})]],
+ ['dragon song',[DRN([.5,.75],.1,{w:'sawtooth',lp:900,vib:[5,2],trem:[.07,.3]}),DRN([.5],.04,{w:'triangle',lp:500,trem:[.05,.5]})]],
+ ['fire',[B('white',1100,.6,{ft:'bandpass',q:.6,sw:[.2,700],lfo:[.3,.12]}),BU(4,[1200,3500],[.01,.05],.4,{q:3}),GL([4,4],[60,110],[1.5],[1.5,3],.4,{w:'sawtooth',lp:500})]]]}
 ];
 /* real recordings on the pads where synthesis sounds least real; the synth version is the fallback */
 const REAL={'e:lust:3':['lust-breath',1],'e:animal:0':['purr',1],'e:animal:3':['wolf',0],'e:breath:1':['breath',1],'e:wet:1':['rain',1],'e:heat:1':['fire',1],'e:underworld:0':['cave',1],'e:celestial:0':['choir',1]};

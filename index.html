@@ -1050,8 +1050,9 @@ function closeTick(){
 /* played voices */
 const held={};
 function degFreq(i){const sc=STATES[S.state].scale,n=sc.length;let base=S.fc*2;while(base<150)base*=2;while(base>330)base/=2;return base*sc[((i%n)+n)%n]*Math.pow(2,Math.floor(i/n))}
+const KEYHZ={};/* an exact pitch for a key note, set by the Magic chords so they sound in the Dream's own tuning */
 function noteOn(id,i,vel=1){
-  if(!A.ctx||held[id])return;const ctx=A.ctx,t=ctx.currentTime,V=VOX[S.voice]||VOX[0],f=degFreq(i)*Math.pow(2,V.oct||0),g=ctx.createGain(),out=ctx.createStereoPanner(),os=[],pre=ctx.createGain();
+  if(!A.ctx||held[id])return;const ctx=A.ctx,t=ctx.currentTime,V=VOX[S.voice]||VOX[0],f=(KEYHZ[id]||degFreq(i))*Math.pow(2,V.oct||0),g=ctx.createGain(),out=ctx.createStereoPanner(),os=[],pre=ctx.createGain();
   {const hk=Object.keys(held);if(hk.length>=(MOBILE?5:12)){const h=held[hk[0]];delete held[hk[0]];h.g.gain.cancelScheduledValues(t);h.g.gain.setTargetAtTime(0,t,.04);h.os.forEach(o=>{try{o.stop(t+.3)}catch(_){}});flash(h.i,false)}}
   out.pan.value=clamp((i-7)/9,-.8,.8);let chain=pre;
   if(V.lp){const [m,q,env,et]=V.lp,lp=ctx.createBiquadFilter(),base=Math.min(16000,f*m);lp.type='lowpass';lp.Q.value=q||.7;
@@ -1386,9 +1387,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1126u"></script>
-<script src="env.js?v=1126u"></script>
-<script src="table.js?v=1126u"></script>
-<script src="luxuria.js?v=1126u"></script>
+<script src="bank.js?v=1126v"></script>
+<script src="env.js?v=1126v"></script>
+<script src="table.js?v=1126v"></script>
+<script src="luxuria.js?v=1126v"></script>
 </body>
 </html>
