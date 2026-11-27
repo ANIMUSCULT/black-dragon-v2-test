@@ -292,6 +292,11 @@ body.idle .hud{opacity:.07}
 #vox .kstep.pick h5 i{background:linear-gradient(180deg,#ff8494,#b8183a);color:#fff}
 #vox .kstep.play{border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25)}
 #vox .kstep .vh{margin:0}
+#vox .kstep.tune{border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25)}
+#vox .kstep.opts{border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.02)}
+#vox .orow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#vox .orow .lab{width:58px;font-size:11px;opacity:.65}
+#vox .orow.dim{opacity:.4}
 .vg{display:flex;flex-wrap:wrap;gap:6px}
 .vb{font-family:var(--tech);font-size:9px;letter-spacing:.08em;padding:8px 11px;border-radius:4px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.03)}
 .vb:hover{border-color:rgba(255,255,255,.6)}.vb.on{background:#ececec;color:#000;border-color:#fff}
@@ -1249,8 +1254,8 @@ keysEl.addEventListener('pointerup',up);keysEl.addEventListener('pointercancel',
 addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey||typingInto(e.target))return;const key=e.key.toLowerCase(),i=KEYMAP.indexOf(key),note=m=>{const el=$('#lcd');if(el)el.textContent=m};
   if(i>=0){e.preventDefault();if(kHeld[i]!=null)return;const d=i+kOct*scaleLen();kHeld[i]=d;noteOn('k'+i,d,kVel);return}
   for(const [map,pre,lane] of [[UPMAP,'u',1],[LOMAP,'l',-1]]){const j=map.indexOf(key);if(j>=0){e.preventDefault();const id=pre+j;if(kHeld[id]!=null)return;const d=j+(kOct+lane)*scaleLen();kHeld[id]=d;noteOn('k'+id,d,kVel);return}}
-  if(key==='-'||key==='='){e.preventDefault();kOct=clamp(kOct+(key==='='?1:-1),-2,2);note('keys · octave '+(kOct>0?'+':'')+kOct)}
-  if(key==='9'||key==='0'){kVel=clamp(+(kVel+(key==='0'?.15:-.15)).toFixed(2),.4,1);note('keys · touch '+Math.round(kVel*100)+'%')}});
+  if(key==='-'||key==='='){e.preventDefault();kOct=clamp(kOct+(key==='='?1:-1),-2,2);note('keys · octave '+(kOct>0?'+':'')+kOct);const vx=$('#vox');if(vx&&vx._sync&&!vx.hidden)vx._sync()}
+  if(key==='9'||key==='0'){kVel=clamp(+(kVel+(key==='0'?.15:-.15)).toFixed(2),.4,1);note('keys · touch '+Math.round(kVel*100)+'%');const vx=$('#vox');if(vx&&vx._sync&&!vx.hidden)vx._sync()}});
 addEventListener('keyup',e=>{const key=e.key.toLowerCase(),i=KEYMAP.indexOf(key);if(i>=0&&kHeld[i]!=null){noteOff('k'+i,kHeld[i]);kHeld[i]=null}
   for(const [map,pre] of [[UPMAP,'u'],[LOMAP,'l']]){const j=map.indexOf(key),id=pre+j;if(j>=0&&kHeld[id]!=null){noteOff('k'+id,kHeld[id]);kHeld[id]=null}}});
 addEventListener('blur',()=>{for(const i in kHeld)if(kHeld[i]!=null){noteOff('k'+i,kHeld[i]);kHeld[i]=null}});
@@ -1317,10 +1322,22 @@ function buildVox(){const el=$('#vox'),FL=[];VOX.forEach(v=>{if(!FL.includes(v.f
       +`<div class="kstep type"><h5><i>1</i>Instrument type</h5><div class="vg">${FL.map(f=>`<button class="vb vf${f===fam?' on':''}" data-f="${f}">${f}</button>`).join('')}</div></div>`
       +`<div class="kstep pick"><h5><i>2</i>Choose your instrument <em>${fam}</em></h5><div class="vg">${VOX.map((x,i)=>x.fam===fam?`<button class="vb${i===S.voice?' on':''}" data-i="${i}">${x.n}</button>`:'').join('')}</div></div>`
       +`<div class="kstep play"><h5><i>3</i>What one key plays <em>${['one note','chords','magic'][cm]}</em></h5><div class="vg">${['one note','chords','magic'].map((t,k)=>`<button class="vb vc${k===cm?' on':''}" data-c="${k}">${t}</button>`).join('')}</div><p class="vh">${HINT[cm]}</p></div>`
+      +(typeof TUN!=='undefined'?`<div class="kstep tune"><h5><i>4</i>Scale <em>${TUN[tun][0]}</em></h5><div class="vg">${TUN.map((t,i)=>`<button class="vb vt${i===tun?' on':''}" data-t="${i}">${t[0]}</button>`).join('')}</div><p class="vh">Which notes the keys play. By state follows the state you are in; the others stay put whatever state you pick.</p></div>`:'')
+      +`<div class="kstep opts"><h5><i>5</i>Key options</h5>`
+      +`<div class="orow"><span class="lab">octave</span>${[-2,-1,0,1,2].map(o=>`<button class="vb vo${o===kOct?' on':''}" data-o="${o}">${o>0?'+'+o:o}</button>`).join('')}</div>`
+      +`<div class="orow"><span class="lab">touch</span>${[[.4,'soft'],[.7,'medium'],[1,'full']].map(([t,n])=>`<button class="vb vv${Math.abs(kVel-t)<.16?' on':''}" data-v="${t}">${n}</button>`).join('')}</div>`
+      +(window.CHORDS?(o=>`<div class="orow${cm?'':' dim'}"><span class="lab">bass</span>${['off','on'].map((n,k)=>`<button class="vb vx${+o.bass===k?' on':''}" data-x="bass" data-y="${k}">${n}</button>`).join('')}</div>`
+        +`<div class="orow${cm?'':' dim'}"><span class="lab">spread</span>${['close','open','wide'].map((n,k)=>`<button class="vb vx${o.spread===k?' on':''}" data-x="spread" data-y="${k}">${n}</button>`).join('')}</div>`
+        +`<div class="orow${cm?'':' dim'}"><span class="lab">strum</span>${['none','soft','slow'].map((n,k)=>`<button class="vb vx${o.strum===k?' on':''}" data-x="strum" data-y="${k}">${n}</button>`).join('')}</div>`)(CHORDS.opts):'')
+      +`<p class="vh">Octave and touch are for every key; the - and = keys move the octave, 9 and 0 the touch. Bass, spread and strum shape chords and magic.</p></div>`
       +`<p class="vh">Playing now: <b>${v.n}</b>. ${VOX.length} instruments in all; the [ and ] keys step through them.</p>`};
   el._sync=()=>{const v=VOX[S.voice];if(v)fam=v.fam;paint()};
   el.onclick=e=>{const b=e.target.closest('.vb');if(!b)return;e.stopPropagation();
-    if(b.dataset.f!=null){fam=b.dataset.f;paint()}else if(b.dataset.i!=null)setVoice(+b.dataset.i);else if(b.dataset.c!=null&&window.CHORDS){CHORDS.mode=+b.dataset.c;say('keys · '+['one note','chords','magic'][+b.dataset.c])}};
+    if(b.dataset.f!=null){fam=b.dataset.f;paint()}else if(b.dataset.i!=null)setVoice(+b.dataset.i);else if(b.dataset.c!=null&&window.CHORDS){CHORDS.mode=+b.dataset.c;say('keys · '+['one note','chords','magic'][+b.dataset.c])}
+    else if(b.dataset.t!=null&&window.setTun)setTun(+b.dataset.t);
+    else if(b.dataset.o!=null){kOct=+b.dataset.o;paint();say('keys · octave '+(kOct>0?'+':'')+kOct)}
+    else if(b.dataset.v!=null){kVel=+b.dataset.v;paint();say('keys · touch '+Math.round(kVel*100)+'%')}
+    else if(b.dataset.x!=null&&window.CHORDS){const k=b.dataset.x,y=+b.dataset.y;CHORDS.set(k,k==='bass'?!!y:y);say('keys · '+k+' '+b.textContent)}};
   paint();setVoice(S.voice)}
 $('#bVoice').onclick=e=>{e.stopPropagation();$('#vox').hidden=!$('#vox').hidden};
 
@@ -1560,9 +1577,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127r"></script>
-<script src="env.js?v=1127r"></script>
-<script src="table.js?v=1127r"></script>
-<script src="luxuria.js?v=1127r"></script>
+<script src="bank.js?v=1127s"></script>
+<script src="env.js?v=1127s"></script>
+<script src="table.js?v=1127s"></script>
+<script src="luxuria.js?v=1127s"></script>
 </body>
 </html>

@@ -288,8 +288,8 @@ const TUN=[['by state',null],['pythagorean',[1,9/8,81/64,3/2,27/16]],['tetractys
   ['hirajoshi',[1,9/8,6/5,3/2,8/5]],['phi spiral',[0,1,2,3,4].map(k=>fold(Math.pow(PHI,k))).sort((a,b)=>a-b)],['timaeus',[1,9/8,81/64,4/3,3/2,27/16,243/128]],['miyako-bushi',[1,16/15,4/3,3/2,8/5]]];
 let tun=0;
 {const d0=degFreq;degFreq=i=>{const sc=TUN[tun][1];if(!sc)return d0(i);const n=sc.length;let base=S.fc*2;while(base<150)base*=2;while(base>330)base/=2;return base*sc[((i%n)+n)%n]*Math.pow(2,Math.floor(i/n))}}
-{const el=$('#vox'),box=document.createElement('div');box.innerHTML='<h4>tuning</h4><div class="vg" id="tunG">'+TUN.map((t,i)=>`<button class="vb tn${i?'':' on'}" data-i="${i}">${t[0]}</button>`).join('')+'</div>';
-  el.querySelector('.vh').after(box);box.addEventListener('click',e=>{const b=e.target.closest('.tn');if(!b)return;e.stopPropagation();tun=+b.dataset.i;$$('.tn').forEach((x,i)=>x.classList.toggle('on',i===tun));say('tuning · '+TUN[tun][0])})}
+/* the scale the keys play: chosen in step 4 of the instruments page */
+function setTun(i){tun=clamp(i|0,0,TUN.length-1);const v=$('#vox');if(v&&v._sync)v._sync();say('scale · '+TUN[tun][0])}
 
 /* ================= reset and volume ================= */
 const DEF={...S,layers:{}};
@@ -297,7 +297,7 @@ function resetAll(){
   stopRun(true);revStop();if(possess)$('#bPossess').click();if(desc)stopDescent();if(silenced)silence(false);
   if(A.ctx){const t=A.ctx.currentTime;Object.keys(held).forEach(k=>{const h=held[k];h.g.gain.cancelScheduledValues(t);h.g.gain.setTargetAtTime(0,t,.05);h.os.forEach(o=>{try{o.stop(t+.4)}catch(_){}});delete held[k]});$$('.key.on').forEach(k=>k.classList.remove('on'))}
   if(ENV)setEnv(null);clearLayers();const vol=S.vol;Object.assign(S,DEF,{layers:{},vol});window.VMODE=null;FORGED=null;$('#seal').setAttribute('points','');$('#sealDot').setAttribute('opacity',0);
-  setState(STATES.findIndex(x=>x.id==='hypnagogia'));setVoice(0);tun=0;$$('.tn').forEach((x,i)=>x.classList.toggle('on',!i));paintKnobs();applyAll();
+  setState(STATES.findIndex(x=>x.id==='hypnagogia'));tun=0;kOct=0;kVel=1;if(window.CHORDS){CHORDS.mode=2;CHORDS.set('bass',false);CHORDS.set('spread',0);CHORDS.set('strum',0)}setVoice(window.DEFVOICE||0);$$('.tn').forEach((x,i)=>x.classList.toggle('on',!i));paintKnobs();applyAll();
   $('#bBreath').classList.toggle('on',S.breath);$('#bTide').classList.toggle('on',S.tide);$('#bPresets').textContent='presets';paintHeal();DR.forEach(d=>$('#'+d).hidden=true);say('reset · the board is back to its starting places')}
 $('#bReset').onclick=resetAll;
 const volIn=$('#vol');volIn.value=S.vol;volIn.addEventListener('input',()=>{S.vol=+volIn.value;if(knobEls.vol)knobEls.vol.style.setProperty('--v',S.vol);if(A.ctx&&!silenced)A.vol.gain.setTargetAtTime(S.vol,A.ctx.currentTime,.03);say('volume · '+Math.round(S.vol*100))});
@@ -741,7 +741,7 @@ if(/[?&]diag\b/.test(location.search)){
    if(!A.ctx)return;envPads('universe').forEach(k=>setLayer(k,null));
    setState(STATES.findIndex(x=>x.id==='desire'));
    Object.assign(S,{fc:+ROOT.toFixed(2),beat:.9,mode:'monaural',tone:.4,body:.45,air:0,close:0,space:.85,echo:.62,att:.72,rel:.8,tide:false,speed:.14,trails:.72,warp:.25,grain:.22,veil:.5,twist:0,mirrors:0});
-   $('#bTide').classList.remove('on');tun=TUN.findIndex(t=>t[0]==='pythagorean');$$('.tn').forEach((x,i)=>x.classList.toggle('on',i===tun));
+   $('#bTide').classList.remove('on');tun=TUN.findIndex(t=>t[0]==='pythagorean');{const vx=$('#vox');if(vx&&vx._sync)vx._sync()}
    setVoice(VOICES.indexOf('opium choir'));window.ENVCOL='#b1123c';paintDial();paintModes();paintKnobs();applyAll();setLayer('umbra',.6);ujStart()};
  const umbraOff=()=>{ujStop(false);UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear();setLayer('umbra',null);const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
  const umbPaint=()=>{const u=$('#bUmbra');if(u)u.classList.toggle('on',umbIsOn())};
@@ -1189,7 +1189,8 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
      every voice of this instrument stays, below them. Voices are chosen by name, so presets and saved sessions keep theirs. */
   {const cur=VOICES[S.voice],ORD=['ascension','ascension realms'].concat(FAMS);FAMS.unshift('ascension','ascension realms');
     VOX.sort((a,b)=>ORD.indexOf(a.fam)-ORD.indexOf(b.fam));VOICES.length=0;VOX.forEach(v=>VOICES.push(v.n));
-    S.voice=S.voice===0?0:Math.max(0,VOICES.indexOf(cur));buildVox();setVoice(S.voice)}
+    /* the keyboard starts on opal keys (owner, 2026-11-27) */window.DEFVOICE=Math.max(0,VOICES.indexOf('opal keys'));
+    S.voice=S.voice===0?DEFVOICE:Math.max(0,VOICES.indexOf(cur));buildVox();setVoice(S.voice)}
   let keys=null,ready=null;const live={};
   const engine=()=>keys||(keys=ASC.make({space:S.space,echo:.18,shimmer:.45,root:S.fc,carrier:S.fc}).then(n=>{const g=gn(A.ctx,KTRIM*(typeof MIX==='object'&&MIX.keys!=null?MIX.keys*2:1));n.connect(g).connect(A.master);A.asc=n;A.ascOut=g;ready=n;return n}).catch(e=>{keys=null;throw e}));
   const on0=noteOn,off0=noteOff;
@@ -1210,7 +1211,7 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
    the keyboard, so a key can never land outside it. With no Dream playing, each group of keys takes the next chord of
    the Float spell in the state's own scale. Ported from Ascension's Performer.h (chordDegs, chordOn). */
 EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');['e:lust:6','e:freeze:3','e:magic:2','e:freeze:1','e:gold:7'].forEach(id=>EASE.add(id));/* the brightest of Ascension's realms */
-{let CM=0,paintM=()=>{};const MODES=['one note','chords','magic'],FLOAT=[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],timers={};
+{let CM=2,paintM=()=>{};const CO={bass:false,spread:0,strum:0};const MODES=['one note','chords','magic'],FLOAT=[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],timers={};
   const voxSync=()=>{const v=$('#vox');if(v&&v._sync)v._sync()};
   const bar=$('#keysBar');if(bar){const b=document.createElement('button');b.className='pill kmode';b.id='bChordM';b.title='One note, chords or magic: magic keeps every key in one sweet chord, so whatever you press fits';
     const paint=()=>{b.textContent=MODES[CM];b.classList.toggle('on',CM>0);$('#keys')&&$('#keys').classList.toggle('magic',CM===2)};paint();paintM=paint;
@@ -1238,11 +1239,16 @@ EASE.add('e:dragon:9');EASE.add('e:dragon:10');EASE.add('e:dragon:15');['e:lust:
     return out.map(hz=>[d,hz,1]).concat([[d,out[0]*2,.55]])};
   const on0=noteOn,off0=noteOff;
   noteOn=(id,i,vel=1)=>{if(!CM||!isKey(id))return on0(id,i,vel);
-    if(CM===2&&!window.DREAM){const now=performance.now();if(!Object.keys(timers).length&&now-MCT>3500){MCI++;MCT=now}}const notes=build(id,i),v=Math.min(1,vel/Math.sqrt(notes.length)*1.15),roll=CM===2?12:0;
+    if(CM===2&&!window.DREAM){const now=performance.now();if(!Object.keys(timers).length&&now-MCT>3500){MCI++;MCT=now}}const L=scaleLen(),notes=build(id,i).map(x=>x.slice());
+    /* key options, as in Ascension: spread opens the chord (every other note up an octave, wide lifts the third note too),
+       bass adds the lowest note an octave down, strum rolls the notes in */
+    const up=x=>{if(x[1])x[1]*=2;else x[0]+=L};if(CO.spread>0&&notes.length>2){up(notes[1]);if(CO.spread>1&&notes[2])up(notes[2])}
+    if(CO.bass&&notes.length){const r=notes[0];notes.push(r[1]?[r[0],r[1]/2,.8]:[r[0]-L,0,.8])}
+    const v=Math.min(1,vel/Math.sqrt(notes.length)*1.15),roll=CM===2?Math.max(12,CO.strum*70):CO.strum*70;
     (timers[id]||[]).forEach(clearTimeout);timers[id]=[];
     notes.forEach(([g,hz,lv],k)=>{const nid=id+'~'+k,go=()=>{if(hz)KEYHZ[nid]=hz;else delete KEYHZ[nid];on0(nid,g,v*lv)};if(k&&roll)timers[id].push(setTimeout(go,k*roll));else go()})};
   noteOff=(id,i)=>{if(!isKey(id)||(!CM&&!timers[id]))return off0(id,i);(timers[id]||[]).forEach(clearTimeout);delete timers[id];for(let k=0;k<5;k++){off0(id+'~'+k,i);delete KEYHZ[id+'~'+k]}off0(id,i)};
-  window.CHORDS={get mode(){return CM},set mode(v){CM=v;paintM();voxSync()}}}
+  window.CHORDS={get mode(){return CM},set mode(v){CM=v;paintM();voxSync()},opts:CO,set(k,v){if(k in CO){CO[k]=v;voxSync()}}}}
 
 /* ================= THE MONAD'S VOICE, from Black Dragon: Ascension (MonadVoice.h, 2026-11-28) =================
    Held, the Monad climbs for ever; let go, it sinks. Six octave-spaced layers of detuned saws on the root and its fifth
