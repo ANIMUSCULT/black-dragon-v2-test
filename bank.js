@@ -176,13 +176,19 @@ function bankInit(){
   A.tonePan=ctx.createStereoPanner();A.tonePan.connect(A.toneBus);
   Object.entries(S.layers).forEach(([id,v])=>startLayer(id,v));
 }
+/* phones: a small speaker has almost no bass, so the upper mids and highs of the stones take over and sound harsh.
+   On phones only, the stone sounds pass a gentle curve: highs eased, the 1.5 kHz glare softened, a little warmth where
+   a phone can still play it. Coloured noise and measured tones stay untouched. */
+function phoneEQ(){if(A.phEQ)return A.phEQ;const ctx=A.ctx,f=(t,fr,q,g)=>{const x=ctx.createBiquadFilter();x.type=t;x.frequency.value=fr;x.Q.value=q;if(g!=null)x.gain.value=g;return x};
+  const i=ctx.createGain(),lo=f('lowshelf',320,.7,3),mid=f('peaking',1500,.9,-3),hi=f('highshelf',2600,.7,-6),lp=f('lowpass',6500,.5);
+  i.connect(lo).connect(mid).connect(hi).connect(lp).connect(A.bankBus);return A.phEQ=i}
 function startLayer(id,level){
   const b=BK[id];if(!b||!A.ctx||act[id])return;const ctx=A.ctx,L=new Lyr();L.g=ctx.createGain();L.g.gain.value=0;
   /* measured tones and coloured noise pass untouched; every other world sound gets its top end eased */
   if(b.bus==='tone')L.g.connect(A.tonePan);
   else if(b.cat==='coloured noise'){L.g.connect(A.bankBus);if(b.verb)L.g.connect(A.bankVerb)}
   else{const sh=ctx.createBiquadFilter(),pk=ctx.createBiquadFilter(),hard=EASE.has(id);sh.type='highshelf';sh.frequency.value=hard?4200:5200;sh.gain.value=hard?-9:-3.5;
-    pk.type='peaking';pk.frequency.value=3200;pk.Q.value=1;pk.gain.value=hard?-4:-2.5;L.g.connect(sh).connect(pk);pk.connect(A.bankBus);if(b.verb)pk.connect(A.bankVerb);L.tail=pk}
+    pk.type='peaking';pk.frequency.value=3200;pk.Q.value=1;pk.gain.value=hard?-4:-2.5;L.g.connect(sh).connect(pk);pk.connect(MOBILE?phoneEQ():A.bankBus);if(b.verb)pk.connect(A.bankVerb);L.tail=pk}
   try{b.gen(ctx,L.g,L)}catch(e){console.error('layer',id,e);return}
   L.g.gain.setTargetAtTime(level*lyrLvl(id),ctx.currentTime,.25);act[id]=L;
 }
