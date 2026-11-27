@@ -1329,9 +1329,9 @@ registerProcessor('bd-monad',M);`;
    ['dub','Dub',140,{kick:[0,10],sub:[[0,0],[6,0],[10,4],[14,3]],stab:[4,12],shk:[2,6,10,14],prog:[0,0,3,4]}],
    ['liquid','Liquid',116,{kick:[0,7,10],sub:[[0,0],[3,2],[6,4],[8,0],[11,2],[14,5]],stab:[6],shk:[1,3,5,7,9,11,13,15],pad:1,prog:[0,5,3,4]}],
    ['temple','Temple',92,{tom:[[0,1],[3,.6],[6,.8],[8,1],[11,.6],[14,.7]],sub:[[0,0],[8,0]],shk:[4,12],pad:1,prog:[0,0,3,0]}],
-   ['velvet','Velvet',84,{kick:[0,9],sub:[[0,0],[8,4]],stab:[],shk:[],pad:2,prog:[0,3,5,4]}],
+   ['velvet','Velvet',84,{kick:[0,9],sub:[[0,0],[8,4]],stab:[],shk:[4,12],pad:2,prog:[0,3,5,4]}],
    ['aura','Aura',120,{kick:[0,4,8,12],sub:[[2,0],[6,0],[10,4],[14,0]],stab:[7,15],shk:[2,6,10,14],prog:[0,4,5,3]}],
-   ['nebula','Nebula',70,{kick:[0],sub:[[0,0],[10,4]],stab:[],shk:[],pad:2,prog:[0,5,3,4]}]];
+   ['nebula','Nebula',70,{kick:[0],sub:[[0,0],[10,4]],stab:[],shk:[8],pad:2,prog:[0,5,3,4]}]];
   const G={cur:null,bus:null,echo:null,lp:null,level:.5,follow:true,step:0,next:0,bar:0,iv:null};
   const ctxOK=()=>!!A.ctx;
   const build=()=>{if(G.bus)return;const ctx=A.ctx;G.bus=gn(ctx,0);G.lp=bq(ctx,'lowpass',9000,.5);const out=gn(ctx,1);G.bus.connect(G.lp).connect(out);out.connect(A.master);
@@ -1342,30 +1342,37 @@ registerProcessor('bd-monad',M);`;
   const base=()=>{let b=hBase();while(b>130)b/=2;while(b<55)b*=2;return b};
   const deg=(d,oct)=>{const sc=STATES[S.state].scale,n=sc.length;return base()*oct*sc[((d%n)+n)%n]*Math.pow(2,Math.floor(d/n))};
   const env=(g,t,a,lv,d)=>{g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(lv,t+a);g.gain.setTargetAtTime(0,t+a,d)};
-  const kick=(t,lv)=>{const ctx=A.ctx,o=ctx.createOscillator(),g=gn(ctx,0),f=bq(ctx,'lowpass',320,.6);o.frequency.setValueAtTime(92,t);o.frequency.exponentialRampToValueAtTime(46,t+.14);env(g,t,.012,.9*lv,.1);o.connect(f).connect(g).connect(G.bus);o.start(t);o.stop(t+.8)};
-  const tom=(t,lv,f0)=>{const ctx=A.ctx,o=ctx.createOscillator(),g=gn(ctx,0);o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*.78,t+.3);env(g,t,.014,.55*lv,.16);o.connect(g).connect(G.bus);o.start(t);o.stop(t+1)};
-  const sub=(t,f,dur,lv)=>{const ctx=A.ctx,o=ctx.createOscillator(),o2=ctx.createOscillator(),g=gn(ctx,0),fl=bq(ctx,'lowpass',380,.7);o.type='triangle';o.frequency.value=f;o2.frequency.value=f*.5;
-    o.connect(fl);o2.connect(gn(ctx,.6)).connect(fl);fl.connect(g).connect(G.bus);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.42*lv,t+.025);g.gain.setValueAtTime(.42*lv,t+dur*.7);g.gain.linearRampToValueAtTime(0,t+dur);o.start(t);o2.start(t);o.stop(t+dur+.05);o2.stop(t+dur+.05)};
+  /* kick: a deep body with a rounded knock above it, so laptop and phone speakers hear the beat; soft 6 ms front, never a slap */
+  const kick=(t,lv)=>{const ctx=A.ctx,o=ctx.createOscillator(),o2=ctx.createOscillator(),g=gn(ctx,0),g2=gn(ctx,0),f=bq(ctx,'lowpass',700,.6);
+    o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(52,t+.12);o2.type='triangle';o2.frequency.setValueAtTime(240,t);o2.frequency.exponentialRampToValueAtTime(120,t+.05);
+    env(g,t,.006,.95*lv,.11);env(g2,t,.006,.28*lv,.035);o.connect(f);o2.connect(g2).connect(f);f.connect(g).connect(G.bus);o.start(t);o2.start(t);o.stop(t+.8);o2.stop(t+.3)};
+  const tom=(t,lv,f0)=>{const ctx=A.ctx,o=ctx.createOscillator(),g=gn(ctx,0);o.type='triangle';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*.78,t+.3);env(g,t,.014,.55*lv,.16);o.connect(g).connect(G.bus);o.start(t);o.stop(t+1)};
+  /* bass: the note itself plus a soft octave above it (what small speakers can actually play), plucked short so it pulses */
+  const sub=(t,f,dur,lv)=>{const ctx=A.ctx,o=ctx.createOscillator(),o2=ctx.createOscillator(),g=gn(ctx,0),fl=bq(ctx,'lowpass',900,.7);o.type='triangle';o.frequency.value=f;o2.frequency.value=f*2;
+    o.connect(fl);o2.connect(gn(ctx,.32)).connect(fl);fl.connect(g).connect(G.bus);fl.frequency.setValueAtTime(900,t);fl.frequency.exponentialRampToValueAtTime(420,t+dur);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.4*lv,t+.012);g.gain.setTargetAtTime(.22*lv,t+.03,.12);g.gain.setTargetAtTime(0,t+dur*.85,.05);o.start(t);o2.start(t);o.stop(t+dur+.4);o2.stop(t+dur+.4)};
   const shk=(t,lv)=>{const ctx=A.ctx,s=ctx.createBufferSource(),g=gn(ctx,0),f=bq(ctx,'bandpass',4800,.8),l=bq(ctx,'lowpass',6500,.5);s.buffer=NB.white;env(g,t,.008,.16*lv,.025);s.connect(f).connect(l).connect(g).connect(G.bus);s.start(t,Math.random()*2,.2)};
   const stab=(t,root,lv,spb)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',1100,.9);f.connect(g);g.connect(G.bus);g.connect(G.eIn);
     [0,2,4].forEach((k,i)=>{const fr=deg(root+k,4);['sawtooth','triangle'].forEach((w,j)=>{const o=ctx.createOscillator();o.type=w;o.frequency.value=fr;o.detune.value=(j?7:-7)+i*2;o.connect(gn(ctx,j?.5:.25)).connect(f);o.start(t);o.stop(t+spb*2)})});
-    f.frequency.setValueAtTime(1400,t);f.frequency.exponentialRampToValueAtTime(500,t+spb*1.5);env(g,t,.012,.11*lv,spb*.5)};
+    f.frequency.setValueAtTime(1900,t);f.frequency.exponentialRampToValueAtTime(650,t+spb*1.2);env(g,t,.012,.15*lv,spb*.45)};
   const pad=(t,root,dur,lv)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',700,.5);f.connect(g).connect(G.bus);
     [0,2,4,7].forEach(k=>{const fr=deg(root+k,2);[-6,6].forEach(dt=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+dur+2)})});
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.07*lv,t+dur*.4);g.gain.linearRampToValueAtTime(0,t+dur+1.5)};
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.04*lv,t+dur*.35);g.gain.linearRampToValueAtTime(0,t+dur+.6)};
   /* the scheduler: looks 120 ms ahead every 30 ms, so every hit lands on its sample */
   const tick=()=>{if(!G.cur||!A.ctx)return;const ctx=A.ctx,P=G.cur[3],spb=60/bpm(),s16=spb/4;G.dl.delayTime.setTargetAtTime(spb*.75,ctx.currentTime,.3);
-    while(G.next<ctx.currentTime+.12){const st=G.step%16,t=Math.max(G.next,ctx.currentTime+.005),bar=Math.floor(G.step/16),root=P.prog[bar%P.prog.length],sw=st%2?s16*.08:0,tt=t+sw,lv=1;
+    if(G.next<ctx.currentTime-.25){G.next=ctx.currentTime+.02}/* fell far behind: pick up on time, never a burst */
+    const ahead=document.hidden?1.3:.12;
+    while(G.next<ctx.currentTime+ahead){const st=G.step%16,t=Math.max(G.next,ctx.currentTime+.005),bar=Math.floor(G.step/16),root=P.prog[bar%P.prog.length],sw=st%2?s16*.08:0,tt=t+sw,lv=1;
       if(st===0&&P.pad&&bar%P.pad===0)pad(tt,root,spb*4*P.pad,lv);
       (P.kick||[]).forEach(k=>{if(k===st&&!(bar%4===3&&st>8&&Math.random()<.4))kick(tt,lv)});
-      (P.tom||[]).forEach(([k,v])=>{if(k===st)tom(tt,v*(.85+Math.random()*.3),deg(root,1)*1.0)});
-      (P.sub||[]).forEach(([k,d],i)=>{if(k===st){const nx=(P.sub[i+1]||[16])[0];sub(tt,deg(root+d,1),Math.max(.12,(nx-k)*s16*.92),lv)}});
+      (P.tom||[]).forEach(([k,v])=>{if(k===st)tom(tt,v*(.85+Math.random()*.3),deg(root,2))});
+      (P.sub||[]).forEach(([k,d],i)=>{if(k===st){const nx=(P.sub[i+1]||[16])[0];sub(tt,deg(root+d,1),Math.max(.12,Math.min((nx-k)*s16*.92,spb*.85)),lv)}});
       (P.shk||[]).forEach(k=>{if(k===st&&Math.random()>.08)shk(tt,lv*(st%4===2?1:.7))});
       if(bar%2===1&&P.shk&&P.shk.length&&st===15&&Math.random()<.5)shk(tt+s16*.5,.6);
       (P.stab||[]).forEach(k=>{if(k===st&&!(bar%4===2&&Math.random()<.3))stab(tt,root,lv,spb)});
       G.step++;G.next+=s16}};
   const setLevel=()=>{if(G.bus&&A.ctx)G.bus.gain.setTargetAtTime(G.cur?G.level*GTRIM:0,A.ctx.currentTime,.4)};
-  const GTRIM=.36;/* set by measurement: a groove at the middle of its slider sits near 0.05 */
+  const GTRIM=.5;/* set by measurement (2026-11-27, after the voices moved up where speakers can play them): a groove at the middle of its slider sits near 0.05 */
   const play=id=>{if(!ctxOK())return say('enter first, then choose a groove');build();const g=GR.find(x=>x[0]===id);if(!g)return;G.cur=g;G.step=0;G.next=A.ctx.currentTime+.1;
     if(!G.iv)G.iv=setInterval(tick,30);setLevel();paint();say('groove · '+g[1]+' · '+Math.round(bpm())+' beats a minute'+(G.follow?' · following the beat':''))};
   const stop=()=>{G.cur=null;setLevel();clearInterval(G.iv);G.iv=null;paint()};
@@ -1429,4 +1436,12 @@ registerProcessor('bd-monad',M);`;
   $('#bReset')&&$('#bReset').addEventListener('click',()=>side.forEach(([k])=>set(k,false)));
   addEventListener('resize',place);if(window.ResizeObserver){const ro=new ResizeObserver(place);side.forEach(([,sel])=>{const sh=$(sel);if(sh)ro.observe(sh)})}
   setInterval(place,1500);setTimeout(place,300)}
+/* the Monad's glass reacts: the inverted hue turns faster with loudness, saturation and brightness rise with the sound,
+   and a small throb rides the beat. Thirty updates a second on one element; paused while the page is hidden. */
+{const m=$('#monad'),calm=matchMedia('(prefers-reduced-motion: reduce)').matches;let h=0,last=0,sm=0;if(m){const sw=document.createElement('div');sw.className='monSwirl';m.prepend(sw)}
+  const go=now=>{requestAnimationFrame(go);if(!m||document.hidden||now-last<33)return;const dt=Math.min(.1,(now-last)/1000);last=now;
+    const L=typeof lvl==='number'?lvl:0;sm+=(Math.min(.08,L)-sm)*Math.min(1,dt*5);const bt=S.beat||0,ph=bt>0&&bt<16&&!calm?Math.sin(now/1000*Math.PI*2*bt):0;
+    h=(h+dt*(calm?4:9+sm*1400))%360;m.style.setProperty('--mh',h.toFixed(1)+'deg');
+    m.style.setProperty('--ms',(2.6+sm*22+ph*.3).toFixed(2));m.style.setProperty('--mb',(.82+sm*2.5+ph*.04).toFixed(3));m.style.setProperty('--mr',(-h*1.7).toFixed(1)+'deg');m.style.setProperty('--mo',Math.min(.75,.2+sm*9).toFixed(3));m.style.setProperty('--mz',(1+ph*.035+sm*.6).toFixed(3))};
+  requestAnimationFrame(go)}
 
