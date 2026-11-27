@@ -641,6 +641,38 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bor
 /* the keys-mode button: plain lettering at the size of the voice button beside it */
 #keysBar .kmode{font-size:9px;letter-spacing:.14em;padding:5px 12px;min-height:26px;min-width:88px}
 @media (max-width:1000px),(pointer:coarse){#keysBar .kmode{font-size:11px;min-height:44px;min-width:96px}}
+
+/* the Monad as an instrument part: an engraved ring that turns slowly, a glass dome over the face, and a glow
+   under the glass that breathes with the beat. Held, the ring turns faster and the glow rises. */
+#monad{isolation:isolate;overflow:hidden}
+#monad>*{position:relative;z-index:2}
+#monad::before{content:"";position:absolute;inset:3px;border-radius:50%;z-index:1;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.55) 0 .6deg,transparent .6deg 6deg),repeating-conic-gradient(from 3deg,rgba(255,255,255,.18) 0 .3deg,transparent .3deg 3deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 60%,#000 61% 69%,transparent 70%);mask:radial-gradient(circle,transparent 0 60%,#000 61% 69%,transparent 70%);
+  animation:monTurn 120s linear infinite}
+#monad::after{inset:16px;border:1px solid color-mix(in srgb,var(--b,#f2455c) 55%,transparent);z-index:1;
+  background:radial-gradient(60% 45% at 34% 24%,rgba(255,255,255,.22),transparent 70%),radial-gradient(circle,color-mix(in srgb,var(--b,#f2455c) 32%,transparent) 0,transparent 68%);
+  box-shadow:inset 0 0 18px color-mix(in srgb,var(--b,#f2455c) 35%,transparent),0 0 0 1px rgba(0,0,0,.6);animation:monBreath var(--beatP,1.6s) ease-in-out infinite}
+#monad.rev::before{animation-duration:6s}
+#monad.rev::after{animation-duration:.5s;box-shadow:inset 0 0 34px color-mix(in srgb,var(--b,#f2455c) 70%,transparent),0 0 30px color-mix(in srgb,var(--b,#f2455c) 45%,transparent)}
+@keyframes monTurn{to{transform:rotate(360deg)}}
+@keyframes monBreath{0%,100%{opacity:.6}50%{opacity:1}}
+/* the stones as cut gems set in dark metal: a faceted stone that catches light, an edge lit in its colour, and a
+   slow glint across the face of the chosen one */
+.stone{background:radial-gradient(120% 90% at 50% 120%,color-mix(in srgb,var(--c) 14%,transparent),transparent 60%),linear-gradient(180deg,#2c2e33,#121316)}
+.stone::after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.45;pointer-events:none}
+.stone i{position:relative;opacity:.72;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.95) 0 9%,transparent 22%),
+  conic-gradient(from 20deg,color-mix(in srgb,var(--c) 70%,#fff),var(--c),color-mix(in srgb,var(--c) 45%,#000),var(--c),color-mix(in srgb,var(--c) 80%,#fff),color-mix(in srgb,var(--c) 40%,#000),color-mix(in srgb,var(--c) 70%,#fff));
+  box-shadow:0 0 0 1px #000,inset 0 -2px 3px rgba(0,0,0,.55),inset 0 1px 1px rgba(255,255,255,.4)}
+.stone:hover i{opacity:1;filter:brightness(1.15)}
+.stone::before{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);pointer-events:none;transform:skewX(-18deg)}
+.stone:hover::before{animation:stGlint 1.1s ease-out 1}
+.stone.on::before{animation:stGlint 7s ease-in-out infinite}
+.stone.on::after{opacity:1;height:2px;box-shadow:0 0 10px var(--c)}
+.stone.on i{animation:stGem 6s ease-in-out infinite}
+@keyframes stGlint{0%{left:-60%}60%,100%{left:130%}}
+@keyframes stGem{0%,100%{box-shadow:0 0 0 1px #000,0 0 10px var(--c)}50%{box-shadow:0 0 0 1px #000,0 0 22px var(--c),0 0 4px #fff}}
+@media (prefers-reduced-motion:reduce){#monad::before,#monad::after,.stone.on::before,.stone.on i,.stone:hover::before{animation:none}}
 </style>
 </head>
 <body>
@@ -1431,9 +1463,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127i"></script>
-<script src="env.js?v=1127i"></script>
-<script src="table.js?v=1127i"></script>
-<script src="luxuria.js?v=1127i"></script>
+<script src="bank.js?v=1127j"></script>
+<script src="env.js?v=1127j"></script>
+<script src="table.js?v=1127j"></script>
+<script src="luxuria.js?v=1127j"></script>
 </body>
 </html>

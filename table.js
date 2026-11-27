@@ -1295,3 +1295,6 @@ registerProcessor('bd-monad',M);`;
   const br=resetAll;resetAll=function(){if(G.cur)stop();return br.apply(this,arguments)};
   $('#bReset').onclick=()=>resetAll();
   window.GROOVE={play,stop,G,names:GR.map(g=>g[0])}}
+
+/* the Monad's glow breathes at the beat: one swell per beat, slowed by whole octaves until it is calm enough to watch */
+{const setP=()=>{let p=1/Math.max(.2,S.beat||1);while(p<.9)p*=2;document.documentElement.style.setProperty('--beatP',p.toFixed(3)+'s')};const ab=applyBeat;applyBeat=function(){const r=ab.apply(this,arguments);setP();return r};setP()}
