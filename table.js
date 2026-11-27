@@ -1403,7 +1403,7 @@ registerProcessor('bd-monad',M);`;
    visualizer, the four groups, and hide panels (so the way back is always in reach). */
 {const GROUPS=[
    ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
-   ['Sound','gSound','What plays: presets, the sound library, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
+   ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
    ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video.',['@slots','bSave','bShare','bLoad','bRec','bVid']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
@@ -1442,6 +1442,39 @@ registerProcessor('bd-monad',M);`;
   const go=now=>{requestAnimationFrame(go);if(!m||document.hidden||now-last<33)return;const dt=Math.min(.1,(now-last)/1000);last=now;
     const L=typeof lvl==='number'?lvl:0;sm+=(Math.min(.08,L)-sm)*Math.min(1,dt*5);const bt=S.beat||0,ph=bt>0&&bt<16&&!calm?Math.sin(now/1000*Math.PI*2*bt):0;
     h=(h+dt*(calm?4:9+sm*1400))%360;m.style.setProperty('--mh',h.toFixed(1)+'deg');
-    m.style.setProperty('--ms',(2.6+sm*22+ph*.3).toFixed(2));m.style.setProperty('--mb',(.82+sm*2.5+ph*.04).toFixed(3));m.style.setProperty('--mr',(-h*1.7).toFixed(1)+'deg');m.style.setProperty('--mo',Math.min(.75,.2+sm*9).toFixed(3));m.style.setProperty('--mz',(1+ph*.035+sm*.6).toFixed(3))};
+    m.style.setProperty('--ms',(1.5+sm*8+ph*.15).toFixed(2));m.style.setProperty('--mb',(.3+sm*1.4+ph*.025).toFixed(3));m.style.setProperty('--mr',(-h*1.7).toFixed(1)+'deg');m.style.setProperty('--mo',Math.min(.3,.07+sm*3.5).toFixed(3));m.style.setProperty('--mz',(1+ph*.035+sm*.6).toFixed(3))};
   requestAnimationFrame(go)}
+/* ================= THE DREAM SPELLS, as Ascension's Dream page =================
+   Ascension's four spells (the chords that play themselves, in the Dragon stone) gathered in one guided drawer:
+   1 the spell, 2 its level and how restless it is, 3 the engine's own shape, bloom, shimmer and width, 4 whether the spell
+   also sets the beat, the carrier and the keys' scale, as it does in Ascension. Ascension's automatic bells stay out. */
+{const SP=[['float','Float',6,136.1,'by state','Floating chords that drift from one to the next. Theta, 6 Hz.',{shape:1.3,bloom:.5,shimmer:.5,width:1}],
+    ['choir','Choir',7.83,128,'overtones','A choir breathing between vowels on the overtone series. Schumann, 7.83 Hz.',{shape:2.2,bloom:.62,shimmer:.78,width:1}],
+    ['rise','Rise',10,144,'timaeus',"Glass tones on Plato's scale with a tempo echo. Alpha, 10 Hz.",{shape:5.2,bloom:.72,shimmer:.62,width:1}],
+    ['deep','Deep',2,108,'hirajoshi','Dark, slow and wide. Delta, 2 Hz, the edge of sleep.',{shape:.4,bloom:.22,shimmer:.35,width:1}]];
+  const DL=[['shape',0,6,'Shape','The tone of the chords: soft and round at the bottom, glassy and rich at the top.'],['bloom',0,1,'Bloom','How slowly each chord swells in.'],
+    ['shimmer',0,1,'Shimmer','The octave shine above the chords.'],['width',0,2,'Width','How wide the chords spread across the two ears.']];
+  window.DOVR={};let lvl0=.5,drift=.5,sets=true;const id=i=>'e:dragon:'+i,cur=()=>SP.findIndex((x,i)=>id(i) in S.layers);
+  const send=()=>{(window.DENG||[]).forEach(nd=>{try{nd.port.postMessage({t:'setMany',v:DOVR})}catch(_){}})};
+  const d=document.createElement('div');d.className='jelly drawer';d.id='dreamSp';d.hidden=true;$('#loops').after(d);DR.push('dreamSp');
+  const b=document.createElement('button');b.className='pill';b.id='bDreamSp';b.textContent='dream spells';b.title="Ascension's four Dream spells: chords that play themselves";$('.rside').insertBefore(b,$('#bLoops'));
+  b.onclick=e=>{e.stopPropagation();paint();openDr('dreamSp')};
+  const cast=i=>{const was=cur();SP.forEach((x,j)=>{if(j!==i&&id(j) in S.layers)setLayer(id(j),null)});if(i<0){say('the Dream rests');paint();return}
+    const sp=SP[i];window.DOVR={};send();if(was!==i)setLayer(id(i),lvl0);
+    if(sets){S.beat=sp[2];S.fc=sp[3];const ti=TUN.findIndex(t=>t[0]===sp[4]);tun=ti<0?0:ti;paintDial();applyBeat();const vx=$('#vox');if(vx&&vx._sync)vx._sync()}
+    say('dream · '+sp[1]+' · '+sp[2]+' Hz'+(sets?' · beat, carrier and scale set':''));paint()};
+  const paint=()=>{const c=cur(),sp=SP[c<0?0:c],val=k=>k in DOVR?DOVR[k]:sp[6][k];
+    d.innerHTML='<button class="pill dclose">close</button><h3>Dream spells</h3><p class="vh">The chords that play themselves, from Black Dragon: Ascension. Pick a spell, then shape it.</p>'
+      +`<div class="kstep pick"><h5><i>1</i>Spell <em>${c<0?'resting':SP[c][1]}</em></h5><div class="vg">${SP.map((x,i)=>`<button class="vb dsp${i===c?' on':''}" data-s="${i}">${x[1]} · ${x[2]} Hz</button>`).join('')}<button class="vb dsp${c<0?' on':''}" data-s="-1">rest</button></div><p class="vh">${c<0?'No spell is playing. Pick one to start the Dream.':SP[c][5]}</p></div>`
+      +`<div class="kstep type"><h5><i>2</i>Level and drift</h5><label class="mrow"><span>level</span><input type="range" min="0" max="1" step=".01" value="${lvl0}" data-k="lvl" aria-label="Dream level"></label>`
+      +`<label class="mrow"><span>drift</span><input type="range" min="0" max="1" step=".01" value="${drift}" data-k="drift" aria-label="drift"></label><p class="vh">Drift is how restless the Dream is: to the left it holds each chord longer, to the right it moves on sooner.</p></div>`
+      +`<div class="kstep play"><h5><i>3</i>Sound</h5>${DL.map(([k,a,z,n])=>`<label class="mrow"><span>${n.toLowerCase()}</span><input type="range" min="${a}" max="${z}" step=".01" value="${val(k)}" data-k="${k}" aria-label="${n}"></label>`).join('')}<p class="vh">${DL.map(x=>x[4]).join(' ')} Picking a spell puts these back to its own.</p></div>`
+      +`<div class="kstep opts"><h5><i>4</i>Spell sets the board</h5><div class="vg"><button class="vb dset${sets?' on':''}" data-v="1">on</button><button class="vb dset${sets?'':' on'}" data-v="0">off</button></div><p class="vh">On: a spell also sets the beat, the carrier and the keys' scale, as in Ascension. Off: it only plays its chords over whatever you have.</p></div>`;
+    d.querySelector('.dclose').onclick=()=>{d.hidden=true}};
+  d.addEventListener('click',e=>{const x=e.target.closest('button');if(!x||x.classList.contains('dclose'))return;e.stopPropagation();
+    if(x.dataset.s!=null)cast(+x.dataset.s);else if(x.dataset.v!=null){sets=x.dataset.v==='1';paint();say(sets?'spells set the beat, carrier and scale':'spells only play their chords')}});
+  d.addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;const v=+e.target.value;
+    if(k==='lvl'){lvl0=v;const c=cur();if(c>=0)setLayer(id(c),v)}else if(k==='drift'){drift=v;window.DDRIFT=Math.pow(2,(.5-v)*2)}else{DOVR[k]=v;send()}});
+  const br=resetAll;resetAll=function(){window.DOVR={};window.DDRIFT=1;drift=.5;lvl0=.5;return br.apply(this,arguments)};
+  window.DREAMSP={cast,SP,get cur(){return cur()}}}
 

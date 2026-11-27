@@ -45,9 +45,11 @@ function prim(ctx,out,L,s){
       if(s.vib){const v=ctx.createOscillator(),vg=gn(ctx,f*.004);v.frequency.value=4.6+Math.random();v.connect(vg);vg.connect(o.frequency);vg.connect(o2.frequency);v.start(t);return{gg,os:[o,o2,v]}}
       return{gg,os:[o,o2]}};
     const free=(v,t)=>{v.gg.gain.cancelScheduledValues(t);v.gg.gain.setValueAtTime(v.gg.gain.value,t);v.gg.gain.linearRampToValueAtTime(0,t+s.rel);v.os.forEach(o=>o.stop(t+s.rel+.1))};
-    let eng=null,dead=false;if(s.fx&&typeof ASC!=='undefined')ASC.make(s.fx).then(nd=>{if(dead)return;eng=nd;const eg=gn(ctx,g0*(s.eg||1));nd.connect(eg).connect(out);L.src.push({stop(){try{nd.port.postMessage({t:'panic'});nd.disconnect()}catch(_){}}})}).catch(()=>{});
+    let eng=null,dead=false;if(s.fx&&typeof ASC!=='undefined')ASC.make(s.fx).then(nd=>{if(dead)return;eng=nd;const eg=gn(ctx,g0*(s.eg||1));nd.connect(eg).connect(out);
+      /* the Dream spells panel can turn this engine's dials while it plays */const DE=window.DENG||(window.DENG=new Set());DE.add(nd);if(window.DOVR&&Object.keys(DOVR).length)nd.port.postMessage({t:'setMany',v:DOVR});
+      L.src.push({stop(){DE.delete(nd);try{nd.port.postMessage({t:'panic'});nd.disconnect()}catch(_){}}})}).catch(()=>{});
     L.src.push({stop(){dead=true;live.forEach(v=>v.os.forEach(o=>{try{o.stop()}catch(_){}}));if(window.DREAM&&window.DREAM.L===L)window.DREAM=null}});
-    L.every(200,t=>{if(t<next)return;next=t+s.ev[0]+Math.random()*(s.ev[1]-s.ev[0]);live.forEach(v=>free(v,t));live=[];
+    L.every(200,t=>{if(t<next)return;next=t+(s.ev[0]+Math.random()*(s.ev[1]-s.ev[0]))*(window.DDRIFT||1);live.forEach(v=>free(v,t));live=[];
       if(eng){const ch=s.ch[ci++%s.ch.length];window.DREAM={ch,all:s.ch,ci:(ci-1)%s.ch.length,dg,n,L};eng.port.postMessage({t:'offPrefix',pre:'d'});
         ch.forEach((d,i)=>eng.port.postMessage({t:'on',id:'d'+ci+'_'+i,f:dg(d,1),v:.8*(1-i*.08),p:s.patch||'pad'}));eng.port.postMessage({t:'on',id:'d'+ci+'_b',f:dg(ch[0],.5),v:.8,p:'bass'});return}
       const ch=s.ch[ci++%s.ch.length],k=ch.length+1;window.DREAM={ch,all:s.ch,ci:(ci-1)%s.ch.length,dg,n,L};

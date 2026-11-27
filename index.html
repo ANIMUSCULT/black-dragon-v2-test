@@ -283,17 +283,17 @@ body.idle .hud{opacity:.07}
 #vox{position:fixed;right:22px;bottom:158px;width:min(600px,94vw);max-height:62vh;overflow:auto;z-index:9;padding:18px 20px 20px}
 #vox h4{font-family:var(--serif);font-style:italic;font-weight:600;font-size:19px;margin:14px 0 7px}
 #vox .vh{font-size:12.5px;opacity:.7}
-#vox .kstep{display:flex;flex-direction:column;gap:8px;border-radius:12px;padding:10px 12px 12px;margin:10px 0}
-#vox .kstep h5{margin:0;display:flex;align-items:center;gap:9px;font-family:var(--serif);font-weight:700;font-size:18px;line-height:1}
-#vox .kstep h5 i{flex:none;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--tech);font-size:11px;color:#0a0607;background:linear-gradient(180deg,#f1e9ef,#a9a2ab)}
-#vox .kstep h5 em{font-style:normal;font-family:var(--body);font-size:12px;font-weight:400;opacity:.65;margin-left:4px;text-transform:lowercase}
-#vox .kstep.type{border:1px dashed rgba(255,255,255,.28);background:rgba(255,255,255,.03)}
-#vox .kstep.pick{border:1px solid rgba(242,69,92,.4);background:rgba(0,0,0,.35)}
-#vox .kstep.pick h5 i{background:linear-gradient(180deg,#ff8494,#b8183a);color:#fff}
-#vox .kstep.play{border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25)}
-#vox .kstep .vh{margin:0}
-#vox .kstep.tune{border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25)}
-#vox .kstep.opts{border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.02)}
+:is(#vox,#dreamSp) .kstep{display:flex;flex-direction:column;gap:8px;border-radius:12px;padding:10px 12px 12px;margin:10px 0}
+:is(#vox,#dreamSp) .kstep h5{margin:0;display:flex;align-items:center;gap:9px;font-family:var(--serif);font-weight:700;font-size:18px;line-height:1}
+:is(#vox,#dreamSp) .kstep h5 i{flex:none;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--tech);font-size:11px;color:#0a0607;background:linear-gradient(180deg,#f1e9ef,#a9a2ab)}
+:is(#vox,#dreamSp) .kstep h5 em{font-style:normal;font-family:var(--body);font-size:12px;font-weight:400;opacity:.65;margin-left:4px;text-transform:lowercase}
+:is(#vox,#dreamSp) .kstep.type{border:1px dashed rgba(255,255,255,.28);background:rgba(255,255,255,.03)}
+:is(#vox,#dreamSp) .kstep.pick{border:1px solid rgba(242,69,92,.4);background:rgba(0,0,0,.35)}
+:is(#vox,#dreamSp) .kstep.pick h5 i{background:linear-gradient(180deg,#ff8494,#b8183a);color:#fff}
+:is(#vox,#dreamSp) .kstep.play{border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25)}
+:is(#vox,#dreamSp) .kstep .vh{margin:0}
+:is(#vox,#dreamSp) .kstep.tune{border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25)}
+:is(#vox,#dreamSp) .kstep.opts{border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.02)}
 #vox .orow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 #vox .orow .lab{width:58px;font-size:11px;opacity:.65}
 #vox .orow.dim{opacity:.4}
@@ -744,17 +744,16 @@ body.hideL #shellL,body.hideR #shellR{cursor:pointer}
 body.hideR #shellR{overflow:hidden!important}
 /* the Monad as clear glass that inverts whatever moves behind it: the hue keeps turning and the glass answers the sound and
    the beat (the values come from table.js). The numbers and the engraved ring invert against it too. */
-#monad{background:transparent!important;isolation:auto!important;border:1px solid rgba(255,255,255,.4)!important;
-  -webkit-backdrop-filter:invert(1) sepia(.75) saturate(var(--ms,3)) hue-rotate(var(--mh,0deg)) brightness(var(--mb,.9)) contrast(1.25);
-  backdrop-filter:invert(1) sepia(.75) saturate(var(--ms,3)) hue-rotate(var(--mh,0deg)) brightness(var(--mb,.9)) contrast(1.25)}
-/* the lettering, ticks and engraving go dark: the inverse of the rest of the page */
-#monad>span,#monad>b,#monad>i{color:rgba(12,6,14,.9)!important;text-shadow:0 0 6px rgba(255,255,255,.35)!important}
-#monad::before,#monad .monOrn{filter:invert(1)}
+/* dark and translucent (owner, 2026-11-27): the inverted picture shows only faintly through smoked glass */
+#monad{isolation:auto!important;border:1px solid rgba(255,255,255,.22)!important;background:radial-gradient(circle at 50% 40%,rgba(10,7,12,.38),rgba(0,0,0,.62) 72%)!important;
+  -webkit-backdrop-filter:invert(1) sepia(.5) saturate(var(--ms,1.6)) hue-rotate(var(--mh,0deg)) brightness(var(--mb,.34)) contrast(1.2) blur(1.5px);
+  backdrop-filter:invert(1) sepia(.5) saturate(var(--ms,1.6)) hue-rotate(var(--mh,0deg)) brightness(var(--mb,.34)) contrast(1.2) blur(1.5px)}
+#monad>span,#monad>b,#monad>i{color:rgba(240,234,240,.92)!important;text-shadow:0 0 10px rgba(0,0,0,.7)!important}
 /* inside the glass: soft colour bands that turn and rings that breathe with the beat, brighter as the sound rises */
-.monSwirl{position:absolute!important;inset:7%;border-radius:50%;z-index:1!important;pointer-events:none;opacity:var(--mo,.3);filter:blur(5px) saturate(1.4);
+.monSwirl{position:absolute!important;inset:7%;border-radius:50%;z-index:1!important;pointer-events:none;opacity:var(--mo,.08);filter:blur(7px) saturate(1.1);
   background:repeating-radial-gradient(circle,rgba(255,255,255,0) 0 9%,rgba(255,255,255,.35) 10.5%,rgba(255,255,255,0) 12%),
     conic-gradient(from var(--mr,0deg),#ff2d73,#ffb347,#4dffc3,#3a8bff,#b04dff,#ff2d73);
-  transform:scale(var(--mz,1));mix-blend-mode:multiply}
+  transform:scale(var(--mz,1));mix-blend-mode:screen}
 #monad::after{background:radial-gradient(60% 45% at 34% 24%,rgba(255,255,255,.18),transparent 70%)!important;box-shadow:inset 0 0 22px rgba(255,255,255,.14),0 0 0 1px rgba(255,255,255,.12)!important}
 /* recorded: a real place or thing, in plain silver */
 .tag.recorded{background:#d8d3dc;color:#111}
@@ -1591,9 +1590,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127t"></script>
-<script src="env.js?v=1127t"></script>
-<script src="table.js?v=1127t"></script>
-<script src="luxuria.js?v=1127t"></script>
+<script src="bank.js?v=1127u"></script>
+<script src="env.js?v=1127u"></script>
+<script src="table.js?v=1127u"></script>
+<script src="luxuria.js?v=1127u"></script>
 </body>
 </html>
