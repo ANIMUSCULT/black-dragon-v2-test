@@ -344,6 +344,18 @@ function applySession(d){
 $('#bSave').onclick=()=>save(new Blob([JSON.stringify(snapshot(),null,1)],{type:'application/json'}),'black-dragon-'+stamp()+'.dragon');
 function readSession(f){f.text().then(t=>{applySession(JSON.parse(t));say('session loaded')}).catch(()=>say('that file is not a black dragon session. choose a .dragon file'))}
 $('#fLoad').onchange=e=>{if(e.target.files[0])readSession(e.target.files[0]);e.target.value=''};
+/* share the board by link: the whole board (state, beat, carrier, stone and its sounds, mix, voice, visualizer) packed
+   and compressed into the address after the #. Nothing is sent anywhere; the link carries it all. */
+{const b64=b=>{let t='';for(let i=0;i<b.length;i++)t+=String.fromCharCode(b[i]);return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')},
+    unb64=t=>Uint8Array.from(atob(t.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)),
+    pipe=async(bytes,T)=>new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(T)).arrayBuffer());
+  const pack=async o=>{const raw=new TextEncoder().encode(JSON.stringify(o));return window.CompressionStream?'z'+b64(await pipe(raw,new CompressionStream('deflate-raw'))):'j'+b64(raw)};
+  const unpack=async t=>{const raw=unb64(t.slice(1));return JSON.parse(new TextDecoder().decode(t[0]==='z'?await pipe(raw,new DecompressionStream('deflate-raw')):raw))};
+  const btn=document.createElement('button');btn.className='pill';btn.id='bShare';btn.textContent='share link';
+  btn.title='Copy a link that opens this exact board: state, beat, carrier, stone, mix, voice and visualizer';$('#bSave').after(btn);
+  btn.onclick=async e=>{e.stopPropagation();const o=snapshot();delete o.saved;o.film=film;const url=location.href.split('#')[0]+'#b='+await pack(o);history.replaceState(null,'',url);
+    try{await navigator.clipboard.writeText(url);say('link copied · it opens this board as it is now')}catch(_){say('the link is in the address bar · copy it from there')}};
+  if(location.hash.startsWith('#b='))unpack(location.hash.slice(3)).then(d=>{applySession(d);if(Number.isInteger(d.film)&&FILMS[d.film])window.SHAREFILM=d.film;say('board opened from a link')}).catch(()=>say('that link could not be read'))}
 let SLOTS=[null,null,null];try{const v=JSON.parse(localStorage.getItem('bd2-slots'));if(Array.isArray(v))SLOTS=[0,1,2].map(i=>v[i]||null)}catch(_){}
 {const acts=$('.acts'),names=['I','II','III'];
   names.slice().reverse().forEach(nm=>{const i=names.indexOf(nm),b=document.createElement('button');b.className='pill slot';b.textContent=nm;b.title='Save slot '+nm+'. Press an empty slot to store the whole board; press a lit one to return to it; hold to store over it.';acts.insertBefore(b,acts.firstChild);
@@ -577,7 +589,7 @@ applyMix();document.addEventListener('pointerdown',()=>setTimeout(applyMix,400),
   place();addEventListener('resize',place);setTimeout(place,400);setTimeout(place,1500);
   if(!A.ctx){$('#veil').play().catch(()=>{});const order=[1,2,3,0,5,2],t0=performance.now();window.VMODE=order[0];
     let lastSwap=performance.now();
-    const demo=setInterval(()=>{if(A.ctx){clearInterval(demo);window.GATEBOX=null;window.VMODE=null;window.REVV=0;hintVis();RS_GRACE=performance.now()+12000;/* the instrument opens on the serpent, its signature, whatever the walk was showing */if(film!==0&&!($('#bOwn')&&$('#bOwn').classList.contains('on')))setFilm(0);return}
+    const demo=setInterval(()=>{if(A.ctx){clearInterval(demo);window.GATEBOX=null;window.VMODE=null;window.REVV=0;hintVis();RS_GRACE=performance.now()+12000;/* the instrument opens on the serpent, its signature, whatever the walk was showing */const sf=window.SHAREFILM;if(sf!=null){window.SHAREFILM=null;setFilm(sf)}else if(film!==0&&!($('#bOwn')&&$('#bOwn').classList.contains('on')))setFilm(0);return}
       /* walk through the visualizers too: a new one every four seconds, once the current one is actually playing */
       const v=$('#veil');if(performance.now()-lastSwap>4000&&v.readyState>=2&&!document.hidden){lastSwap=performance.now();setFilm(film+1)}
       const t=(performance.now()-t0)/1000,ph=(t%7)/7;window.VMODE=order[Math.floor(t/7)%order.length];window.REVV=ph>.8?Math.max(0,1-Math.abs(ph-.9)/.1)*.75:.12+.1*Math.sin(t*.5)},60)}}
@@ -1348,7 +1360,7 @@ registerProcessor('bd-monad',M);`;
    ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
    ['Sound','gSound','What plays: presets, the sound library, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
    ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
-   ['Session','gSession','Keep what you made: three quick slots, save and load a session, record sound or video.',['@slots','bSave','bLoad','bRec','bVid']]];
+   ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video.',['@slots','bSave','bShare','bLoad','bRec','bVid']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
     const row=document.createElement('div');row.className='grpRow';
     GROUPS.forEach(([name,id,line,ids])=>{

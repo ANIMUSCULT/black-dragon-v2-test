@@ -92,8 +92,8 @@ const G={
     const t0=ctx.currentTime;L.every(50,t=>{const ph=(t-t0)*.035;os.forEach(({o,g},k)=>{const pos=((k+ph)%N+N)%N;o.frequency.setTargetAtTime(32*Math.pow(2,pos),t,.03);g.gain.setTargetAtTime(.5*Math.exp(-Math.pow(pos-N/2,2)/2.4),t,.05)})})}
 };
 
-/* ---------- the bank. tag: measured, studied or tradition ---------- */
-const TR='tradition',ST='studied',ME='measured';
+/* ---------- the bank. tag: measured, studied, tradition or recorded ---------- */
+const TR='tradition',ST='studied',ME='measured',RC='recorded';
 const SOLF=[[174,'the lowest of the set, said to ease pain'],[285,'said to mend tissue'],[396,'said to release fear and guilt'],[417,'said to clear the past and ease change'],[528,'called the love tone or repair tone'],
   [639,'said to open connection with others'],[741,'said to cleanse and free expression'],[852,'said to wake intuition'],[963,'called the crown tone']];
 const PLAN=[['Sun',126.22],['Earth day',194.18],['Earth year',136.1],['Moon',210.42],['Mercury',141.27],['Venus',221.23],['Mars',144.72],['Jupiter',183.58],['Saturn',147.85]];
@@ -105,7 +105,7 @@ const BANK=[
  {id:'brown',n:'brown noise',cat:'coloured noise',tag:ME,gen:G.noise('brown'),info:'Energy falls 6 dB with each octave. Deep and soft, like a distant waterfall. A favourite for sleep and focus.'},
  {id:'blue',n:'blue noise',cat:'coloured noise',tag:ME,lvl:0.7,gen:G.noise('blue'),info:'Energy rises 3 dB with each octave. Bright and airy.'},
  {id:'violet',n:'violet noise',cat:'coloured noise',tag:ME,lvl:0.8,gen:G.noise('violet'),info:'Energy rises 6 dB with each octave. The thinnest, highest hiss. Sometimes used to mask ringing in the ears.'},
- {id:'green',n:'green noise',cat:'coloured noise',tag:ME,gen:G.noise('pink',['bandpass',500,.7]),lvl:1.6,info:'Noise gathered around 500 Hz, the middle of the hearing range. An informal name; it sounds like open country.'},
+ {id:'green',n:'green noise',cat:'coloured noise',tag:'',gen:G.noise('pink',['bandpass',500,.7]),lvl:1.6,info:'Noise gathered around 500 Hz, the middle of the hearing range. An informal name; it sounds like open country.'},
  /* elements */
  {id:'rain',n:'rain',cat:'elements',tag:'',lvl:2,gen:G.rain,info:'Water. A steady fall with single drops landing around you.'},
  {id:'ocean',n:'ocean',cat:'elements',tag:'',lvl:1.6,gen:G.ocean,info:'Water. A wave about every twelve seconds, close to a slow breath.'},
@@ -335,8 +335,8 @@ function buildPresets(){
 function buildCodex(){
   const tg=t=>t?`<span class="tag ${t}">${t}</span>`:'';
   $('#codex').innerHTML=`<h3>Codex</h3>
-  <p>Every number on this instrument is exact and can be checked with any tuner or analyser. What has been measured or studied carries a mark.</p>
-  <p>${tg(ME)} A physical fact about the sound.<br>${tg(ST)} Explored in published research.</p>
+  <p>Every number on this instrument is exact and can be checked with any tuner or analyser. What has been measured, studied or recorded carries a mark.</p>
+  <p>${tg(ME)} A physical fact about the sound.<br>${tg(ST)} Explored in published research.<br>${tg(RC)} A recording of a real place or thing.</p>
   <h4>How the beat works</h4>
   <p><b>Binaural.</b> One tone in each ear, a few hertz apart. The beat is made inside the head, so it needs headphones. It only works with tones under about 1,000 Hz.</p>
   <p><b>Monaural.</b> Both tones in both ears. The beat is in the air and drives the brain harder in EEG studies.</p>

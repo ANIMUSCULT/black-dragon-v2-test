@@ -710,6 +710,14 @@ body.cymIn #monad>span,body.cymIn #monad>b,body.cymIn #monad>i{opacity:0}
 #cymBar.dock{position:static;transform:none;flex-wrap:wrap;white-space:normal;justify-content:flex-start;max-width:none;margin:0 0 10px;padding:6px;gap:4px;z-index:auto}
 #cymBar.dock #cymRead{flex-basis:100%;max-width:none;margin:0 0 2px}
 body.cymIn .cymGo,body.cymIn #pads .cymH{display:none}
+#pstrip{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto 20px;gap:3px;margin:4px 0 5px;font-variant-numeric:tabular-nums}
+#pstrip span{display:flex;flex-direction:column;gap:1px;min-width:0;padding:2px 4px;border-radius:5px;background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+#pstrip i{font-style:normal;font-size:6.5px;letter-spacing:.14em;line-height:1.1;text-transform:uppercase;opacity:.6}
+#pstrip b{font-weight:500;font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+#pstrip .lock{align-items:center}#pstrip .lock b{width:9px;height:9px;border-radius:50%;margin-top:2px;background:#3a2a2e;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+#pstrip .lock.ok b{background:#5fe08a;box-shadow:0 0 8px #5fe08a,inset 0 1px 1px rgba(255,255,255,.6)}
+/* recorded: a real place or thing, in plain silver */
+.tag.recorded{background:#d8d3dc;color:#111}
 #pads .cymGo{margin-top:8px;width:100%;padding:10px 12px;font-size:11px;letter-spacing:.18em}
 </style>
 </head>
@@ -807,6 +815,7 @@ body.cymIn .cymGo,body.cymIn #pads .cymH{display:none}
       <dt id="lR">right ear</dt><dd id="mR">–</dd><span>Hz</span>
       <dt id="lD">difference</dt><dd id="mD">–</dd><span>Hz</span>
     </dl>
+    <div id="pstrip"><span><i>beat</i><b id="psB">–</b></span><span><i>carrier</i><b id="psC">–</b></span><span><i>band</i><b id="psN">–</b></span><span><i>state</i><b id="psS">–</b></span><span><i>square</i><b id="psQ">–</b></span><span class="lock" id="psL"><i>lock</i><b></b></span></div>
     <dl id="tonesOut"></dl>
     <canvas id="spec" width="560" height="184"></canvas>
     <div class="seg" id="modes">
@@ -1279,7 +1288,7 @@ function paintKnobs(){KN.forEach(([k])=>knobEls[k]._set(S[k]))}
 
 /* ---------- buttons ---------- */
 function setVoice(i){S.voice=(i+VOX.length)%VOX.length;$('#bVoice').textContent='keys: '+VOICES[S.voice];$$('.vb').forEach((b,j)=>b.classList.toggle('on',j===S.voice))}
-function buildVox(){const el=$('#vox');let fam='',h='';VOX.forEach((v,i)=>{if(v.fam!==fam){if(fam)h+='</div>';fam=v.fam;h+=`<h4>${fam}</h4><div class="vg">`}h+=`<button class="vb" data-i="${i}">${v.n}</button>`});
+function buildVox(){const el=$('#vox');let fam='',h='';VOX.forEach((v,i)=>{if(v.fam!==fam){if(fam)h+='</div>';fam=v.fam;h+=`<h4>${({'ascension':'ascension · voices','ascension realms':'ascension · realms'})[fam]||fam}</h4><div class="vg">`}h+=`<button class="vb" data-i="${i}">${v.n}</button>`});
   el.innerHTML='<p class="vh">'+VOX.length+' voices for the keyboard. Pick one, then play. The arrows beside the Keys button, or the [ and ] keys, step through them.</p>'+h+'</div>';el.onclick=e=>{const b=e.target.closest('.vb');if(b)setVoice(+b.dataset.i)};setVoice(S.voice)}
 $('#bVoice').onclick=e=>{e.stopPropagation();$('#vox').hidden=!$('#vox').hidden};
 
@@ -1332,19 +1341,26 @@ function envBeat(){
   if(m<1e-4||(hi-lo)<m*.2||(e[e.length-1][0]-e[0][0])/(e.length-1)*S.beat*5>1)return null;const arm=m-(hi-lo)*.15,c=[];let armed=false;
   for(let i=1;i<e.length;i++){const a=e[i-1],b=e[i];if(b[1]<arm)armed=true;else if(armed&&a[1]<m&&b[1]>=m){c.push(a[0]+(b[0]-a[0])*(m-a[1])/(b[1]-a[1]));armed=false}}
   return c.length<3?null:(c.length-1)/(c[c.length-1]-c[0])}
-let proofN=0;
+let proofN=0,PRM=null;
+/* the strip under the readings: what is set, in five fixed slots, and a light that turns green when the measured beat
+   sits within 0.05 Hz of the beat that is set */
+function paintStrip(){const q=id=>document.getElementById(id);if(!q('psB'))return;const st=STATES[S.state];
+  q('psB').textContent=S.beat.toFixed(2);q('psC').textContent=(+S.fc).toFixed(1);q('psN').textContent=(q('bandN')||{}).textContent||'–';
+  q('psS').textContent=st?st.name:'–';const mt=(q('monadT')||{}).textContent||'';q('psQ').textContent=mt.split('·').slice(1).join('·').trim()||'–';
+  const ok=PRM!=null&&Math.abs(PRM-S.beat)<=.05;q('psL').classList.toggle('ok',ok);q('psL').title=ok?'measured beat matches the set beat':'measured beat not yet within 0.05 Hz';}
 function proof(){
   if(!A.ctx)return;const nowP=performance.now();if(nowP-proofN<(MOBILE?330:120))return;proofN=nowP;
   A.anL.getFloatFrequencyData(A.bufL);A.anR.getFloatFrequencyData(A.bufR);A.anM.getFloatFrequencyData(A.bufM);
   {bankProof();
     const lab=(a,b,c)=>{$('#lL').textContent=a;$('#lR').textContent=b;$('#lD').textContent=c},f=v=>v?v.toFixed(1):'–';
-    if(S.mode==='binaural'){const l=peak(A.bufL,S.fc,S.beat/2+1.5),r=peak(A.bufR,S.fc+S.beat,S.beat/2+1.5);lab('left ear','right ear','difference');
+    if(S.mode==='binaural'){const l=peak(A.bufL,S.fc,S.beat/2+1.5),r=peak(A.bufR,S.fc+S.beat,S.beat/2+1.5);lab('left ear','right ear','difference');PRM=l&&r?r-l:null;
       $('#mL').textContent=f(l);$('#mR').textContent=f(r);$('#mD').textContent=l&&r?(r-l).toFixed(1):'–'}
-    else if(S.mode==='monaural'){if(S.beat>=5){const sp=Math.min(S.beat/2-1,8),l=peak(A.bufL,S.fc,sp),r=peak(A.bufL,S.fc+S.beat,sp);lab('tone one','tone two','beat');
+    else if(S.mode==='monaural'){if(S.beat>=5){const sp=Math.min(S.beat/2-1,8),l=peak(A.bufL,S.fc,sp),r=peak(A.bufL,S.fc+S.beat,sp);lab('tone one','tone two','beat');PRM=l&&r?r-l:null;
         $('#mL').textContent=f(l);$('#mR').textContent=f(r);$('#mD').textContent=l&&r?(r-l).toFixed(1):'–'}
-      else{const b=envBeat();lab('tones, merged','beat, set','beat, measured');$('#mL').textContent=f(peak(A.bufL,S.fc+S.beat/2,6));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent=b?b.toFixed(2):'–'}}
-    else{const b=S.beat<5?envBeat():null;lab('carrier',S.beat<5?'pulse, set':'pulse, as set',S.beat<5?'pulse, measured':'');$('#mL').textContent=f(peak(A.bufL,S.fc,2.5));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent=b?b.toFixed(2):'–'}
+      else{const b=envBeat();PRM=b;lab('tones, merged','beat, set','beat, measured');$('#mL').textContent=f(peak(A.bufL,S.fc+S.beat/2,6));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent=b?b.toFixed(2):'–'}}
+    else{const b=S.beat<5?envBeat():null;PRM=b;lab('carrier',S.beat<5?'pulse, set':'pulse, as set',S.beat<5?'pulse, measured':'');$('#mL').textContent=f(peak(A.bufL,S.fc,2.5));$('#mR').textContent=S.beat.toFixed(2);$('#mD').textContent=b?b.toFixed(2):'–'}
   }
+  paintStrip();
   if(window.PEARL)return;
   const W=spec.width,H=spec.height,hz=A.ctx.sampleRate/A.anL.fftSize,f1=20,f2=1200;sx.clearRect(0,0,W,H);
   const draw=(buf,col)=>{sx.beginPath();for(let x=0;x<W;x++){const f=f1*Math.pow(f2/f1,x/W),v=buf[Math.round(f/hz)],y=H-clamp((v+100)/80,0,1)*H;x?sx.lineTo(x,y):sx.moveTo(x,y)}sx.strokeStyle=col;sx.lineWidth=2;sx.stroke()};
@@ -1512,9 +1528,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127n"></script>
-<script src="env.js?v=1127n"></script>
-<script src="table.js?v=1127n"></script>
-<script src="luxuria.js?v=1127n"></script>
+<script src="bank.js?v=1127o"></script>
+<script src="env.js?v=1127o"></script>
+<script src="table.js?v=1127o"></script>
+<script src="luxuria.js?v=1127o"></script>
 </body>
 </html>
