@@ -705,7 +705,7 @@ const PH={};
     const step=()=>{const now=performance.now(),dt=Math.min(.2,(now-last)/1000);last=now;a+=dt*Math.PI*2/14;pos(Math.sin(a)*1.6,Math.sin(a*.5)*.35,-Math.cos(a)*1.6)};
     step();out.gain.setTargetAtTime(1.4,ctx.currentTime,.8);PH.orbit={src:[src,lf],out,iv:setInterval(step,40)};st('orbit','circling · one lap every fourteen seconds')};
   /* the nave of York Minster: a send from the whole board into the measured nave, returned before the ceiling */
-  let IRB=null,IRP=null;const loadIR=()=>IRP||(IRP=fetch('media/audio/york-minster.wav').then(r=>r.arrayBuffer()).then(a=>A.ctx.decodeAudioData(a)).then(b=>IRB=b));
+  let IRB=null,IRP=null;const loadIR=()=>IRP||(IRP=audioFetch('audio/york-minster.wav').then(r=>r.arrayBuffer()).then(a=>A.ctx.decodeAudioData(a)).then(b=>IRB=b));
   const minster=()=>{const ctx=A.ctx,wet=gn(ctx,0),cv=ctx.createConvolver(),p={src:[],out:wet,end:()=>{try{A.master.disconnect(cv)}catch(_){}}};PH.minster=p;st('minster','opening the doors');
     loadIR().then(buf=>{if(PH.minster!==p)return;cv.buffer=buf;A.master.connect(cv);cv.connect(wet).connect(A.limTrim);wet.gain.setTargetAtTime(MINSTER_WET,ctx.currentTime,1.2);st('minster','the board rings in the nave')})
       .catch(()=>{if(PH.minster===p){delete PH.minster;paint()}st('minster','the nave would not open on this device')})};
@@ -929,7 +929,7 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
   const applyHaze=()=>{if(!L.g)return;const G=L.g,t=A.ctx.currentTime,h=L.haze;G.lp.frequency.setTargetAtTime(18000*Math.pow(420/18000,Math.pow(h,.8)),t,.08);
     G.cmp.threshold.setTargetAtTime(-6-30*h,t,.08);G.cmp.ratio.setTargetAtTime(1+11*h,t,.08);G.dry.gain.setTargetAtTime(1-.15*h+.35*h*h,t,.08);G.send.gain.setTargetAtTime(h*.5,t,.08);G.wet.gain.setTargetAtTime(.3+.3*h,t,.08)};
   const applyLevel=()=>{if(!L.g||!L.cur)return;L.g.bus.gain.setTargetAtTime(L.level*2*(.072/L.cur.rms),A.ctx.currentTime,.1)};
-  const load=id=>{if(L.buf.has(id))return Promise.resolve(L.buf.get(id));return fetch('media/audio/loops/'+id+'.'+((LPA.find(r=>r[0]===id)||[])[5]||'mp3')).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>A.ctx.decodeAudioData(a))
+  const load=id=>{if(L.buf.has(id))return Promise.resolve(L.buf.get(id));return audioFetch('audio/loops/'+id+'.'+((LPA.find(r=>r[0]===id)||[])[5]||'mp3')).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>A.ctx.decodeAudioData(a))
     .then(x=>{/* a 25 ms fade in and a quarter-second fade out, in memory only, so the wrap from the end to the top never clicks */
       for(let c=0;c<x.numberOfChannels;c++){const ch=x.getChannelData(c),fi=Math.round(x.sampleRate*.025),fo=Math.round(x.sampleRate*.25),n=ch.length;for(let i=0;i<fi&&i<n;i++)ch[i]*=i/fi;for(let i=0;i<fo&&i<n;i++)ch[n-1-i]*=i/fo}
       L.buf.set(id,x);while(L.buf.size>2){const k=[...L.buf.keys()].find(k=>k!==id&&(!L.cur||k!==L.cur.id));if(!k)break;L.buf.delete(k)}return x})};

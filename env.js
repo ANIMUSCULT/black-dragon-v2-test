@@ -255,7 +255,7 @@ const ENVS=[
 const REAL={'e:animal:0':['purr',1],'e:animal:3':['wolf',0],'e:breath:1':['breath',1],'e:wet:1':['rain',1],'e:heat:1':['fire',1],'e:underworld:0':['cave',1],'e:celestial:0':['choir',1]};
 const RLV={'e:animal:3':.4,'e:breath:1':.45,'e:celestial:0':1.4,'e:heat:1':3,'e:underworld:0':1.3,'e:wet:1':3};
 const SB={};
-function loadS(ctx,name){return SB[name]||(SB[name]=fetch('media/audio/'+name+'.mp3').then(r=>{if(!r.ok)throw new Error('missing');return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>ctx.decodeAudioData(b,ok,no))))}
+function loadS(ctx,name){return SB[name]||(SB[name]=audioFetch('audio/'+name+'.mp3').then(r=>{if(!r.ok)throw new Error('missing');return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>ctx.decodeAudioData(b,ok,no))))}
 G.sample=(name,loop,fallback)=>(ctx,out,L)=>{let dead=false;L.src.push({stop(){dead=true}});
   loadS(ctx,name).then(buf=>{if(dead)return;const play=t=>{const s=ctx.createBufferSource();s.buffer=buf;if(loop){s.loop=true;s.loopStart=.04;s.loopEnd=buf.duration-.07}s.connect(out);s.start(t||0);L.src.push(s)};
     if(loop)play();else{let next=0;L.every(500,t=>{if(t<next)return;next=t+buf.duration+5+Math.random()*9;play(t)})}})

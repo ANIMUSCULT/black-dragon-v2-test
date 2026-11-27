@@ -907,6 +907,9 @@ $('#gateVid').src='media/gate-serpent.mp4';setFilm(0);
 $('#bFilm').onclick=()=>{nextFilm();$('#veil').play().catch(()=>{})};
 
 /* ---------- audio ---------- */
+/* audio lives in its own repository (black-dragon-v2-media), so this one stays small; the site's own copy is the fallback */
+const MEDIA='https://animuscult.github.io/black-dragon-v2-media/';
+function audioFetch(p){return fetch(MEDIA+p).then(r=>{if(!r.ok)throw new Error(r.status);return r}).catch(()=>fetch('media/'+p))}
 const A={};
 function initAudio(){
   const ctx=A.ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:MOBILE?.045:'interactive'}),sr=ctx.sampleRate;
@@ -948,7 +951,7 @@ function initAudio(){
       for(let e=0;e<R.er[0];e++){const at=pd+((.004+Math.random()*R.er[1])*sr|0);if(at<n)d[at]+=(Math.random()<.5?-1:1)*(.8-e*.6/R.er[0])*(c?.9:1)}}
     return ir};
   const irCache={};
-  const loadRoom=id=>irCache[id]||(irCache[id]=ROOMS[id].file?fetch(ROOMS[id].file).then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)):Promise.resolve(makeIR(ROOMS[id])));
+  const loadRoom=id=>irCache[id]||(irCache[id]=ROOMS[id].file?audioFetch(ROOMS[id].file.replace(/^media\//,'')).then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)):Promise.resolve(makeIR(ROOMS[id])));
   A.setRoom=id=>{if(!ROOMS[id])id='hall';return loadRoom(id).then(buf=>{const cv=ctx.createConvolver(),g=ctx.createGain(),t=ctx.currentTime;cv.buffer=buf;g.gain.value=0;
       A.verb.connect(cv);cv.connect(g).connect(A.wet);g.gain.setTargetAtTime(1,t,.25);const old=A.room;A.room={id,cv,g};
       if(old){old.g.gain.setTargetAtTime(0,t,.25);setTimeout(()=>{try{A.verb.disconnect(old.cv)}catch(_){}try{old.g.disconnect()}catch(_){}},1800)}return id})
@@ -1387,9 +1390,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1127d"></script>
-<script src="env.js?v=1127d"></script>
-<script src="table.js?v=1127d"></script>
-<script src="luxuria.js?v=1127d"></script>
+<script src="bank.js?v=1127e"></script>
+<script src="env.js?v=1127e"></script>
+<script src="table.js?v=1127e"></script>
+<script src="luxuria.js?v=1127e"></script>
 </body>
 </html>
