@@ -627,16 +627,54 @@ if(/[?&]diag\b/.test(location.search)){
   @keyframes umbraPulse{0%,100%{transform:scale(.6);opacity:.35}50%{transform:scale(1.15);opacity:.9}}
   @media (prefers-reduced-motion:reduce){.umbraBtn::before{animation:none}}`;document.head.appendChild(st);
  const umbIsOn=()=>'umbra' in S.layers;
+ /* the Umbra journey: a love hypnosis in Umbra's own tone, about fourteen minutes. A countdown in from ten, sinking into
+    being held, drawing closer, a sensual rise and crest in the middle, an afterglow, and a count back up from one to five.
+    Umbra itself never changes; the beat glides, the Lust stone's sounds and the Monad's voice rise and fall around it.
+    When the journey ends, Umbra keeps playing until it is released. */
+ const UJ={on:false,t0:0,iv:null,ti:0,added:new Set(),word:-1,mon:false};
+ const WORDS=[[4,'Ten','let your eyes soften'],[9,'Nine','breathe out, slowly'],[14,'Eight','heavier now'],[19,'Seven','warmth beneath you'],[24,'Six','deeper'],
+   [29,'Five','nothing to hold up'],[34,'Four','sinking, softly'],[39,'Three','let go'],[44,'Two','almost'],[49,'One','held'],[55,'You are held',''],
+   [95,'Nothing to do','only be here'],[145,'Warm darkness','all around you'],[190,'Someone is close','you can feel them near'],
+   [232,'Closer','breath on breath'],[282,'Skin, warm','everywhere it is touched'],[330,'Slower','and deeper still'],
+   [378,'Let it rise','the heat in you'],[422,'Warmer','follow it down'],[466,'The pulse in you','beating with mine'],[510,'Give in to it','all of it'],[552,'Yes',''],
+   [602,'Melt','soft now'],[662,'Still held','always held'],[722,'Rest here','as long as you like'],
+   [790,'Coming back, slowly','bring the warmth with you'],[800,'One',''],[805,'Two',''],[810,'Three',''],[815,'Four',''],[820,'Five','open your eyes when you are ready']];
+ const BEAT=[[0,1.4],[55,.9],[210,.9],[360,1.4],[540,2.6],[600,3.2],[780,.7],[830,.9]];
+ /* [time, sound, level, seconds to fade]: level 0 lets the sound go */
+ const CUES=[[210,'e:lust:1',.32,14],[215,'e:lust:3',.28,18],[360,'e:lust:0',.4,16],[372,'e:lust:8',.34,20],[420,'e:lust:7',.3,20],[460,'e:lust:9',.28,24],
+   [596,'e:lust:9',0,10],[598,'e:lust:7',0,12],[600,'e:lust:8',0,14],[602,'e:lust:0',0,16],[606,'e:lust:11',.34,20],[640,'e:lust:1',0,24],
+   [780,'e:lust:11',0,30],[790,'e:lust:3',0,30]];
+ const lvlTo=(id,lv,secs)=>{if(!A.ctx)return;const L=act[id];if(lv>0){if(!L){setLayer(id,.001);UJ.added.add(id)}S.layers[id]=lv;const L2=act[id];if(L2)L2.g.gain.setTargetAtTime(lv*lyrLvl(id),A.ctx.currentTime,secs/3)}
+   else if(L){L.g.gain.setTargetAtTime(0,A.ctx.currentTime,secs/4);setTimeout(()=>{if(UJ.added.has(id)){setLayer(id,null);UJ.added.delete(id)}},secs*1000)}};
+ const beatAt=s=>{for(let i=1;i<BEAT.length;i++){const [t1,b1]=BEAT[i],[t0,b0]=BEAT[i-1];if(s<=t1){const f=(s-t0)/(t1-t0);return b0*Math.pow(b1/b0,f)}}return BEAT[BEAT.length-1][1]};
+ const ujTick=()=>{if(!UJ.on)return;const s=(performance.now()-UJ.t0)/1000;
+   S.beat=+beatAt(s).toFixed(3);if(typeof applyBeat==='function')applyBeat();paintDial();
+   while(UJ.ti<CUES.length&&CUES[UJ.ti][0]<=s){const [,id,lv,sec]=CUES[UJ.ti++];lvlTo(id,lv,sec)}
+   let w=-1;for(let i=0;i<WORDS.length;i++)if(WORDS[i][0]<=s)w=i;
+   if(w!==UJ.word){UJ.word=w;if(w>=0){const [,big,hint]=WORDS[w];showHud(true);hudSet(big,hint,'')}}
+   if(w>=0&&s-WORDS[w][0]>10&&w<WORDS.length-1)hudSet('','','');
+   /* the crest: the Monad's voice climbs under everything for twenty seconds, then sinks */
+   if(!UJ.mon&&s>=540&&s<560){UJ.mon=true;try{monadStart()}catch(_){}}
+   if(UJ.mon&&s>=560){UJ.mon=false;try{monadStop()}catch(_){}}
+   window.REVV=s>520&&s<600?Math.max(window.REVV||0,.35*Math.sin(Math.PI*(s-520)/80)):window.REVV;
+   if(s>836){ujStop(true)}};
+ const ujStart=()=>{ujStop(false);UJ.on=true;UJ.t0=performance.now();UJ.ti=0;UJ.word=-1;
+   if(act.umbra){act.umbra.g.gain.setValueAtTime(.12*lyrLvl('umbra'),A.ctx.currentTime);act.umbra.g.gain.setTargetAtTime(.6*lyrLvl('umbra'),A.ctx.currentTime,14)}
+   UJ.iv=setInterval(ujTick,250);ujTick();say('umbra · breathe, and let me count you down')};
+ const ujStop=done=>{if(!UJ.on&&!UJ.iv)return;UJ.on=false;clearInterval(UJ.iv);UJ.iv=null;if(UJ.mon){UJ.mon=false;try{monadStop()}catch(_){}}
+   hudSet('','','');showHud(false);if(!done){UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear()}else say('umbra · the journey is done · you are still held')};
+ $('#rStop').addEventListener('click',()=>{if(UJ.on)ujStop(false)});
+ window.UMBRAJ=UJ;
+
  const umbraOn=()=>{
    if(!A.ctx)return;envPads('universe').forEach(k=>setLayer(k,null));
    setState(STATES.findIndex(x=>x.id==='desire'));
    Object.assign(S,{fc:+ROOT.toFixed(2),beat:.9,mode:'monaural',tone:.4,body:.45,air:0,close:0,space:.85,echo:.62,att:.72,rel:.8,tide:false,speed:.14,trails:.72,warp:.25,grain:.22,veil:.5,twist:0,mirrors:0});
    $('#bTide').classList.remove('on');tun=TUN.findIndex(t=>t[0]==='pythagorean');$$('.tn').forEach((x,i)=>x.classList.toggle('on',i===tun));
-   setVoice(VOICES.indexOf('opium choir'));window.ENVCOL='#b1123c';paintDial();paintModes();paintKnobs();applyAll();setLayer('umbra',.6);
-   say('umbra · you are held')};
- const umbraOff=()=>{setLayer('umbra',null);const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
+   setVoice(VOICES.indexOf('opium choir'));window.ENVCOL='#b1123c';paintDial();paintModes();paintKnobs();applyAll();setLayer('umbra',.6);ujStart()};
+ const umbraOff=()=>{ujStop(false);UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear();setLayer('umbra',null);const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
  const umbPaint=()=>{const u=$('#bUmbra');if(u)u.classList.toggle('on',umbIsOn())};
- const b0=buildPads;buildPads=()=>{b0();if(ENV!=='universe')return;const u=document.createElement('button');u.id='bUmbra';u.className='umbraBtn';u.title='Umbra: one press builds the whole soundscape. Press again to release it.';
+ const b0=buildPads;buildPads=()=>{b0();if(ENV!=='universe')return;const u=document.createElement('button');u.id='bUmbra';u.className='umbraBtn';u.title='Umbra: a love hypnosis journey of about fourteen minutes, counted down from ten. Umbra stays when it ends. Press again to release it.';
     u.textContent='Umbra';u.onclick=()=>{umbIsOn()?umbraOff():umbraOn();umbPaint()};$('#pads h3').after(u);umbPaint()};
  const p0=paintPads;paintPads=()=>{p0();umbPaint()};
  const s0=setEnv;setEnv=(id,start)=>{s0(id,start);if(ENV!=='universe'&&umbIsOn())setLayer('umbra',null)};
@@ -1190,3 +1228,70 @@ registerProcessor('bd-monad',M);`;
   revTick=function(){if(!REV)return;const el=(performance.now()-REV.t0)/1000,st=Math.min(4,Math.floor(el/1.8)),R=Math.min(1,el/9);window.REVV=R;pluck=Math.max(pluck,.35+R);
     if(st>REV.st){REV.st=st;$('#monP').textContent=STAGES[st];say(`monad · ${STAGES[st]} · the number ${[1,2,3,4,10][st]}`)}$('#monN').textContent=Math.round(R*100)};
   window.MONADV={get node(){return node},realm}}
+
+/* ================= GROOVES: rhythm played live by the synth, in the styles of the loops =================
+   Dub, liquid, temple, velvet, aura and nebula, each a sixteen-step pattern for a soft kick (a rounded 12 ms front, never a
+   slap), a sub bass on the state's own scale and carrier, hushed shakers, and chord stabs into a dub echo. By default the
+   tempo follows the beat: the beat rate times sixty, folded into 70 to 150 beats a minute, so a groove breathes with the
+   state. Each bar walks a four-bar progression and varies a little, so it never loops exactly. Off until chosen. */
+{const GR=[
+   ['dub','Dub',140,{kick:[0,10],sub:[[0,0],[6,0],[10,4],[14,3]],stab:[4,12],shk:[2,6,10,14],prog:[0,0,3,4]}],
+   ['liquid','Liquid',116,{kick:[0,7,10],sub:[[0,0],[3,2],[6,4],[8,0],[11,2],[14,5]],stab:[6],shk:[1,3,5,7,9,11,13,15],pad:1,prog:[0,5,3,4]}],
+   ['temple','Temple',92,{tom:[[0,1],[3,.6],[6,.8],[8,1],[11,.6],[14,.7]],sub:[[0,0],[8,0]],shk:[4,12],pad:1,prog:[0,0,3,0]}],
+   ['velvet','Velvet',84,{kick:[0,9],sub:[[0,0],[8,4]],stab:[],shk:[],pad:2,prog:[0,3,5,4]}],
+   ['aura','Aura',120,{kick:[0,4,8,12],sub:[[2,0],[6,0],[10,4],[14,0]],stab:[7,15],shk:[2,6,10,14],prog:[0,4,5,3]}],
+   ['nebula','Nebula',70,{kick:[0],sub:[[0,0],[10,4]],stab:[],shk:[],pad:2,prog:[0,5,3,4]}]];
+  const G={cur:null,bus:null,echo:null,lp:null,level:.5,follow:true,step:0,next:0,bar:0,iv:null};
+  const ctxOK=()=>!!A.ctx;
+  const build=()=>{if(G.bus)return;const ctx=A.ctx;G.bus=gn(ctx,0);G.lp=bq(ctx,'lowpass',9000,.5);const out=gn(ctx,1);G.bus.connect(G.lp).connect(out);out.connect(A.master);
+    /* the dub echo: a dotted eighth, darkened each time round */
+    G.eIn=gn(ctx,1);G.dl=ctx.createDelay(2);G.fb=gn(ctx,.42);const dk=bq(ctx,'lowpass',1500,.6),hp=bq(ctx,'highpass',180,.6);G.eIn.connect(G.dl);G.dl.connect(dk).connect(hp).connect(G.fb).connect(G.dl);hp.connect(gn(ctx,.8)).connect(G.lp);
+    G.bus.connect(A.verb);G.out=out};
+  const bpm=()=>{if(!G.follow||!G.cur)return G.cur?G.cur[2]:100;let b=(S.beat||1.5)*60;while(b<70)b*=2;while(b>150)b/=2;return b};
+  const base=()=>{let b=hBase();while(b>130)b/=2;while(b<55)b*=2;return b};
+  const deg=(d,oct)=>{const sc=STATES[S.state].scale,n=sc.length;return base()*oct*sc[((d%n)+n)%n]*Math.pow(2,Math.floor(d/n))};
+  const env=(g,t,a,lv,d)=>{g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(lv,t+a);g.gain.setTargetAtTime(0,t+a,d)};
+  const kick=(t,lv)=>{const ctx=A.ctx,o=ctx.createOscillator(),g=gn(ctx,0),f=bq(ctx,'lowpass',320,.6);o.frequency.setValueAtTime(92,t);o.frequency.exponentialRampToValueAtTime(46,t+.14);env(g,t,.012,.9*lv,.1);o.connect(f).connect(g).connect(G.bus);o.start(t);o.stop(t+.8)};
+  const tom=(t,lv,f0)=>{const ctx=A.ctx,o=ctx.createOscillator(),g=gn(ctx,0);o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*.78,t+.3);env(g,t,.014,.55*lv,.16);o.connect(g).connect(G.bus);o.start(t);o.stop(t+1)};
+  const sub=(t,f,dur,lv)=>{const ctx=A.ctx,o=ctx.createOscillator(),o2=ctx.createOscillator(),g=gn(ctx,0),fl=bq(ctx,'lowpass',380,.7);o.type='triangle';o.frequency.value=f;o2.frequency.value=f*.5;
+    o.connect(fl);o2.connect(gn(ctx,.6)).connect(fl);fl.connect(g).connect(G.bus);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.42*lv,t+.025);g.gain.setValueAtTime(.42*lv,t+dur*.7);g.gain.linearRampToValueAtTime(0,t+dur);o.start(t);o2.start(t);o.stop(t+dur+.05);o2.stop(t+dur+.05)};
+  const shk=(t,lv)=>{const ctx=A.ctx,s=ctx.createBufferSource(),g=gn(ctx,0),f=bq(ctx,'bandpass',4800,.8),l=bq(ctx,'lowpass',6500,.5);s.buffer=NB.white;env(g,t,.008,.16*lv,.025);s.connect(f).connect(l).connect(g).connect(G.bus);s.start(t,Math.random()*2,.2)};
+  const stab=(t,root,lv,spb)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',1100,.9);f.connect(g);g.connect(G.bus);g.connect(G.eIn);
+    [0,2,4].forEach((k,i)=>{const fr=deg(root+k,4);['sawtooth','triangle'].forEach((w,j)=>{const o=ctx.createOscillator();o.type=w;o.frequency.value=fr;o.detune.value=(j?7:-7)+i*2;o.connect(gn(ctx,j?.5:.25)).connect(f);o.start(t);o.stop(t+spb*2)})});
+    f.frequency.setValueAtTime(1400,t);f.frequency.exponentialRampToValueAtTime(500,t+spb*1.5);env(g,t,.012,.11*lv,spb*.5)};
+  const pad=(t,root,dur,lv)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',700,.5);f.connect(g).connect(G.bus);
+    [0,2,4,7].forEach(k=>{const fr=deg(root+k,2);[-6,6].forEach(dt=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+dur+2)})});
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.07*lv,t+dur*.4);g.gain.linearRampToValueAtTime(0,t+dur+1.5)};
+  /* the scheduler: looks 120 ms ahead every 30 ms, so every hit lands on its sample */
+  const tick=()=>{if(!G.cur||!A.ctx)return;const ctx=A.ctx,P=G.cur[3],spb=60/bpm(),s16=spb/4;G.dl.delayTime.setTargetAtTime(spb*.75,ctx.currentTime,.3);
+    while(G.next<ctx.currentTime+.12){const st=G.step%16,t=Math.max(G.next,ctx.currentTime+.005),bar=Math.floor(G.step/16),root=P.prog[bar%P.prog.length],sw=st%2?s16*.08:0,tt=t+sw,lv=1;
+      if(st===0&&P.pad&&bar%P.pad===0)pad(tt,root,spb*4*P.pad,lv);
+      (P.kick||[]).forEach(k=>{if(k===st&&!(bar%4===3&&st>8&&Math.random()<.4))kick(tt,lv)});
+      (P.tom||[]).forEach(([k,v])=>{if(k===st)tom(tt,v*(.85+Math.random()*.3),deg(root,1)*1.0)});
+      (P.sub||[]).forEach(([k,d],i)=>{if(k===st){const nx=(P.sub[i+1]||[16])[0];sub(tt,deg(root+d,1),Math.max(.12,(nx-k)*s16*.92),lv)}});
+      (P.shk||[]).forEach(k=>{if(k===st&&Math.random()>.08)shk(tt,lv*(st%4===2?1:.7))});
+      if(bar%2===1&&P.shk&&P.shk.length&&st===15&&Math.random()<.5)shk(tt+s16*.5,.6);
+      (P.stab||[]).forEach(k=>{if(k===st&&!(bar%4===2&&Math.random()<.3))stab(tt,root,lv,spb)});
+      G.step++;G.next+=s16}};
+  const setLevel=()=>{if(G.bus&&A.ctx)G.bus.gain.setTargetAtTime(G.cur?G.level*GTRIM:0,A.ctx.currentTime,.4)};
+  const GTRIM=.36;/* set by measurement: a groove at the middle of its slider sits near 0.05 */
+  const play=id=>{if(!ctxOK())return say('enter first, then choose a groove');build();const g=GR.find(x=>x[0]===id);if(!g)return;G.cur=g;G.step=0;G.next=A.ctx.currentTime+.1;
+    if(!G.iv)G.iv=setInterval(tick,30);setLevel();paint();say('groove · '+g[1]+' · '+Math.round(bpm())+' beats a minute'+(G.follow?' · following the beat':''))};
+  const stop=()=>{G.cur=null;setLevel();clearInterval(G.iv);G.iv=null;paint()};
+  /* in the Loops drawer, under its own heading */
+  const d=$('#loops');let box=null;
+  const paint=()=>{if(!box)return;box.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',!!G.cur&&c.dataset.g===G.cur[0]));box.querySelector('.grF').classList.toggle('on',G.follow)};
+  if(d){box=document.createElement('div');box.className='grooves';box.innerHTML='<h4>Grooves, from the synth</h4><p class="vh">Played live in the key and scale of the state. They follow the beat unless you set them free.</p>'
+      +'<div class="chips">'+GR.map(([id,n])=>`<button class="chip" data-g="${id}">${n}</button>`).join('')+'</div>'
+      +'<label class="mrow"><span>groove level</span><input type="range" min="0" max="1" step=".01" value=".5" aria-label="groove level"></label>'
+      +'<div class="vg" style="margin-top:8px"><button class="vb grF on" title="Tempo from the beat rate, or each groove at its own tempo">follow the beat</button><button class="vb grX">stop the groove</button></div>';
+    d.querySelector('.dclose').after(box);
+    box.addEventListener('click',e=>{const x=e.target.closest('button');if(!x)return;e.stopPropagation();
+      if(x.dataset.g){if(G.cur&&G.cur[0]===x.dataset.g){stop();say('groove off')}else play(x.dataset.g)}
+      else if(x.classList.contains('grF')){G.follow=!G.follow;paint();if(G.cur)say('groove · '+Math.round(bpm())+' beats a minute')}
+      else if(x.classList.contains('grX')){stop();say('groove off')}});
+    box.querySelector('input').addEventListener('input',e=>{G.level=+e.target.value;setLevel()})}
+  const bl=liveList;liveList=function(){const R=bl();if(G.cur)R.push(['groove · '+G.cur[1],stop]);return R};
+  const br=resetAll;resetAll=function(){if(G.cur)stop();return br.apply(this,arguments)};
+  $('#bReset').onclick=()=>resetAll();
+  window.GROOVE={play,stop,G,names:GR.map(g=>g[0])}}
