@@ -1774,7 +1774,7 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
   @media (prefers-reduced-motion:reduce){.stone::after{animation:none}}`;document.head.appendChild(css);
 
   /* 1 cymatics: a place button in the plate bar: in the Monad, in the centre dial, or off */
-  let place='panel';const host=document.createElement('div');host.className='cymDialHost';host.hidden=true;
+  let place='monad';const host=document.createElement('div');host.className='cymDialHost';host.hidden=true;
   /* the panel spot: the empty part of the right panel, under the cymatics button; the plate fills what room there is */
   const ph=document.createElement('div');ph.className='cymPanelHost';ph.hidden=true;
   const pfit=()=>{const pd=document.getElementById('pads');if(!pd)return 0;if(ph.parentNode!==pd||pd.firstChild!==ph)pd.prepend(ph);const sz=Math.max(120,Math.min(pd.clientWidth-24,200));ph.style.width=ph.style.height=ph.style.minHeight=sz+'px';pd.scrollTop=0;return sz};
@@ -1787,9 +1787,9 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
     const to=h=>{if(c.parentNode!==h){h.appendChild(c);if(c2)h.appendChild(c2)}c.classList.remove('inMon');c2&&c2.classList.remove('inMon')};
     if(inDial){fit();to(host)}else if(inPanel){pfit();to(ph)}
     else if(on&&(c.parentNode===host||c.parentNode===ph)){m.append(c);if(c2)c.after(c2);c.classList.add('inMon');c2&&c2.classList.add('inMon')}};
-  const btn=document.createElement('button');btn.id='cymPlace';btn.title='Where the plate sits: in the Monad, in the centre dial, or off';
+  const btn=document.createElement('button');btn.id='cymPlace';btn.title='Where the sand sits: small in the Monad, or large in the centre dial';
   const paint=()=>{btn.textContent='place · '+({panel:'panel',monad:'monad',dial:'centre'})[place]};
-  btn.onclick=e=>{e.stopPropagation();if(place==='panel'){place='monad';apply();say('cymatics · in the Monad')}else if(place==='monad'){place='dial';apply();say('cymatics · in the centre dial')}else{place='panel';const x=document.getElementById('cymX');apply();if(x)x.click()}paint()};
+  btn.onclick=e=>{e.stopPropagation();place=place==='monad'?'dial':'monad';apply();say(place==='dial'?'cymatics · in the centre dial':'cymatics · in the Monad');paint()};
   const w=setInterval(()=>{const bar=document.getElementById('cymBar'),big=document.getElementById('cymBig');if(!bar)return;clearInterval(w);if(desk()){(big||bar.lastChild).before(btn);if(big)big.hidden=true}paint();
     new MutationObserver(apply).observe(document.body,{attributes:true,attributeFilter:['class']});addEventListener('resize',()=>{if(place==='dial')fit();if(place==='panel')pfit()})},300);
 
@@ -1839,3 +1839,9 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
     ['pointerup','pointercancel','lostpointercapture'].forEach(t=>c.addEventListener(t,e=>{if(on){on=false;e.stopPropagation()}},true));
     c.addEventListener('click',e=>e.stopPropagation(),true);return true};
   const w=setInterval(()=>{if(hook())clearInterval(w)},400)}
+
+/* the cymatics readout and settings sit under the cymatics button, in the right panel (owner, 2026-11-27): the plate's own
+   code docks its bar in the first #cymDock it finds, so this one, placed in the Proof panel, comes first; the one the stone
+   panel draws is left empty and hidden */
+{const css=document.createElement('style');css.textContent='#pads #cymDock{display:none!important}#proof>#cymDock{margin-top:8px}#proof>#cymDock #cymBar{position:static!important;transform:none!important;width:100%!important;max-width:none!important}#shellR{overflow-y:auto}';document.head.appendChild(css);
+  setTimeout(()=>{if(MOBILE)return;const pr=document.getElementById('proof');if(!pr||pr.querySelector('#cymDock'))return;const d=document.createElement('div');d.id='cymDock';const row=pr.querySelector('.ptRow');(row||pr.lastChild).after(d)},900)}

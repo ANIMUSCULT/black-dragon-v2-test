@@ -307,8 +307,8 @@ function paintPads(){
 }
 function buildPads(){
   const e=ENVS.find(x=>x.id===ENV),el=$('#pads');
-  if(!e){el.innerHTML='<div id="cymDock"></div><h3 class="cymH">Cymatics</h3><p class="vh cymH">Sand that gathers into the figure of the tone you hear, a ring of the spectrum, and the scribble the two ears draw, set inside the Monad. Press a stone below for its sounds.</p><button class="pill cymGo">open the cymatics</button>';return}
-  el.innerHTML=`<div id="cymDock"></div><h3>${e.n}</h3><p class="vh">${e.line} Press a pad to add it. Hold shift and scroll on a pad to set its level.</p><div class="padg">`+e.snd.map(([n],i)=>`<button class="pad${REAL[`e:${e.id}:${i}`]?' rec':''}" data-id="e:${e.id}:${i}"><span>${n}</span></button>`).join('')+'</div>';
+  if(!e){el.innerHTML='<h3 class="cymH">Cymatics</h3><p class="vh cymH">Sand that gathers into the figure of the tone you hear, a ring of the spectrum, and the scribble the two ears draw, set inside the Monad. Press a stone below for its sounds.</p><button class="pill cymGo">open the cymatics</button>';return}
+  el.innerHTML=`<h3>${e.n}</h3><p class="vh">${e.line} Press a pad to add it. Hold shift and scroll on a pad to set its level.</p><div class="padg">`+e.snd.map(([n],i)=>`<button class="pad${REAL[`e:${e.id}:${i}`]?' rec':''}" data-id="e:${e.id}:${i}"><span>${n}</span></button>`).join('')+'</div>';
 }
 function setEnv(id,start){
   const e=ENVS.find(x=>x.id===id),prev=ENV;
