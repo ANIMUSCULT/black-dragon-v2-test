@@ -1476,7 +1476,7 @@ registerProcessor('bd-monad',M);`;
    into four panels. Each button is moved, not copied, so it keeps every behaviour it had. The top row keeps only the
    visualizer, the four groups, and hide panels (so the way back is always in reach). */
 {const GROUPS=[
-   ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
+   ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, possession and freeze.',['bOwn','bTrans','bDream','bPossess','bFreeze']],
    ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
    ['Rituals','gRituals','The workings: the healing table, body programs, extasis, the ritual chamber, vowels, fornax and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video.',['@slots','bSave','bShare','bLoad','bRec','bVid']]];
@@ -1593,3 +1593,72 @@ setTimeout(()=>{const kb=document.getElementById('keysBar');if(!kb||document.get
   const mode=document.getElementById('bChordM');mode&&mode.parentNode===kb?mode.after(b):kb.appendChild(b);
   const sv=setVoice;setVoice=function(){const r=sv.apply(this,arguments);paint();return r};
   document.getElementById('vox')?.addEventListener('click',()=>setTimeout(paint,0));paint()},200);
+
+
+/* ================= REALM KEYS, THE SOUNDBAR PAGE, AND CYMATICS BACK IN THE PROOF PANEL (owner, 2026-11-27) =================
+   Each stone brings its own keys voice, as each realm does in Ascension (SOUND-SYSTEM-FOR-V2: Dream opal keys, Nature moss reed,
+   Water tide glass, Air cloud flute, Cosmos star pad, Electric arc lead, Blood heart strings, Underworld ash organ, Gold sun brass,
+   Freeze frost bells, Lust velvet sigh, Magic fairy glass, Dragon dragon throat, Sand duduk). V2's own stones take the voice of the
+   realm they stand for. It happens when you press a stone, so start-up, reset and presets keep their own keys. A switch turns it off. */
+{const RKV={dream:'opal keys',nature:'moss reed',wet:'tide glass',breath:'cloud flute',universe:'star pad',celestial:'star pad',magnetism:'arc lead',
+    blood:'heart strings',animal:'heart strings',underworld:'ash organ',wyrm:'ash organ',gold:'sun brass',freeze:'frost bells',lust:'velvet sigh',
+    magic:'fairy glass',dragon:'dragon throat',heat:'dragon throat',sand:'duduk'};
+  let rk=true;try{rk=localStorage.getItem('bd-rk')!=='0'}catch(_){}
+  window.REALMKEYS={get on(){return rk},set on(v){rk=!!v;try{localStorage.setItem('bd-rk',rk?'1':'0')}catch(_){}},voice:id=>RKV[id]};
+  const st=$('#stones');st.addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b||!rk)return;setTimeout(()=>{const id=b.dataset.id,v=RKV[id];
+    if(ENV!==id||!v)return;const i=VOICES.indexOf(v);if(i>=0&&i!==S.voice){setVoice(i);say(`${ENVS.find(x=>x.id===id).n.toLowerCase()} · keys: ${v}`)}},0)});
+
+  /* the Soundbar page: the keys, the five levels, every sound playing with its own level, then the rooms that hold more sound */
+  const build=()=>{const d=document.getElementById('gSound');if(!d||d.querySelector('.sbKeys'))return false;
+    d.classList.add('sbPage');d.querySelector('h3').textContent='Soundbar';d.querySelector('.vh').textContent='Everything you hear, each with its own level. Press a stone and its realm voice comes to the keys.';
+    const grid=d.querySelector('.grpGrid');
+    const keys=document.createElement('section');keys.className='sbKeys sbSec';
+    keys.innerHTML='<h4>Keys</h4><div class="sbRow"><button class="vb" id="sbVoice"></button><button class="vb" id="sbRK"></button><button class="vb" id="sbEng"></button></div><p class="vh" id="sbKeyNote"></p>';
+    const lv=document.createElement('section');lv.className='sbSec';
+    lv.innerHTML='<h4>Levels</h4>'+MXB.map(([k])=>`<label class="mrow"><span>${k}</span><input type="range" min="0" max="1" step=".01" data-sk="${k}" aria-label="${k} level"></label>`).join('');
+    const now=document.createElement('section');now.className='sbSec';now.innerHTML='<h4>Playing now</h4><div id="sbNow"></div>';
+    const more=document.createElement('section');more.className='sbSec';more.innerHTML='<h4>More sound</h4>';
+    grid.before(keys,lv,now,more);more.appendChild(grid);
+    const two=()=>{const V=VOX[S.voice];return !!(V&&window.ASCP&&ASCP[V.n])};
+    const paintKeys=()=>{keys.querySelector('#sbVoice').textContent='keys: '+VOICES[S.voice];
+      const r=keys.querySelector('#sbRK');r.textContent='realm keys: '+(rk?'on':'off');r.classList.toggle('on',rk);
+      const g=keys.querySelector('#sbEng');g.textContent='sound: '+(window.VENG==='v2'?'old':'new');g.style.opacity=two()?'':'.45';g.classList.toggle('on',two()&&window.VENG!=='v2');
+      const e=ENV&&RKV[ENV],nm=e&&ENVS.find(x=>x.id===ENV).n,note=keys.querySelector('#sbKeyNote');
+      note.innerHTML=!rk?'Realm keys are off: the keys stay on what you chose.':!e?'Press a stone and its voice comes to the keys.':VOICES[S.voice]===e?`${nm} plays ${e} on the keys.`:`${nm}'s realm voice is ${e}. <button class="sbOff" id="sbPlayRV">play it</button>`};
+    keys.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;e.stopPropagation();
+      if(t.id==='sbVoice'){openDr('vox');return}
+      if(t.id==='sbPlayRV'){const i=VOICES.indexOf(RKV[ENV]);if(i>=0){setVoice(i);say('keys: '+RKV[ENV])}}
+      if(t.id==='sbRK'){REALMKEYS.on=!rk;say('realm keys · '+(rk?'on':'off'))}
+      if(t.id==='sbEng'){const be=document.getElementById('bEng');if(be)be.click();else if(two()){window.VENG=window.VENG==='v2'?'asc':'v2';const v=document.getElementById('vox');if(v&&v._sync)v._sync()}}
+      paintKeys()});
+    lv.addEventListener('input',e=>{const k=e.target.dataset.sk;if(!k)return;MIX[k]=+e.target.value;applyMix();const m=document.querySelector(`#mixer input[data-k=${k}]`);if(m)m.value=MIX[k];say(`${k} · ${Math.round(MIX[k]*200)}`)});
+    const paintLv=()=>lv.querySelectorAll('input').forEach(i=>{if(document.activeElement!==i)i.value=MIX[i.dataset.sk]});
+    /* each sound playing: its name, a level where it has one, and an off switch */
+    const KNOB={beat:'tone',body:'body',air:'air',close:'close'};
+    const rows=()=>liveList().map(([n,off])=>{let k=null,v=null,lo=0;
+      if(/^beat tone/.test(n)){k='S:tone';v=S.tone}else if(n==='body chord'){k='S:body';v=S.body}else if(n==='air'){k='S:air';v=S.air}else if(n==='close whisper'){k='S:close';v=S.close}
+      else{const id=Object.keys(S.layers).find(x=>BK[x]&&BK[x].n===n);if(id){k='L:'+id;v=S.layers[id];lo=.05}}return{n,off,k,v,lo}});
+    let sig='';const nowEl=now.querySelector('#sbNow');
+    const paintNow=force=>{const R=rows(),key=R.map(r=>r.n+'|'+r.k).join(',');
+      if(key!==sig||force){sig=key;nowEl.innerHTML=R.length?R.map((r,i)=>`<div class="sbLine"><span>${r.n}</span>${r.k?`<input type="range" min="${r.lo}" max="1" step=".01" value="${r.v}" data-i="${i}" aria-label="${r.n} level">`:'<em>on</em>'}<button class="sbOff" data-i="${i}" title="Turn off ${r.n}">off</button></div>`).join(''):'<p class="vh">Nothing but the keys. Press a stone or open the sounds.</p>';nowEl._r=R}
+      else nowEl.querySelectorAll('input').forEach(inp=>{if(document.activeElement!==inp){const r=R[+inp.dataset.i];if(r)inp.value=r.v}})};
+    nowEl.addEventListener('input',e=>{const r=(nowEl._r||[])[+e.target.dataset.i];if(!r||!r.k)return;const v=+e.target.value,[t,id]=[r.k.slice(0,1),r.k.slice(2)];
+      if(t==='S'){S[id]=v;paintKnobs();applyAll()}else setLayer(id,v)});
+    nowEl.addEventListener('click',e=>{const b=e.target.closest('.sbOff');if(!b)return;e.stopPropagation();const r=(nowEl._r||[])[+b.dataset.i];if(r){r.off();paintKnobs();applyAll();say(r.n+' · off');paintNow(true)}});
+    const tick=()=>{if(d.hidden)return;paintKeys();paintLv();paintNow()};setInterval(tick,500);
+    new MutationObserver(()=>{if(!d.hidden){paintNow(true);tick()}}).observe(d,{attributes:true,attributeFilter:['hidden']});tick();return true};
+  const w=setInterval(()=>{if(build())clearInterval(w)},250);
+
+  /* cymatics back where it began, in the Proof panel beside the test tone, as wide as it */
+  setTimeout(()=>{const b=document.getElementById('bScope'),t=document.getElementById('bTone');if(!b||!t||t.parentNode.classList.contains('ptRow'))return;const row=document.createElement('div');row.className='ptRow';t.before(row);row.append(b,t);b.classList.add('cymBtn')},700);
+  const css=document.createElement('style');css.textContent=`
+  .sbPage .sbSec{margin-top:14px}.sbPage .sbSec h4{margin:0 0 6px}
+  .sbPage .sbRow{display:flex;flex-wrap:wrap;gap:8px}.sbPage .sbRow .vb{flex:1 1 150px}
+  .sbPage .mrow{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:10px;margin:4px 0}
+  .sbPage .sbLine{display:grid;grid-template-columns:minmax(110px,1fr) 2fr auto;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .sbPage .sbLine span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sbPage .sbLine em{opacity:.5;font-style:normal;font-size:12px}
+  .sbPage .sbOff{background:none;border:1px solid rgba(255,255,255,.18);color:inherit;border-radius:12px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer;opacity:.75}
+  .sbPage .sbOff:hover{opacity:1;border-color:rgba(245,96,114,.7)}
+  .ptRow{display:flex;gap:8px;margin-top:8px}.ptRow>button{flex:1 1 0;margin:0!important;min-height:30px;display:block}
+  /* the Monad sits in the middle of the space under the stones instead of pressing up against them */
+  @media (min-width:1001px) and (pointer:fine){#monad{width:184px;height:184px;align-self:center;margin-top:0}#monad b{font-size:42px}}`;document.head.appendChild(css)}
