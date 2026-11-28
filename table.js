@@ -2072,3 +2072,10 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
     const b=document.createElement('button');b.className='pill dreamBtn';b.textContent='dream';b.title="The Dream spells: chords that play themselves, from Black Dragon: Ascension";kn.appendChild(b);
     b.onclick=e=>{e.stopPropagation();src.onclick(e)};
     setInterval(()=>b.classList.toggle('on',DREAMSP.cur>=0),600)},300)}
+/* the Dreamachine's history is written in only when its room opens, so the page's own text begins with the instrument */
+{const H='In 1958 Brion Gysin closed his eyes on a bus to Marseille as the sun flickered through a row of trees, and saw blazing colours and patterns. With Ian Sommerville he built the Dreamachine: a slotted cylinder turning around a lamp, watched with the eyes shut. In 2021 Reeder\'s Ganzflicker brought it to the screen, and many who watch at about ten flickers a second see shapes, faces and scenes of their own. Close your eyes, face the screen, and let it come.';
+  const d=document.getElementById('dream'),h=document.getElementById('dmHist');
+  if(d&&h){const fill=()=>{if(!d.hidden&&!h.textContent)h.textContent=H};new MutationObserver(fill).observe(d,{attributes:true,attributeFilter:['hidden']});fill()}}
+/* the Proof's waiting line goes once the sound is running */
+{const w=setInterval(()=>{if(!A.ctx||A.ctx.state!=='running')return;const e=document.getElementById('proofWait');if(e)e.remove();clearInterval(w)},400)}
+

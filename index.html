@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Black Dragon II</title>
+<meta name="description" content="An occult hypno-synth for trance, self-hypnosis and sound work. Thirteen states of exact binaural, monaural and isochronic beats, measured live in the Proof panel. Eighteen sound stones, Ascension's synth voice on the keys, chords and magic chords, live cymatics, rites and a Dreamachine.">
+<meta property="og:title" content="Black Dragon II">
+<meta property="og:description" content="An occult hypno-synth for trance, self-hypnosis and sound work. Thirteen states of exact binaural, monaural and isochronic beats, measured live in the Proof panel. Eighteen sound stones, Ascension's synth voice on the keys, chords and magic chords, live cymatics, rites and a Dreamachine.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://animuscult.github.io/black-dragon-v2-test/media/posters/gate-serpent.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#040208">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Grenze+Gotisch:wght@500;600;700&family=Texturina:ital,wght@0,400;0,500;0,600;1,400&family=Michroma&display=swap" rel="stylesheet">
 <style>
@@ -771,15 +778,22 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
 /* recorded: a real place or thing, in plain silver */
 .tag.recorded{background:#d8d3dc;color:#111}
 #pads .cymGo{margin-top:8px;width:100%;padding:10px 12px;font-size:11px;letter-spacing:.18em}
+
+/* Proof before the sound starts: a quiet line in the empty strip beside the tag, gone once it measures */
+#proofWait{position:absolute;top:22px;right:48px;font:italic 10.5px/1.2 var(--body);letter-spacing:.06em;opacity:.62;pointer-events:none;white-space:nowrap}
+@media (max-width:1000px){#proofWait{position:static;display:block;margin:4px 0 0;opacity:.6}}
+/* visually hidden, still read aloud and read as text */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
 </style>
 </head>
 <body>
+<h1 class="sr-only">Black Dragon II</h1><p class="sr-only">An occult hypno-synth for trance, self-hypnosis and sound work. Thirteen states of exact binaural, monaural and isochronic beats, measured live in the Proof panel. Eighteen sound stones, Ascension's synth voice on the keys, chords and magic chords, live cymatics, rites and a Dreamachine.</p>
 <video id="veil" muted loop playsinline></video>
 <canvas id="field"></canvas>
 <canvas id="cym" hidden></canvas><div id="dream" hidden><canvas id="dreamC" hidden></canvas><div id="dreamGate" class="jelly drawerish">
 <h3>Dreamachine</h3>
 <p class="dmNote"><b>Before you enter.</b> This room flickers light across the whole screen. If you or anyone in your family has epilepsy or has ever had a seizure, do not enter. Stop at once if you feel unwell. Any tap or key ends it.</p>
-<p class="vh">In 1958 Brion Gysin closed his eyes on a bus to Marseille as the sun flickered through a row of trees, and saw blazing colours and patterns. With Ian Sommerville he built the Dreamachine: a slotted cylinder turning around a lamp, watched with the eyes shut. In 2021 Reeder's Ganzflicker brought it to the screen, and many who watch at about ten flickers a second see shapes, faces and scenes of their own. Close your eyes, face the screen, and let it come.</p>
+<p class="vh" id="dmHist"></p>
 <div class="dmRow"><span>rate</span><button data-hz="-0.5">−</button><b><i id="dmHz">10.00</i> Hz</b><button data-hz="0.5">+</button></div>
 <div class="dmRow"><span>strength</span><input id="dmDepth" type="range" min=".05" max="1" step=".01" value=".45" aria-label="flicker strength"></div>
 <div class="dmRow"><span>light</span><button data-col="gold">gold</button><button data-col="white">white</button><button data-col="amber">amber</button></div>
@@ -802,7 +816,7 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
 </div>
 
 <main class="hud" id="hud">
-  <header class="top">
+  <header class="top"><h2 class="sr-only">Transport and panels</h2>
     <svg class="blade" viewBox="0 0 1000 54" preserveAspectRatio="none" aria-hidden="true"><path d="M0,30 C140,30 190,6 330,8 C520,10 600,44 780,44 C880,44 940,34 1000,20 L1000,24 C940,40 880,50 780,50 C600,50 520,16 330,14 C190,12 140,36 0,34 Z" fill="url(#gChrome)"/></svg>
     <div class="mark">Black Dragon<i>II</i></div>
     <div id="lcd" role="status" aria-live="polite"></div>
@@ -822,9 +836,9 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
     <input type="file" id="fLoad" accept=".dragon,application/json" hidden>
   </header>
 
-  <div class="shell" id="shellL"><nav class="jelly" id="states" aria-label="States"></nav></div>
+  <div class="shell" id="shellL"><h2 class="sr-only">States</h2><nav class="jelly" id="states" aria-label="States"></nav></div>
 
-  <section id="core">
+  <section id="core" aria-label="Beat dial"><h2 class="sr-only">Beat dial</h2>
     <div id="rhud" hidden><b id="rBig"></b><span id="rHint"></span><span id="rCnt"></span><button class="pill" id="rStop">stop</button></div>
     <svg id="wyrm" viewBox="-420 -330 840 660" aria-hidden="true">
       <defs>
@@ -859,7 +873,7 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
   </section>
 
   <div class="shell" id="shellR"><aside class="jelly" id="proof">
-    <h2>Proof</h2><span class="tag" id="tag">studied</span>
+    <h2>Proof</h2><span class="tag" id="tag">studied</span><span id="proofWait">measured live once you enter</span>
     <p>Measured on the live tone channel, not read from the settings.</p>
     <dl class="read">
       <dt id="lL">left ear</dt><dd id="mL">–</dd><span>Hz</span>
@@ -874,13 +888,13 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
     </div>
     <p id="note"></p>
     <button class="pill" id="bTone" title="A clean 30 second WAV of only the tones, to check in any analyser">download test tone</button>
-  </aside><section class="jelly" id="pads" aria-label="Environment sounds"></section></div>
+  </aside><h2 class="sr-only">Stone sounds</h2><section class="jelly" id="pads" aria-label="Stone sounds"></section></div>
 
-  <div id="live" aria-label="Sounding now"></div>
-  <nav id="stones" aria-label="Environments"></nav>
+  <h2 class="sr-only">Sounding now</h2><div id="live" aria-label="Sounding now"></div>
+  <h2 class="sr-only">Stones</h2><nav id="stones" aria-label="Stones"></nav>
   <footer class="deck">
     <div class="jelly" id="jawp"></div>
-    <div class="knobwrap"><div class="ktabs"><button class="pill on" data-b="s">sound dials</button><button class="pill" data-b="v">vision dials</button></div><div class="jelly knobs" id="knobs" data-b="s"></div></div>
+    <h2 class="sr-only">Dials and keyboard</h2><div class="knobwrap"><div class="ktabs"><button class="pill on" data-b="s">sound dials</button><button class="pill" data-b="v">vision dials</button></div><div class="jelly knobs" id="knobs" data-b="s"></div></div>
     <button id="monad" aria-label="Monad. Tap to change planet, hold to trace the square"><svg class="monOrn" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="monArc" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/></defs><circle class="o1" cx="100" cy="100" r="98"/><circle class="o2" cx="100" cy="100" r="88.5"/><circle class="o3" cx="100" cy="100" r="77.5"/><g class="spin"><text><textPath href="#monArc" textLength="500" lengthAdjust="spacing">♄︎ SATVRNVS · ♃︎ IVPITER · ♂︎ MARS · ☉︎ SOL · ♀︎ VENVS · ☿︎ MERCVRIVS · ☽︎ LVNA ·</textPath></text></g><circle class="gem" cx="100.0" cy="11.5" r="1.7"/><circle class="gem" cx="169.2" cy="44.8" r="1.7"/><circle class="gem" cx="186.3" cy="119.7" r="1.7"/><circle class="gem" cx="138.4" cy="179.7" r="1.7"/><circle class="gem" cx="61.6" cy="179.7" r="1.7"/><circle class="gem" cx="13.7" cy="119.7" r="1.7"/><circle class="gem" cx="30.8" cy="44.8" r="1.7"/></svg><span id="monP">saturn</span><b id="monN">15</b><i>monad</i></button>
     <div id="keys"></div>
     <div class="rside"><button class="pill" id="bHeal">healing</button><button class="pill" id="bBody">body</button><button class="pill" id="bTrance">extasis</button><button class="pill" id="bRites">rites</button><button class="pill" id="bForge">fornax</button><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">keys</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
@@ -1624,9 +1638,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1129a"></script>
-<script src="env.js?v=1129a"></script>
-<script src="table.js?v=1129a"></script>
-<script src="luxuria.js?v=1129a"></script>
+<script src="bank.js?v=1129b"></script>
+<script src="env.js?v=1129b"></script>
+<script src="table.js?v=1129b"></script>
+<script src="luxuria.js?v=1129b"></script>
 </body>
 </html>
