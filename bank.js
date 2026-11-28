@@ -325,6 +325,8 @@ function buildBank(){
   /* a bank sound that has the same name as a stone layer shows once, in its stone; the copy stays in BANK for presets */
   const STONE_N=new Set(BANK.filter(b=>/ stone$/.test(b.cat)).map(b=>b.n.toLowerCase()));
   const SHOWN=BANK.filter(b=>!HIDE.has(b.cat)&&(/ stone$/.test(b.cat)||!STONE_N.has(b.n.toLowerCase())));
+  /* the sounds that live on no stone come first, so they are easy to find; the stones' own sounds follow (owner, 2026-11-27) */
+  SHOWN.sort((x,y)=>(/ stone$/.test(x.cat)?1:0)-(/ stone$/.test(y.cat)?1:0));
   const el=$('#bank');el.innerHTML=`<p class="vh">${SHOWN.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
     +group(SHOWN,b=>b.cat,b=>`<button class="vb lb" data-id="${b.id}">${b.n}</button>`)+'<button class="vb" id="bClear" style="margin-top:14px">clear the mix</button>';
   el.addEventListener('click',e=>{const b=e.target.closest('.lb'),off=e.target.dataset.off;if(off)return setLayer(off,null);if(e.target.id==='bClear')return clearLayers();

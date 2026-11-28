@@ -375,7 +375,7 @@ let SLOTS=[null,null,null];try{const v=JSON.parse(localStorage.getItem('bd2-slot
 {const kt=$('.ktabs'),mk=(id,txt,title)=>{const b=document.createElement('button');b.className='pill mini';b.id=id;b.textContent=txt;b.title=title;kt.append(b);return b};
   mk('bDice','dice','Throw the vision dials and the picture behind them').onclick=()=>{const r=(a,b)=>+(a+Math.random()*(b-a)).toFixed(2);
     /* the picture is thrown too, unless your own video is playing */
-    if(!($('#bOwn')&&$('#bOwn').classList.contains('on'))&&FILMS.length>1){let n=film;while(n===film)n=Math.random()*FILMS.length|0;setFilm(n)}Object.assign(S,{vision:r(.3,1),trails:r(0,.8),twist:r(0,.6),mirrors:Math.random()<.5?0:r(.1,.9),warp:r(0,.6),hue:Math.random()<.5?0:r(0,1),split:r(.1,.8),speed:r(.15,.8),lens:r(.3,.75)});
+    if(!($('#bOwn')&&$('#bOwn').classList.contains('on'))&&FILMS.length>1){let n=film;while(n===film)n=Math.random()*FILMS.length|0;setFilm(n)}Object.assign(S,{vision:r(.3,1),trails:r(0,.8),twist:r(0,.6),mirrors:Math.random()<.5?0:r(.1,.9),warp:r(0,.6),hue:Math.random()<.5?0:r(0,1),split:r(.1,.8),speed:r(.15,.8),lens:r(.3,.75)});S.rot=S.vision;
     window.VMODE=Math.random()*6|0;paintKnobs();applyAll();say('dice · the vision and its picture are thrown')};
   const fz=mk('bFreeze','freeze','Hold the vision still');fz.onclick=()=>{window.FREEZE=!window.FREEZE;fz.classList.toggle('on',!!window.FREEZE);say(window.FREEZE?'freeze · the vision is held':'freeze off')}}
 
@@ -1436,7 +1436,7 @@ registerProcessor('bd-monad',M);`;
       phonk: a long gliding bass and the soft cowbell melody, filtered dark. early dubstep: half-time, one deep note a bar
       under a wobbling filter, a hushed knock where the snare would be. */
    ['witch','Witch house',70,{kick:[0,10],sub:[[0,0],[8,0]],chant:[6,14],shk:[3,7,11,15],pad:1,prog:[0,1,0,6]}],
-   ['phonk','Phonk',140,{kick:[0,7,10],sub:[[0,0],[7,0],[10,4]],bell:[[0,0],[3,2],[6,4],[8,2],[11,0],[14,1]],shk:[2,6,10,14],prog:[0,0,5,4]}],
+   ['phonk','Phonk',140,{kick:[0,10],e808:[[0,0],[3,0],[7,4],[10,2]],bell:[[0,0],[3,2],[6,4],[8,2],[11,0],[14,1]],shk:[2,6,10,14],hatroll:1,prog:[0,0,5,4]}],
    ['step','Dubstep',140,{kick:[0],tom:[[8,.9]],wob:1,shk:[4,12],prog:[0,0,5,6]}]];
   const G={cur:null,bus:null,echo:null,lp:null,level:.5,follow:true,step:0,next:0,bar:0,iv:null};
   const ctxOK=()=>!!A.ctx;
@@ -1470,12 +1470,17 @@ registerProcessor('bd-monad',M);`;
     g.connect(G.bus);g.connect(gn(ctx,.5)).connect(G.eIn);env(g,t,.02,.05*lv,spb*.5)};
   /* bell: the soft phonk cowbell, two triangles a fifth-and-a-bit apart under a dark lowpass */
   const bell=(t,f,lv)=>{const ctx=A.ctx,g=gn(ctx,0),fl=bq(ctx,'lowpass',1700,.7);[1,1.48].forEach((r,i)=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=f*r;o.connect(gn(ctx,i?.5:1)).connect(fl);o.start(t);o.stop(t+.6)});
-    fl.connect(g).connect(G.bus);env(g,t,.003,.08*lv,.12)};
+    fl.connect(g).connect(G.bus);g.connect(gn(ctx,.3)).connect(G.eIn);env(g,t,.008,.085*lv,.11)};
   /* wob: one deep note a bar, two saws and a sine under a resonant lowpass swung by an LFO at a quarter or an eighth note */
   const wob=(t,f,dur,lv,spb,bar)=>{const ctx=A.ctx,g=gn(ctx,0),fl=bq(ctx,'lowpass',620,5),lfo=ctx.createOscillator(),lg=gn(ctx,480);
     lfo.frequency.value=(bar%2?2:1)/spb*(bar%4===3?2:1);lfo.connect(lg).connect(fl.frequency);
     [['sawtooth',1,0,.5],['sawtooth',1,9,.5],['sawtooth',2,-5,.25],['sine',1,0,.5]].forEach(([w,r,dt,a])=>{const o=ctx.createOscillator();o.type=w;o.frequency.value=f*r;o.detune.value=dt;o.connect(gn(ctx,a)).connect(fl);o.start(t);o.stop(t+dur+.3)});
     fl.connect(g).connect(G.bus);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.2*lv,t+.03);g.gain.setValueAtTime(.2*lv,t+dur*.9);g.gain.linearRampToValueAtTime(0,t+dur);lfo.start(t);lfo.stop(t+dur+.3)};
+  /* e808: the phonk bass. A sine that drops into its note in 50 ms and dies away in about half a second, with a soft octave
+     above it for small speakers. Rounded 8 ms front: no click. */
+  const e808=(t,f,lv)=>{const ctx=A.ctx,o=ctx.createOscillator(),o2=ctx.createOscillator(),g=gn(ctx,0),g2=gn(ctx,.45);o.frequency.setValueAtTime(f*1.5,t);o.frequency.exponentialRampToValueAtTime(f,t+.05);
+    o2.type='triangle';o2.frequency.setValueAtTime(f*3,t);o2.frequency.exponentialRampToValueAtTime(f*2,t+.05);o.connect(g);o2.connect(g2).connect(g);g.connect(G.bus);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.42*lv,t+.008);g.gain.setTargetAtTime(0,t+.06,.12);o.start(t);o2.start(t);o.stop(t+1.1);o2.stop(t+1.1)};
   const pad=(t,root,dur,lv)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',700,.5);f.connect(g).connect(G.bus);
     [0,2,4,7].forEach(k=>{const fr=deg(root+k,2);[-6,6].forEach(dt=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+dur+2)})});
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.04*lv,t+dur*.35);g.gain.linearRampToValueAtTime(0,t+dur+.6)};
@@ -1491,13 +1496,17 @@ registerProcessor('bd-monad',M);`;
       (P.shk||[]).forEach(k=>{if(k===st&&Math.random()>.08)shk(tt,lv*(st%4===2?1:.7))});
       if(bar%2===1&&P.shk&&P.shk.length&&st===15&&Math.random()<.5)shk(tt+s16*.5,.6);
       (P.stab||[]).forEach(k=>{if(k===st&&!(bar%4===2&&Math.random()<.3))stab(tt,root,lv,spb)});
+      (P.e808||[]).forEach(([k,d])=>{if(k===st)e808(tt,deg(root+d,1),lv)});
+      if(P.hatroll&&bar%2===1&&st>=12&&st%1===0)shk(tt+s16*.5,.45);
       (P.chant||[]).forEach(k=>{if(k===st&&Math.random()>.1)chant(tt,root,lv,spb)});
       (P.bell||[]).forEach(([k,d])=>{if(k===st&&Math.random()>.06)bell(tt,deg(root+d+(bar%4===3?1:0),4),lv*(st===0?1:.8))});
       if(P.wob&&st===0)wob(tt,deg(root,1),spb*4,lv*.8,spb,bar);
       if(P.roll&&st%2===0&&!(bar%4===3&&st>=12))sub(tt,deg(root,1)*(st%4===2?2:1),s16*1.7,lv*.75);
       if(P.arp&&Math.random()>.07){const seq=bar%4===3?P.arp.slice().reverse():P.arp,d=seq[st%seq.length]+(bar%8>=4?2:0);arp(tt,deg(root+d,4),lv*(st%4===0?1:.7),s16)}
       G.step++;G.next+=s16}};
-  const setLevel=()=>{if(G.bus&&A.ctx)G.bus.gain.setTargetAtTime(G.cur?G.level*GTRIM:0,A.ctx.currentTime,.4)};
+  /* per-groove trim, measured with a state playing (2026-11-27): each sits near 0.055 at the middle of the slider */
+  const GLV={witch:1.3,step:1.45,phonk:1.1};
+  const setLevel=()=>{if(G.bus&&A.ctx)G.bus.gain.setTargetAtTime(G.cur?G.level*GTRIM*(GLV[G.cur[0]]||1):0,A.ctx.currentTime,.4)};
   const GTRIM=.5;/* set by measurement (2026-11-27, after the voices moved up where speakers can play them): a groove at the middle of its slider sits near 0.05 */
   const play=id=>{if(!ctxOK())return say('enter first, then choose a groove');build();const g=GR.find(x=>x[0]===id);if(!g)return;G.cur=g;G.step=0;G.next=A.ctx.currentTime+.1;
     if(!G.iv)G.iv=setInterval(tick,30);setLevel();paint();say('groove · '+g[1]+' · '+Math.round(bpm())+' beats a minute'+(G.follow?' · following the beat':''))};
@@ -1712,15 +1721,15 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
     /* every sound: the whole library, with the mix of what is playing (each with its level) at its head, lives on this page */
     const lib=document.createElement('section');lib.className='sbSec sbLib';lib.innerHTML='<h4>Every sound</h4>';const bank=document.getElementById('bank');
     if(bank){const i=DR.indexOf('bank');if(i>=0)DR.splice(i,1);bank.classList.remove('drawer','jelly');bank.hidden=false;const x=bank.querySelector('.dclose');if(x)x.remove();lib.appendChild(bank);
-      const bb=document.getElementById('bBank');if(bb){bb.onclick=e=>{e.stopPropagation();openDr('gSound');window.SBSHOW&&SBSHOW(1)}}}
+      const bb=document.getElementById('bBank');if(bb){bb.onclick=e=>{e.stopPropagation();openDr('gSound');window.SBSHOW&&SBSHOW(0)}}}
     const more=document.createElement('h4');more.textContent='More';more.className='sbSec';
-    const grid=g.querySelector('.grpGrid');grid.before(dream,room,lv,lib,more);
+    const grid=g.querySelector('.grpGrid');grid.before(room,lv,lib,more);
     /* one part at a time: Dream, every sound, the mix (room and levels), and the rest */
     const mix=document.createElement('div');mix.className='sbPane';room.before(mix);mix.append(room,lv);
     const rest=document.createElement('div');rest.className='sbPane';more.before(rest);rest.append(more,grid);more.remove();
-    dream.classList.add('sbPane');lib.classList.add('sbPane');
-    const panes=[['Dream',dream],['Every sound',lib],['Mix',mix],['More',rest]],tabs=document.createElement('div');tabs.className='sbTabs';
-    tabs.innerHTML=panes.map(([n],i)=>`<button class="vb" data-p="${i}">${n}</button>`).join('');g.querySelector('.vh').textContent='The Dream spells, every sound, the mix and the rest, one at a time.';g.querySelector('.vh').after(tabs);
+    lib.classList.add('sbPane');
+    const panes=[['Every sound',lib],['Mix',mix],['More',rest]],tabs=document.createElement('div');tabs.className='sbTabs';
+    tabs.innerHTML=panes.map(([n],i)=>`<button class="vb" data-p="${i}">${n}</button>`).join('');g.querySelector('.vh').textContent='Every sound, the mix and the rest, one at a time.';g.querySelector('.vh').after(tabs);
     let pi=0;const show=i=>{pi=i;panes.forEach(([,el],j)=>{el.hidden=j!==i});tabs.querySelectorAll('.vb').forEach((b,j)=>b.classList.toggle('on',j===i))};show(0);
     tabs.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;e.stopPropagation();show(+b.dataset.p);g.scrollTop=0});
     window.SBSHOW=show;
@@ -1902,7 +1911,7 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
     const gv=document.getElementById('bgVision');if(gv)gv.hidden=true},400);
   const css=document.createElement('style');css.textContent='#bgVision{display:none!important}'+
     '@media (min-width:1001px) and (pointer:fine){#knobs[data-b=v]{grid-template-columns:repeat(7,52px)!important;gap:8px 4px!important}#knobs[data-b=v] .knob{width:50px}'+
-    '.ktabs{flex-wrap:wrap;row-gap:4px;max-width:100%}.ktabs .visRow{margin-left:0}}';document.head.appendChild(css)}
+    '.ktabs{flex-wrap:nowrap;gap:4px!important;max-width:100%}.ktabs .visRow{margin-left:0;gap:3px}.ktabs .pill,.ktabs button{padding-left:7px!important;padding-right:7px!important;font-size:10px!important}}';document.head.appendChild(css)}
 
 /* ================= THE PROOF READOUT AS LIQUID (owner, 2026-11-27) =================
    The live line under the Proof numbers is drawn as fluid: drops along the measured signal, run through a 'goo' filter
@@ -1990,7 +1999,7 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
 {const RLM={magic:{fc:66,tun:'locrian',a:'#1a1418',b:'#b0303f',groove:'witch',gn:'Witch house'},
     blood:{fc:144.72,tun:'phrygian',a:'#3a0008',b:'#e01b3c',groove:'phonk',gn:'Phonk'},
     dragon:{fc:126.22,tun:'minor pentatonic',a:'#3a1606',b:'#ff8a2a',groove:'step',gn:'Dubstep'}};
-  let on=true,touch=true;try{on=localStorage.getItem('bd-realms')!=='0';touch=localStorage.getItem('bd-touch')!=='0'}catch(_){}
+  let on=false,touch=true;try{on=localStorage.getItem('bd-realms')==='1';touch=localStorage.getItem('bd-touch')!=='0'}catch(_){}/* realms start off (owner, 2026-11-27): each state keeps its own tone until someone turns realms on */
   window.REALMS={get on(){return on},data:RLM};
   const root=document.documentElement,stateCols=()=>{const c=STATES[S.state].cols;root.style.setProperty('--a',c[0]);root.style.setProperty('--b',c[2])};
   const enter=id=>{const R=RLM[id];if(!R||!on)return;S.fc=R.fc;const ti=TUN.findIndex(t=>t[0]===R.tun);if(ti>=0)tun=ti;applyAll();paintKnobs();if(typeof paintDial==='function')paintDial();
@@ -2040,3 +2049,26 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
   document.addEventListener('pointerup',end,true);document.addEventListener('pointercancel',end,true);
   /* buttons: a very soft touch of the realm on every press */
   document.addEventListener('click',e=>{const r=realm();if(r&&e.target.closest('button'))TICK[r](A.ctx.currentTime)},true)}
+
+/* ================= THE DIALS, TIDIED (owner, 2026-11-27) =================
+   Readouts in real units while a dial turns: the carrier in hertz, attack and release as how much longer or shorter than the
+   voice's own (×0.25 to ×4), everything else out of a hundred. The effect dial works the transmute machine, so it dims when
+   no machine is running and says so if turned. The dial tab buttons are slimmer, so the dial area keeps its old height. */
+{const css=document.createElement('style');css.textContent='@media (min-width:1001px) and (pointer:fine){.deck>.rside{display:none!important}#core{padding-top:36px;box-sizing:border-box}#stones{gap:4px 6px!important}#stones .stone{height:21px!important;font-size:8.5px!important}.ktabs .pill,.ktabs button{height:28px!important;min-height:0!important;padding-top:4px!important;padding-bottom:4px!important;padding-left:6px!important;padding-right:6px!important;line-height:1.1}}.knob.kDim{opacity:.42}';document.head.appendChild(css);
+  const txt=k=>k==='car'?S.fc.toFixed(1)+' Hz':(k==='att'||k==='rel')?'×'+Math.pow(2,(S[k]-.5)*4).toFixed(2):String(Math.round((S[k]||0)*100));
+  const kn=document.getElementById('knobs');
+  const read=e=>{const k=e.target.closest('.knob');if(!k)return;const i=[...kn.querySelectorAll('.knob')].filter(x=>!x.dataset.k).indexOf(k);
+    const ent=Object.entries(knobEls).find(([,el])=>el===k);if(!ent)return;const key=ent[0],lab=KN.find(x=>x[0]===key)[1];
+    requestAnimationFrame(()=>{if(key==='vision'&&!(window.TRANS&&TRANS.on))say('effect works the transmute machine · turn the transmute dial first');else say(`${lab} · ${txt(key)}`)})};
+  kn.addEventListener('pointermove',e=>{if(e.buttons)read(e)});kn.addEventListener('keydown',read);
+  setInterval(()=>{const el=knobEls&&knobEls.vision;if(el){const off=!(window.TRANS&&TRANS.on);el.classList.toggle('kDim',off);el.title=off?'Works the transmute machine: turn the transmute dial to choose one':''}},500)}
+
+/* ================= A SMALL DREAM BUTTON BY THE DIALS (owner, 2026-11-27) =================
+   The Dream spells left the soundbar (its Dream tab and the 'dream spells' button in More). One small button in the empty
+   space beside the sound dials opens the full Dream page: spell, level and drift, its sound, and whether it sets the board.
+   It is lit while a spell plays. */
+{const css=document.createElement('style');css.textContent='#bDreamSp{display:none!important}#gSound #bBank,#gSound #bMixer{display:none!important}#knobs .dreamBtn{grid-column:5/7;grid-row:2;align-self:center;justify-self:center;min-height:30px;padding:4px 18px;font-size:11px;letter-spacing:.14em}#knobs[data-b=v] .dreamBtn{display:none}';document.head.appendChild(css);
+  const w=setInterval(()=>{const kn=document.getElementById('knobs'),src=document.getElementById('bDreamSp');if(!kn||!src||!window.DREAMSP)return;clearInterval(w);
+    const b=document.createElement('button');b.className='pill dreamBtn';b.textContent='dream';b.title="The Dream spells: chords that play themselves, from Black Dragon: Ascension";kn.appendChild(b);
+    b.onclick=e=>{e.stopPropagation();src.onclick(e)};
+    setInterval(()=>b.classList.toggle('on',DREAMSP.cur>=0),600)},300)}
