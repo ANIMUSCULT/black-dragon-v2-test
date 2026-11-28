@@ -1475,9 +1475,13 @@ registerProcessor('bd-monad',M);`;
    The thirty-odd buttons that were spread over the top row, the menu at the lower right and the dial tabs are gathered
    into four panels. Each button is moved, not copied, so it keeps every behaviour it had. The top row keeps only the
    visualizer, the four groups, and hide panels (so the way back is always in reach). */
+/* one switch for the keys' synths, in the Sound group: new is Ascension's voice, old is each instrument's original */
+{const b=document.createElement('button');b.className='pill';b.id='bSynth';const p=()=>{b.textContent='synths: '+(window.VENG==='v2'?'old':'new');b.classList.toggle('on',window.VENG!=='v2')};
+  b.title="New: the keys play on Ascension's voice. Old: each instrument's original sound. Voices, strings, nectar, breath and reed, electric and the dark have both.";
+  b.onclick=e=>{e.stopPropagation();window.VENG=window.VENG==='v2'?'asc':'v2';p();say('synths · '+(window.VENG==='v2'?'old':'new'))};p();$('.rside').appendChild(b)}
 {const GROUPS=[
    ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
-   ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
+   ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer, and new or old synths.',['bSynth','bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
    ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video.',['@slots','bSave','bShare','bLoad','bRec','bVid']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
@@ -1577,3 +1581,74 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
     gate.onclick=e=>{if(ok())return go.call(gate,e);w.hidden=false};
     w.querySelector('#lgEnter').onclick=e=>{e.stopPropagation();try{sessionStorage.setItem(KEY,'1')}catch(_){}w.hidden=true;go.call(gate,e)};
     w.querySelector('#lgLeave').onclick=e=>{e.stopPropagation();w.hidden=true}}}
+
+/* ================= THE OWNER'S LAYOUT PIECES (2026-11-27, evening) =================
+   1 sounding now sits at the bottom of the board, under the keys (computers; phones keep it in the mix tab);
+   2 the Vision panel opens on every visualizer at once, to pick from, above its other buttons;
+   3 each side panel has a small x that puts it away (the tab in the gutter or a click in its space brings it back);
+   4 the Soundbar opens on the Dream spells and dials: Dream level, drift and the spell's sound, the room, and the five levels. */
+{const desk=()=>matchMedia('(min-width:1001px) and (pointer:fine)').matches;
+  const css=document.createElement('style');css.textContent=`
+  .hud>#live{grid-column:1/-1;justify-content:center;margin-top:2px}
+  .vzGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin:10px 0 4px}
+  .vzGrid button{min-height:40px;padding:4px 6px;font-size:11px;line-height:1.2;text-transform:lowercase}
+  .vzGrid button b{display:block;font-family:var(--tech);font-size:10px;opacity:.7}
+  .pnX{position:absolute;top:6px;right:8px;z-index:4;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#eee;font:14px/18px var(--body);cursor:pointer;opacity:.6;padding:0}
+  .pnX:hover{opacity:1;border-color:rgba(245,96,114,.8)}
+  .sbSec{margin-top:12px}.sbSec h4{margin:0 0 6px}
+  .sbDials{display:flex;flex-wrap:wrap;gap:12px 10px;justify-content:flex-start;padding:4px 2px}
+  .sbDials .knob{width:62px}`;document.head.appendChild(css);
+
+  /* 1 */
+  const moveLive=()=>{const l=document.getElementById('live'),h=document.querySelector('.hud');if(!l||!h)return;if(desk()){if(l.parentNode!==h)h.appendChild(l)}else{const r=document.getElementById('row2');if(r&&l.parentNode!==r)r.prepend(l)}};
+  setTimeout(moveLive,0);addEventListener('resize',moveLive);
+
+  /* 2 */
+  const nm=f=>f.replace(/^(gate|film)-?\d*-?/,'').replace(/-/g,' ')||f;
+  const vizBuild=()=>{const g=document.getElementById('gVision');if(!g||g.querySelector('.vzGrid'))return !!g;
+    const h=document.createElement('h4');h.textContent='Visualizers';const grid=document.createElement('div');grid.className='vzGrid';
+    grid.innerHTML=FILMS.map((f,i)=>`<button class="vb" data-f="${i}"><b>${i+1}</b>${nm(f)}</button>`).join('');
+    g.querySelector('.vh').after(h,grid);const h2=document.createElement('h4');h2.textContent='Machines and rooms';grid.after(h2);
+    grid.addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;e.stopPropagation();setFilm(+b.dataset.f);paintViz();say('visualizer '+(+b.dataset.f+1)+' · '+nm(FILMS[+b.dataset.f]))});
+    const paintViz=()=>grid.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',+b.dataset.f===film));
+    new MutationObserver(()=>{if(!g.hidden)paintViz()}).observe(g,{attributes:true,attributeFilter:['hidden']});paintViz();return true};
+  const w2=setInterval(()=>{if(vizBuild())clearInterval(w2)},250);
+
+  /* 3 */
+  setTimeout(()=>[['#shellL','L'],['#shellR','R']].forEach(([sel,k])=>{const sh=document.querySelector(sel);if(!sh||sh.querySelector('.pnX'))return;
+    if(getComputedStyle(sh).position==='static')sh.style.position='relative';const x=document.createElement('button');x.className='pnX';x.textContent='×';x.title='Put this panel away';x.setAttribute('aria-label','Put this panel away');
+    x.onclick=e=>{e.stopPropagation();const t=document.querySelector(`.sideTab[data-k=${k}]`);if(t)t.click()};sh.appendChild(x)}),400);
+
+  /* 4 */
+  const knob=(label,get,set,fmt)=>{const d=document.createElement('div');d.className='knob';d.tabIndex=0;d.setAttribute('role','slider');d.setAttribute('aria-label',label);
+    d.innerHTML=`<i></i><span>${label}</span>`;const paint=()=>d.style.setProperty('--v',get());let y0=null,v0=0;
+    const put=v=>{v=clamp(v,0,1);set(v);paint();say(label+' · '+(fmt?fmt(v):Math.round(v*100)))};
+    d.addEventListener('pointerdown',e=>{e.stopPropagation();d.setPointerCapture(e.pointerId);y0=e.clientY;v0=get()});d.addEventListener('pointermove',e=>{if(y0!=null)put(v0+(y0-e.clientY)/160)});
+    ['pointerup','pointercancel'].forEach(t=>d.addEventListener(t,()=>{y0=null}));
+    d.addEventListener('keydown',e=>{const u=e.key==='ArrowUp'||e.key==='ArrowRight',dn=e.key==='ArrowDown'||e.key==='ArrowLeft';if(u||dn){e.preventDefault();put(get()+(u?.04:-.04))}});
+    d._paint=paint;paint();return d};
+  const sbBuild=()=>{const g=document.getElementById('gSound');if(!g||!window.DREAMSP)return false;if(g.querySelector('.sbDream'))return true;
+    const SP=DREAMSP.SP,id=i=>'e:dragon:'+i,R={shape:[0,6],bloom:[0,1],shimmer:[0,1],width:[0,2]};let lvl=.5,drift=.5;
+    const spv=k=>{const c=DREAMSP.cur,sp=SP[c<0?0:c];return k in DOVR?DOVR[k]:sp[6][k]};
+    const send=()=>(window.DENG||[]).forEach(nd=>{try{nd.port.postMessage({t:'setMany',v:DOVR})}catch(_){}});
+    const dream=document.createElement('section');dream.className='sbSec sbDream';
+    dream.innerHTML='<h4>Dream</h4><div class="vg sbSpells">'+SP.map((x,i)=>`<button class="vb" data-s="${i}">${x[1]} · ${x[2]} Hz</button>`).join('')+'<button class="vb" data-s="-1">rest</button></div><div class="sbDials"></div>';
+    const dd=dream.querySelector('.sbDials'),ks=[];
+    ks.push(knob('level',()=>lvl,v=>{lvl=v;const c=DREAMSP.cur;if(c>=0)setLayer(id(c),Math.max(.02,v))}));
+    ks.push(knob('drift',()=>drift,v=>{drift=v;window.DDRIFT=Math.pow(2,(.5-v)*2)}));
+    Object.keys(R).forEach(k=>{const [a,z]=R[k];ks.push(knob(k,()=>(spv(k)-a)/(z-a),v=>{DOVR[k]=a+v*(z-a);send()}))});
+    ks.forEach(k=>dd.appendChild(k));
+    const room=document.createElement('section');room.className='sbSec';room.innerHTML='<h4>Room</h4><div class="sbDials"></div>';
+    const rd=room.querySelector('.sbDials');[['space','space'],['echo','echo']].forEach(([k,l])=>{const kn=knob(l,()=>S[k],v=>{S[k]=v;applyAll();if(typeof paintKnobs==='function')paintKnobs()});ks.push(kn);rd.appendChild(kn)});
+    const lv=document.createElement('section');lv.className='sbSec';lv.innerHTML='<h4>Levels</h4><div class="sbDials"></div>';
+    const ld=lv.querySelector('.sbDials');MXB.forEach(([k])=>{const kn=knob(k,()=>MIX[k],v=>{MIX[k]=v;applyMix();const m=document.querySelector(`#mixer input[data-k=${k}]`);if(m)m.value=v},v=>Math.round(v*200));ks.push(kn);ld.appendChild(kn)});
+    /* every sound: the whole library, with the mix of what is playing (each with its level) at its head, lives on this page */
+    const lib=document.createElement('section');lib.className='sbSec sbLib';lib.innerHTML='<h4>Every sound</h4>';const bank=document.getElementById('bank');
+    if(bank){const i=DR.indexOf('bank');if(i>=0)DR.splice(i,1);bank.classList.remove('drawer','jelly');bank.hidden=false;const x=bank.querySelector('.dclose');if(x)x.remove();lib.appendChild(bank);
+      const bb=document.getElementById('bBank');if(bb){bb.onclick=e=>{e.stopPropagation();openDr('gSound');setTimeout(()=>lib.scrollIntoView({block:'start'}),30)}}}
+    const more=document.createElement('h4');more.textContent='More';more.className='sbSec';
+    const grid=g.querySelector('.grpGrid');grid.before(dream,room,lv,lib,more);
+    const paintSp=()=>dream.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',+b.dataset.s===DREAMSP.cur));
+    dream.querySelector('.sbSpells').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;e.stopPropagation();DREAMSP.cast(+b.dataset.s);setTimeout(()=>{paintSp();ks.forEach(k=>k._paint())},50)});
+    new MutationObserver(()=>{if(!g.hidden){paintSp();ks.forEach(k=>k._paint())}}).observe(g,{attributes:true,attributeFilter:['hidden']});paintSp();return true};
+  const w4=setInterval(()=>{if(sbBuild())clearInterval(w4)},250)}
