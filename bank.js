@@ -387,12 +387,7 @@ function monadStop(){if(!MON.held)return;MON.held=false;clearTimeout(MON.tm);$('
 
 /* ---------- wire up ---------- */
 function bankBoot(){
-/* the Codex is long: a search keeps every entry whose words match, and the headings that still have one under them */
-function codexSearch(){const el=$('#codex'),q=document.createElement('input');q.className='q';q.type='search';q.placeholder='search';q.setAttribute('aria-label','Search the codex');el.querySelector('h3').after(q);
-  q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();let head=null,any=false;const close=()=>{if(head)head.hidden=!!v&&!any};
-    [...el.children].forEach(c=>{if(c===q||c.tagName==='H3'||c.classList.contains('dclose'))return;if(c.tagName==='H4'){close();head=c;any=false;return}
-      const ps=c.tagName==='P'?[c]:[...c.querySelectorAll('p')];ps.forEach(p=>{const hit=!v||p.textContent.toLowerCase().includes(v)||(head&&head.textContent.toLowerCase().includes(v));p.hidden=!hit;if(hit)any=true})});close()})}
-buildBank();buildPresets();buildCodex();codexSearch();['vox','bank','presets'].forEach(addSearch);setKamea(0);
+buildBank();buildPresets();buildCodex();['vox','bank','presets'].forEach(addSearch);setKamea(0);
 $('#bSilence').onclick=()=>silence();
 $('#bBank').onclick=e=>{e.stopPropagation();openDr('bank')};
 $('#bPresets').onclick=e=>{e.stopPropagation();openDr('presets')};

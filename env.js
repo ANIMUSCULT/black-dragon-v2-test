@@ -290,7 +290,7 @@ const NBI=['Brown noise with everything above 60 Hz cut away. Felt more than hea
 
 /* ---------- presets for the stones ---------- */
 [['Blood','blood','dread','infernal brass'],['Breath','breath','stillness','flute'],['Magnetism','magnetism','gateway','fm glass'],['Heat','heat','journey','oud'],['Wet','wet','stillness','harp'],
- ['Universe','universe','hypnagogia','glass pad'],['Luxuria','lust','desire','cello'],['Animal attraction','animal','journey','didgeridoo'],['Celestial','celestial','solfeggio','boy choir'],['Avernus','underworld','chamber','bass choir'],['Gold','gold','earth','vibraphone'],['Freeze','freeze','abyss','crystal bowl'],['Dream','dream','hypnagogia','glass pad'],['Nature','nature','earth','flute'],['Wyrm','wyrm','earth','didgeridoo'],['Dragon','dragon','hypnagogia','opal keys'],['Magic','magic','hypnagogia','music box'],['Sand','sand','journey','ney']]
+ ['Universe','universe','hypnagogia','glass pad'],['Luxuria','lust','desire','cello'],['Animal attraction','animal','journey','didgeridoo'],['Celestial','celestial','solfeggio','boy choir'],['Avernus','underworld','chamber','bass choir'],['Gold','gold','earth','vibraphone'],['Freeze','freeze','abyss','crystal bowl'],['Dream','dream','hypnagogia','glass pad'],['Nature','nature','earth','flute'],['Wyrm','wyrm','earth','didgeridoo']]
  .forEach(([n,id,st,vo])=>{const e=ENVS.find(x=>x.id===id);PRESETS.push([n,'stones',st,vo,Object.fromEntries(e.sig.map(i=>[`e:${id}:${i}`,.5])),id]);
    PRESETS.push([n+', deep','stones',st,vo,Object.fromEntries([...e.sig,(e.sig[0]+3)%e.snd.length,(e.sig[1]+5)%e.snd.length].map(i=>[`e:${id}:${i}`,.45])),id])});
 PCATS.unshift('stones');PRESETS.sort((a,b)=>PCATS.indexOf(a[1])-PCATS.indexOf(b[1]));
@@ -339,7 +339,7 @@ $('#bTide').addEventListener('click',()=>{say(S.tide?'tide on · a swell that bu
 $('#bPossess').addEventListener('click',()=>say(possess?'possess on · the machine plays itself. touch a key to steer it':'possess off'));
 $('#bDescent').addEventListener('click',()=>say(desc?'descent · fifteen minutes down to the bottom':'descent stopped'));
 $('#bBreath').addEventListener('click',()=>say(S.breath?'breath on · follow the ring. six a minute':'breath off'));
-$('#knobs').addEventListener('pointermove',e=>{if(!e.buttons)return;const k=e.target.closest('.knob');if(k){const i=[...$('#knobs').children].indexOf(k);say(`${KN[i][1]} · ${kText(KN[i][0])}`)}});
+$('#knobs').addEventListener('pointermove',e=>{if(!e.buttons)return;const k=e.target.closest('.knob');if(k){const i=[...$('#knobs').children].indexOf(k);say(`${KN[i][1]} · ${Math.round(S[KN[i][0]]*100)}`)}});
 $('#modes').addEventListener('click',()=>say('beat · '+S.mode));
 
 /* ---------- the big Monad button ---------- */
