@@ -1425,7 +1425,11 @@ registerProcessor('bd-monad',M);`;
    ['temple','Temple',92,{tom:[[0,1],[3,.6],[6,.8],[8,1],[11,.6],[14,.7]],sub:[[0,0],[8,0]],shk:[4,12],pad:1,prog:[0,0,3,0]}],
    ['velvet','Velvet',84,{kick:[0,9],sub:[[0,0],[8,4]],stab:[],shk:[4,12],pad:2,prog:[0,3,5,4]}],
    ['aura','Aura',120,{kick:[0,4,8,12],sub:[[2,0],[6,0],[10,4],[14,0]],stab:[7,15],shk:[2,6,10,14],prog:[0,4,5,3]}],
-   ['nebula','Nebula',70,{kick:[0],sub:[[0,0],[10,4]],stab:[],shk:[8],pad:2,prog:[0,5,3,4]}]];
+   ['nebula','Nebula',70,{kick:[0],sub:[[0,0],[10,4]],stab:[],shk:[8],pad:2,prog:[0,5,3,4]}],
+   /* nightwave (2026-11-27): dark and glittering. A rolling eighth-note bass, root and octave; a soft arpeggio of chord tones
+      on every sixteenth, filtered and fed to the dotted-eighth echo so it cascades; slow pads under it; the arp turns back on
+      itself every fourth bar and climbs a step for four bars in eight; the chords walk minor i, VI, III, VII */
+   ['night','Nightwave',104,{kick:[0,8],roll:1,arp:[0,2,4,7,9,7,4,2],shk:[4,12],pad:2,prog:[0,5,2,6]}]];
   const G={cur:null,bus:null,echo:null,lp:null,level:.5,follow:true,step:0,next:0,bar:0,iv:null};
   const ctxOK=()=>!!A.ctx;
   const build=()=>{if(G.bus)return;const ctx=A.ctx;G.bus=gn(ctx,0);G.lp=bq(ctx,'lowpass',9000,.5);const out=gn(ctx,1);G.bus.connect(G.lp).connect(out);out.connect(A.master);
@@ -1449,6 +1453,9 @@ registerProcessor('bd-monad',M);`;
   const stab=(t,root,lv,spb)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',1100,.9);f.connect(g);g.connect(G.bus);g.connect(G.eIn);
     [0,2,4].forEach((k,i)=>{const fr=deg(root+k,4);['sawtooth','triangle'].forEach((w,j)=>{const o=ctx.createOscillator();o.type=w;o.frequency.value=fr;o.detune.value=(j?7:-7)+i*2;o.connect(gn(ctx,j?.5:.25)).connect(f);o.start(t);o.stop(t+spb*2)})});
     f.frequency.setValueAtTime(1900,t);f.frequency.exponentialRampToValueAtTime(650,t+spb*1.2);env(g,t,.012,.15*lv,spb*.45)};
+  /* arp: a short soft pluck, sine and a detuned triangle under a 2.6 kHz lowpass, half of it sent to the echo */
+  const arp=(t,f,lv,s16)=>{const ctx=A.ctx,o=ctx.createOscillator(),o2=ctx.createOscillator(),g=gn(ctx,0),fl=bq(ctx,'lowpass',2600,.6);o.frequency.value=f;o2.type='triangle';o2.frequency.value=f;o2.detune.value=6;
+    o.connect(fl);o2.connect(gn(ctx,.5)).connect(fl);fl.connect(g);g.connect(G.bus);g.connect(gn(ctx,.55)).connect(G.eIn);env(g,t,.004,.07*lv,s16*.9);o.start(t);o2.start(t);o.stop(t+s16*6);o2.stop(t+s16*6)};
   const pad=(t,root,dur,lv)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',700,.5);f.connect(g).connect(G.bus);
     [0,2,4,7].forEach(k=>{const fr=deg(root+k,2);[-6,6].forEach(dt=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+dur+2)})});
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.04*lv,t+dur*.35);g.gain.linearRampToValueAtTime(0,t+dur+.6)};
@@ -1464,6 +1471,8 @@ registerProcessor('bd-monad',M);`;
       (P.shk||[]).forEach(k=>{if(k===st&&Math.random()>.08)shk(tt,lv*(st%4===2?1:.7))});
       if(bar%2===1&&P.shk&&P.shk.length&&st===15&&Math.random()<.5)shk(tt+s16*.5,.6);
       (P.stab||[]).forEach(k=>{if(k===st&&!(bar%4===2&&Math.random()<.3))stab(tt,root,lv,spb)});
+      if(P.roll&&st%2===0&&!(bar%4===3&&st>=12))sub(tt,deg(root,1)*(st%4===2?2:1),s16*1.7,lv*.75);
+      if(P.arp&&Math.random()>.07){const seq=bar%4===3?P.arp.slice().reverse():P.arp,d=seq[st%seq.length]+(bar%8>=4?2:0);arp(tt,deg(root+d,4),lv*(st%4===0?1:.7),s16)}
       G.step++;G.next+=s16}};
   const setLevel=()=>{if(G.bus&&A.ctx)G.bus.gain.setTargetAtTime(G.cur?G.level*GTRIM:0,A.ctx.currentTime,.4)};
   const GTRIM=.5;/* set by measurement (2026-11-27, after the voices moved up where speakers can play them): a groove at the middle of its slider sits near 0.05 */
