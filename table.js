@@ -1803,3 +1803,28 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
   window.STONEFILM=STONEFILM;
   $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{const id=b.dataset.id;if(ENV!==id)return;const own=document.getElementById('bOwn');if(own&&own.classList.contains('on'))return;
     const i=FILMS.indexOf(STONEFILM[id]);if(i>=0&&i!==film)setFilm(i)},0)})}
+
+/* ================= TAKE IT WITH YOU, AND SAND YOU CAN DRAG (owner, 2026-11-27) =================
+   Every tone on the healing table carries a small ↓: thirty seconds of that exact sine as a 24-bit WAV, the frequency in
+   the file name (black-dragon-528.00Hz.wav), soft in and out, ready for anyone's own track. The beat bank has no ↓: a
+   beat is not a tone on its own. And the cymatics plate can be dragged: from the middle to the rim, the carrier tone
+   rises from 60 to 600 Hz on a smooth curve, and the sand gathers into the figure of each tone as you move. */
+{const css=document.createElement('style');css.textContent=`.hb{position:relative}.hb .tkDl{position:absolute;top:3px;right:5px;font-size:12px;line-height:1;opacity:.55;padding:2px 3px;border-radius:4px;cursor:pointer}
+  .hb .tkDl:hover{opacity:1;background:rgba(255,255,255,.12)}#cym.dragOn{cursor:crosshair}`;document.head.appendChild(css);
+  const take=hz=>{const sr=48000,n=sr*30,L=new Float32Array(n),R=new Float32Array(n),w=2*Math.PI*hz/sr,fa=sr;
+    for(let i=0;i<n;i++){const e=Math.min(1,i/fa,(n-1-i)/fa),v=Math.sin(w*i)*.5*e*e*(3-2*e);L[i]=v;R[i]=v}
+    save(wav24(L,R,sr),`black-dragon-${(+hz).toFixed(2)}Hz.wav`);say(`take it with you · ${(+hz).toFixed(2)} Hz, 30 seconds`)};
+  const deco=()=>{const b=HBANKS[hbank];if(b&&b.beat)return;document.querySelectorAll('#heal .hb').forEach(h=>{if(h.querySelector('.tkDl'))return;const d=document.createElement('span');
+    d.className='tkDl';d.textContent='↓';d.setAttribute('role','button');d.title=`Take ${h.dataset.hz} Hz with you: a 30 second WAV of the exact tone`;d.dataset.dl=h.dataset.hz;h.appendChild(d)})};
+  const bh0=buildHeal;buildHeal=function(){const r=bh0.apply(this,arguments);deco();return r};deco();
+  document.getElementById('heal').addEventListener('click',e=>{const d=e.target.closest('.tkDl');if(!d)return;e.stopPropagation();e.preventDefault();take(+d.dataset.dl)},true);
+
+  /* drag the sand */
+  const hook=()=>{const c=document.getElementById('cym');if(!c||c._drag)return !!c;c._drag=1;c.classList.add('dragOn');c.style.pointerEvents='auto';c.style.touchAction='none';let on=false;
+    const at=e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5,d=Math.min(1,Math.hypot(x,y)*2),f=60*Math.pow(10,d);
+      const v=Math.log(f/40)/Math.log(15);if(knobEls&&knobEls.car)knobEls.car._set(v);else{S.fc=+f.toFixed(1);applyAll()}say(`the sand follows · ${S.fc.toFixed(1)} Hz`)};
+    c.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();on=true;c.setPointerCapture(e.pointerId);at(e)},true);
+    c.addEventListener('pointermove',e=>{if(on){e.stopPropagation();at(e)}},true);
+    ['pointerup','pointercancel','lostpointercapture'].forEach(t=>c.addEventListener(t,e=>{if(on){on=false;e.stopPropagation()}},true));
+    c.addEventListener('click',e=>e.stopPropagation(),true);return true};
+  const w=setInterval(()=>{if(hook())clearInterval(w)},400)}
