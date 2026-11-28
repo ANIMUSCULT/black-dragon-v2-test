@@ -1198,6 +1198,82 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
     const sv0=setVoice;setVoice=function(i){const r=sv0.apply(this,arguments);if(A.ctx&&VOX[S.voice]&&VOX[S.voice].asc)engine().catch(()=>{});return r}}
   window.ASCKEYS={engine,live}}
 
+/* ================= ASCENSION'S VOICE FOR V2'S OWN INSTRUMENTS (pilot, 2026-11-27) =================
+   A faithful copy of Black Dragon: Ascension's synth voice (morphing band-limited wavetables, among them its four sung
+   vowels, unison spread across the ears, a sub octave, breath noise, a ZDF low-pass with its own envelope, vibrato and a
+   slow morph), run in V2's own worklet so each V2 instrument can bring its own settings. Ascension's file stays untouched.
+   It plays into V2's keys bus, so the instrument keeps V2's chorus, echo and room. The voices and strings families are the
+   pilot; each can be heard both ways with the engine switch on the instrument page. Whisper stays as it was. */
+const ASCVW=`const SR=sampleRate,TAU=Math.PI*2,TL=2048,NMIP=10;const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+const SPECS=[k=>(1/k)*(k%2?1:.55)*Math.exp(-k/60),null,null,null,null,k=>(k%2?1/(1+.18*k*k):0)+(k===2?.25:0)+(k===4?.12:0),k=>(k<=3?1/k:0)+(k===5?.3:0)+(k===8?.18:0)+(k===12?.09:0)];
+const VOW=[[[800,1,140],[1150,.55,130],[2900,.22,220]],[[450,1,110],[800,.5,110],[2830,.14,220]],[[325,1,90],[700,.35,110],[2530,.1,220]],[[280,1,90],[2250,.5,190],[2900,.32,230]]];
+VOW.forEach((fm,i)=>{SPECS[i+1]=k=>{const f=k*196;let a=0;for(const [F,A,B] of fm)a+=A*Math.exp(-Math.pow((f-F)/B,2));return(a+.02/k)/Math.pow(k,.25)}});
+const NT=SPECS.length,SIN=new Float32Array(TL);for(let i=0;i<TL;i++)SIN[i]=Math.sin(i/TL*TAU);const TABLES=[];
+for(let t=0;t<NT;t++){const mips=[];for(let m=0;m<NMIP;m++){const fHi=27.5*Math.pow(2,m+1),maxH=clamp(Math.floor(SR*.45/fHi),1,400),tb=new Float32Array(TL+1);
+  for(let k=1;k<=maxH;k++){const a=SPECS[t](k);if(Math.abs(a)<1e-5)continue;for(let i=0;i<TL;i++)tb[i]+=a*SIN[(i*k)%TL]}
+  let pk=0;for(let i=0;i<TL;i++)pk=Math.max(pk,Math.abs(tb[i]));pk=pk||1;for(let i=0;i<TL;i++)tb[i]/=pk;tb[TL]=tb[0];mips.push(tb)}TABLES.push(mips)}
+const mipFor=f=>clamp(Math.floor(Math.log2(Math.max(f,1)/27.5)),0,NMIP-1);
+class Voice{constructor(){this.on=false;this.amp=0;this.ph=new Float64Array(9);this.ic=new Float64Array(4)}
+  start(id,f,vel,P){this.P=P;this.id=id;this.f=f;this.vel=vel;this.gate=true;this.on=true;this.age=0;this.lfoPh=Math.random()*TAU;this.vibPh=Math.random()*TAU;
+    if(this.amp<1e-4){for(let i=0;i<9;i++)this.ph[i]=Math.random();this.ic.fill(0);this.fenv=0}this.stage=0;this.fstage=0;const n=P.uni;this.dets=[];this.pans=[];
+    for(let u=0;u<n;u++){const x=n===1?0:u/(n-1)*2-1;this.dets.push(Math.pow(2,x*P.det/12));this.pans.push(x*P.spr)}}
+  release(){this.gate=false;this.stage=3;this.fstage=3}}
+class AV extends AudioWorkletProcessor{constructor(o){super();const n=(o&&o.processorOptions&&o.processorOptions.voices)||12;this.V=Array.from({length:n},()=>new Voice());
+  this.port.onmessage=e=>{const m=e.data;if(m.t==='on'){let v=this.V.find(x=>x.on&&x.id===m.id);if(!v)v=this.V.find(x=>!x.on)||this.V.filter(x=>!x.gate).sort((a,b)=>a.amp-b.amp)[0]||this.V.sort((a,b)=>b.age-a.age)[0];v.start(m.id,m.f,m.v,m.P)}
+    else if(m.t==='off')this.V.forEach(v=>{if(v.on&&v.id===m.id&&v.gate)v.release()});else if(m.t==='allOff')this.V.forEach(v=>{if(v.on&&v.gate)v.release()});
+    else if(m.t==='glide')this.V.forEach(v=>{if(v.on&&v.id===m.id)v.f=m.f})}}
+  process(_,outs){const out=outs[0],L=out[0],R=out[1]||out[0],N=L.length,bloom=.5,act=[];
+    for(const v of this.V){if(!v.on)continue;v.age+=N;const P=v.P;v.lfoPh+=TAU*P.morphLfo*N/SR;const shp=clamp(P.shape+Math.sin(v.lfoPh)*(P.morphLfo?1.4:0),0,NT-1.001);
+      v.t0=Math.floor(shp);v.tf=shp-v.t0;const fm=v.f;v.mip=mipFor(fm*Math.pow(2,P.det/12)*1.2);v.vibPh+=TAU*5.1*N/SR;const vd=P.vib*Math.min(1,v.age/(SR*.6));v.fmv=Math.pow(2,Math.sin(v.vibPh)*vd/12);
+      v.inc=v.dets.map(d=>fm*d*v.fmv/SR);v.subInc=fm*.5*v.fmv/SR;const coef=st=>1-Math.exp(-1/(Math.max(.002,st)*SR));
+      v.cA=1/(Math.max(.002,P.A)*SR);v.cD=coef(P.D/4);v.cR=coef(P.R/6);v.fcA=1/(Math.max(.002,P.fA)*SR);v.fcD=coef(P.fD/4);v.fcR=coef(P.fR/6);
+      v.cutBase=P.cut*(.35+bloom*1.9)*Math.pow(fm/261.6,P.kt);v.envAmt=P.env*(.4+bloom);act.push(v)}
+    const nyq=SR*.45;
+    for(let i=0;i<N;i++){let sl=0,sr=0;
+      for(const v of act){const P=v.P;
+        if(v.stage===0){v.amp+=v.cA;if(v.amp>=1){v.amp=1;v.stage=1}}else if(v.stage===1){v.amp+=(P.S-v.amp)*v.cD}else if(v.stage===3){v.amp+=(0-v.amp)*v.cR;if(v.amp<1e-4){v.on=false;v.amp=0;continue}}
+        if(v.fstage===0){v.fenv+=v.fcA;if(v.fenv>=1){v.fenv=1;v.fstage=1}}else if(v.fstage===1)v.fenv+=(P.fS-v.fenv)*v.fcD;else v.fenv+=(0-v.fenv)*v.fcR;
+        let ol=0,or=0;const ta=TABLES[v.t0][v.mip],tb=TABLES[Math.min(NT-1,v.t0+1)][v.mip],tf=v.tf,n=v.inc.length;
+        for(let u=0;u<n;u++){let ph=v.ph[u]+v.inc[u];if(ph>=1)ph-=1;v.ph[u]=ph;const x=ph*TL,j=x|0,fr=x-j,a=ta[j]+(ta[j+1]-ta[j])*fr,b=tb[j]+(tb[j+1]-tb[j])*fr,smp=a+(b-a)*tf;const pn=v.pans[u];ol+=smp*(1-pn)*.5;or+=smp*(1+pn)*.5}
+        ol/=Math.sqrt(n);or/=Math.sqrt(n);let sp=v.ph[8]+v.subInc;if(sp>=1)sp-=1;v.ph[8]=sp;const sub=Math.sin(sp*TAU)*P.sub,nz=(Math.random()*2-1)*P.noise;ol+=sub+nz;or+=sub+nz;
+        if((i&15)===0){const fc=clamp(v.cutBase+v.envAmt*v.fenv,30,nyq),g=Math.tan(Math.PI*fc/SR),k=2-2*P.res;v.a1=1/(1+g*(g+k));v.a2=g*v.a1;v.a3=g*v.a2}
+        const ic=v.ic;let v3=ol-ic[1],v1=v.a1*ic[0]+v.a2*v3,v2=ic[1]+v.a2*ic[0]+v.a3*v3;ic[0]=2*v1-ic[0];ic[1]=2*v2-ic[1];const fl=v2;
+        v3=or-ic[3];v1=v.a1*ic[2]+v.a2*v3;v2=ic[3]+v.a2*ic[2]+v.a3*v3;ic[2]=2*v1-ic[2];ic[3]=2*v2-ic[3];const fr2=v2;
+        const gA=v.amp*v.amp*P.gain*v.vel;sl+=fl*gA;sr+=fr2*gA}
+      L[i]=sl;if(R!==L)R[i]=sr}return true}}
+registerProcessor('bd-ascv',AV);`;
+/* levels set by measurement (2026-11-27): one note, held voices at about 0.055 RMS on the keys bus, plucks matched to their
+   originals (koto held so its attack peaks with the rest), all under 0.5% of energy above 3.5 kHz.
+   Each pilot instrument in Ascension's terms: shape (0 warm, 1 to 4 the vowels A O U I, 5 glass, 6 bell organ), unison,
+   detune and spread, sub, breath, filter cutoff, resonance, envelope and key tracking, the two envelopes, vibrato, morph */
+const ASCP={
+  'choir':{shape:2,morphLfo:.1,uni:5,det:.14,spr:1,sub:.18,noise:.02,cut:2600,res:.08,env:900,kt:.4,A:.7,D:2,S:.85,R:2.6,fA:.8,fD:3,fS:.7,fR:2.6,vib:.12,gain:0.579},
+  'sirens':{shape:3,morphLfo:.08,uni:3,det:.1,spr:.9,sub:.05,noise:.03,cut:3000,res:.1,env:800,kt:.4,A:.9,D:2,S:.85,R:3,fA:1,fD:3,fS:.7,fR:3,vib:.12,gain:0.655},
+  'monks':{shape:2.4,morphLfo:.05,uni:5,det:.1,spr:.8,sub:.25,noise:.015,cut:1400,res:.08,env:700,kt:.35,A:1.1,D:2,S:.88,R:3,fA:1.2,fD:3,fS:.7,fR:3,vib:.08,gain:0.561},
+  'throat singer':{shape:4,morphLfo:.03,uni:2,det:.04,spr:.5,sub:.35,noise:.01,cut:900,res:.55,env:2400,kt:.3,A:.5,D:1.5,S:.8,R:2,fA:.6,fD:3,fS:.5,fR:2,vib:.03,gain:0.458},
+  'hum':{shape:3,morphLfo:0,uni:2,det:.06,spr:.6,sub:.2,noise:.005,cut:700,res:.05,env:300,kt:.3,A:.5,D:1.5,S:.9,R:2,fA:.5,fD:2,fS:.8,fR:2,vib:.08,gain:0.573},
+  'bass choir':{shape:2,morphLfo:.07,uni:6,det:.12,spr:1,sub:.3,noise:.015,cut:1600,res:.08,env:700,kt:.35,A:.9,D:2,S:.88,R:2.8,fA:1,fD:3,fS:.7,fR:2.8,vib:.1,gain:0.458},
+  'boy choir':{shape:3,morphLfo:.09,uni:4,det:.1,spr:.9,sub:.05,noise:.02,cut:3200,res:.08,env:900,kt:.45,A:.6,D:2,S:.85,R:2.4,fA:.7,fD:3,fS:.7,fR:2.4,vib:.1,gain:0.655},
+  'banshee':{shape:4,morphLfo:.25,uni:3,det:.2,spr:1,sub:.05,noise:.03,cut:3000,res:.12,env:1200,kt:.4,A:.5,D:1.5,S:.85,R:2.2,fA:.5,fD:2,fS:.7,fR:2.2,vib:.3,gain:0.573},
+  'tanpura':{shape:0,morphLfo:.02,uni:3,det:.06,spr:.7,sub:.1,noise:.008,cut:1800,res:.25,env:3000,kt:.5,A:.01,D:3,S:.25,R:3,fA:.01,fD:1.8,fS:.3,fR:2,vib:0,gain:1.463},
+  'bowed strings':{shape:0,morphLfo:.03,uni:7,det:.18,spr:1,sub:.1,noise:.01,cut:1100,res:.1,env:1200,kt:.5,A:.8,D:2,S:.9,R:2.4,fA:.9,fD:2,fS:.7,fR:2.4,vib:.1,gain:0.724},
+  'cello':{shape:2,morphLfo:0,uni:3,det:.06,spr:.6,sub:.15,noise:.008,cut:900,res:.1,env:1400,kt:.45,A:.25,D:1,S:.85,R:1.2,fA:.3,fD:1.5,fS:.6,fR:1.2,vib:.14,gain:0.585},
+  'harp':{shape:6,morphLfo:0,uni:2,det:.02,spr:.4,sub:.05,noise:.004,cut:2400,res:.1,env:3000,kt:.6,A:.004,D:1.4,S:0,R:1.2,fA:.002,fD:.6,fS:0,fR:1,vib:0,gain:5.45},
+  'koto':{shape:0,morphLfo:0,uni:2,det:.03,spr:.4,sub:.05,noise:.02,cut:1800,res:.2,env:3500,kt:.6,A:.005,D:1,S:0,R:.9,fA:.003,fD:.3,fS:0,fR:.8,vib:0,gain:6.5},
+  'sitar':{shape:5,morphLfo:.04,uni:2,det:.04,spr:.5,sub:.05,noise:.01,cut:1600,res:.45,env:4000,kt:.5,A:.006,D:2.4,S:.05,R:1.6,fA:.004,fD:1,fS:.1,fR:1.4,vib:0,gain:2.389}};
+window.ASCP=ASCP;window.VENG='asc';
+{let node=null,boot=null;const live={};const mount=()=>boot||(boot=A.ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([ASCVW],{type:'application/javascript'}))).then(()=>{
+    node=new AudioWorkletNode(A.ctx,'bd-ascv',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{voices:MOBILE?6:12}});node.connect(A.vBus);return node}).catch(e=>{boot=null;throw e}));
+  const uses=V=>V&&ASCP[V.n]&&window.VENG!=='v2';
+  const on0=noteOn,off0=noteOff;
+  noteOn=(id,i,vel=1)=>{const V=VOX[S.voice];if(!uses(V))return on0(id,i,vel);if(!A.ctx||live[id])return;
+    const f=(KEYHZ[id]||degFreq(i))*Math.pow(2,V.oct||0),P=ASCP[V.n];live[id]=1;flash(i,true);
+    const send=n=>{if(live[id])n.port.postMessage({t:'on',id,f,v:Math.min(1,vel)*(P.tr||1),P})};if(node)send(node);else mount().then(send).catch(()=>{delete live[id];flash(i,false)})};
+  noteOff=(id,i)=>{if(!live[id])return off0(id,i);delete live[id];flash(i,false);if(node)node.port.postMessage({t:'off',id})};
+  {const w=setInterval(()=>{if(!A.ctx||!A.vBus)return;clearInterval(w);if(uses(VOX[S.voice]))mount().catch(()=>{})},400);
+    const sv0=setVoice;setVoice=function(i){const r=sv0.apply(this,arguments);if(A.ctx&&uses(VOX[S.voice]))mount().catch(()=>{});return r}}
+  window.ASCV={mount,live,get node(){return node}}}
+
 /* ================= CHORDS AND MAGIC CHORDS: the keyboard modes of Black Dragon: Ascension =================
    Notes plays one note a key. Chords builds a chord on each key from the scale (d, d+2, d+4). Magic makes every key play
    the chord the Dream is on at that moment (a chord spell in the Dragon stone), walking up through its inversions along

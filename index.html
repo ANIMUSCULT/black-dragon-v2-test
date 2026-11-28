@@ -1367,6 +1367,7 @@ function buildVox(){const el=$('#vox'),FL=[];VOX.forEach(v=>{if(!FL.includes(v.f
     el.innerHTML=`<h3>Instrument</h3><p class="vh">What the keys sound like. Pick a type, then the instrument, then what one key plays.</p>`
       +`<div class="kstep type"><h5><i>1</i>Instrument type</h5><div class="vg">${FL.map(f=>`<button class="vb vf${f===fam?' on':''}" data-f="${f}">${f}</button>`).join('')}</div></div>`
       +`<div class="kstep pick"><h5><i>2</i>Choose your instrument <em>${fam}</em></h5><div class="vg">${VOX.map((x,i)=>x.fam===fam?`<button class="vb${i===S.voice?' on':''}" data-i="${i}">${x.n}</button>`:'').join('')}</div></div>`
+      +(window.ASCP&&VOX.some(x=>x.fam===fam&&ASCP[x.n])?`<div class="kstep opts" style="margin-top:-4px"><h5><i>·</i>Engine <em>${window.VENG==='v2'?'original':'Ascension voice'}</em></h5><div class="vg"><button class="vb veng${window.VENG!=='v2'?' on':''}" data-eng="asc">Ascension voice</button><button class="vb veng${window.VENG==='v2'?' on':''}" data-eng="v2">original</button></div><p class="vh">The ${fam} family can play on Ascension's own voice or on this instrument's original one. Try both.</p></div>`:'')
       +`<div class="kstep play"><h5><i>3</i>What one key plays <em>${['one note','chords','magic'][cm]}</em></h5><div class="vg">${['one note','chords','magic'].map((t,k)=>`<button class="vb vc${k===cm?' on':''}" data-c="${k}">${t}</button>`).join('')}</div><p class="vh">${HINT[cm]}</p></div>`
       +(typeof TUN!=='undefined'?`<div class="kstep tune"><h5><i>4</i>Scale <em>${TUN[tun][0]}</em></h5><div class="vg">${TUN.map((t,i)=>`<button class="vb vt${i===tun?' on':''}" data-t="${i}">${t[0]}</button>`).join('')}</div><p class="vh">Which notes the keys play. By state follows the state you are in; the others stay put whatever state you pick.</p></div>`:'')
       +`<div class="kstep opts"><h5><i>5</i>Key options</h5>`
@@ -1381,6 +1382,7 @@ function buildVox(){const el=$('#vox'),FL=[];VOX.forEach(v=>{if(!FL.includes(v.f
   el.onclick=e=>{const b=e.target.closest('.vb');if(!b)return;e.stopPropagation();
     if(b.dataset.f!=null){fam=b.dataset.f;paint()}else if(b.dataset.i!=null)setVoice(+b.dataset.i);else if(b.dataset.c!=null&&window.CHORDS){CHORDS.mode=+b.dataset.c;say('keys · '+['one note','chords','magic'][+b.dataset.c])}
     else if(b.dataset.t!=null&&window.setTun)setTun(+b.dataset.t);
+    else if(b.dataset.eng!=null){window.VENG=b.dataset.eng;paint();say('engine · '+(VENG==='v2'?'original':'Ascension voice'))}
     else if(b.dataset.o!=null){kOct=+b.dataset.o;paint();say('keys · octave '+(kOct>0?'+':'')+kOct)}
     else if(b.dataset.v!=null){kVel=+b.dataset.v;paint();say('keys · touch '+Math.round(kVel*100)+'%')}
     else if(b.dataset.x!=null&&window.CHORDS){const k=b.dataset.x,y=+b.dataset.y;CHORDS.set(k,k==='bass'?!!y:y);say('keys · '+k+' '+b.textContent)}};
@@ -1623,9 +1625,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1128e"></script>
-<script src="env.js?v=1128e"></script>
-<script src="table.js?v=1128e"></script>
-<script src="luxuria.js?v=1128e"></script>
+<script src="bank.js?v=1128f"></script>
+<script src="env.js?v=1128f"></script>
+<script src="table.js?v=1128f"></script>
+<script src="luxuria.js?v=1128f"></script>
 </body>
 </html>
