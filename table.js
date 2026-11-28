@@ -1628,20 +1628,15 @@ document.addEventListener('click',e=>{if(e.target.closest('.drawer,.sideTab,#gat
   addEventListener('pointerup',off);addEventListener('pointercancel',off);addEventListener('blur',off)}
 setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElementById('keysBar');if(g&&kb){kb.appendChild(g);g.classList.add('kbSound');g.textContent='soundbar';const h=document.querySelector('#gSound h3');if(h)h.textContent='Soundbar'}},120);
 
-/* ================= ONE LIGHT WARNING, AT THE DOOR =================
-   The board flickers and floods the screen in several places (the Dreamachine, the flicker, the Ganzfeld), so the warning
-   lives at the entrance, shown once on a first visit and remembered, rather than inside any one room. */
-{const KEY='bd-light-ok',ok=()=>{try{return sessionStorage.getItem(KEY)==='1'}catch(_){return false}},gate=$('#gate'),go=gate&&gate.onclick;
-  if(gate&&go){const w=document.createElement('div');w.id='lightGate';w.hidden=true;
-    w.style.cssText='position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:20px';
-    w.innerHTML='<div style="width:min(520px,94vw);padding:24px 26px;border-radius:12px;background:rgba(14,10,10,.96);border:1px solid rgba(242,69,92,.45);color:var(--bone)">'
-      +'<h3 style="font-family:var(--serif);font-size:28px;font-weight:600;margin-bottom:12px">Before you enter</h3>'
-      +'<p style="font-size:15px;line-height:1.55;margin-bottom:18px">Black Dragon flickers and pulses light, and some rooms fill the whole screen with it. If you or anyone in your family has epilepsy or has ever had a seizure, keep the light features off. Stop at once if you feel unwell.</p>'
-      +'<div style="display:flex;gap:10px;flex-wrap:wrap"><button id="lgEnter" class="pill">I understand · enter</button><button id="lgLeave" class="pill">not now</button></div></div>';
-    document.body.appendChild(w);
-    gate.onclick=e=>{if(ok())return go.call(gate,e);w.hidden=false};
-    w.querySelector('#lgEnter').onclick=e=>{e.stopPropagation();try{sessionStorage.setItem(KEY,'1')}catch(_){}w.hidden=true;go.call(gate,e)};
-    w.querySelector('#lgLeave').onclick=e=>{e.stopPropagation();w.hidden=true}}}
+/* ================= ONE LIGHT WARNING, ON THE DOOR (owner, 2026-11-28) =================
+   The board flickers and floods the screen in several places (the Dreamachine, the flicker, the Ganzfeld). The warning is
+   written on the door itself, read on every visit before 'enter', so there is one screen to pass, not two. */
+{const foot=document.querySelector('#gate');
+  if(foot&&!document.getElementById('lightNote')){const n=document.createElement('p');n.id='lightNote';
+    n.textContent='Black Dragon flickers and pulses light, and some rooms fill the whole screen with it. If you or anyone in your family has epilepsy or has ever had a seizure, keep the light features off. Stop at once if you feel unwell.';
+    foot.appendChild(n);
+    const c=document.createElement('style');c.textContent='#lightNote{position:absolute;z-index:2;top:22px;left:50%;transform:translateX(-50%);width:min(720px,92vw);margin:0;padding:10px 16px;border-radius:10px;background:rgba(10,6,8,.62);border:1px solid rgba(242,69,92,.4);font-size:13px;line-height:1.5;text-align:center;color:#efe6da}'
+      +'@media (max-width:1000px){#lightNote{font-size:11.5px;padding:8px 12px;top:14px}#stones .stone{font-size:11px!important}}';document.head.appendChild(c)}}
 
 /* ================= THE OWNER'S LAYOUT PIECES (2026-11-27, evening) =================
    1 sounding now sits at the bottom of the board, under the keys (computers; phones keep it in the mix tab);
@@ -2054,7 +2049,7 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
    Readouts in real units while a dial turns: the carrier in hertz, attack and release as how much longer or shorter than the
    voice's own (×0.25 to ×4), everything else out of a hundred. The effect dial works the transmute machine, so it dims when
    no machine is running and says so if turned. The dial tab buttons are slimmer, so the dial area keeps its old height. */
-{const css=document.createElement('style');css.textContent='@media (min-width:1001px) and (pointer:fine){.deck>.rside{display:none!important}#core{padding-top:36px;box-sizing:border-box}#stones{gap:4px 6px!important}#stones .stone{height:21px!important;font-size:8.5px!important}.ktabs .pill,.ktabs button{height:28px!important;min-height:0!important;padding-top:4px!important;padding-bottom:4px!important;padding-left:6px!important;padding-right:6px!important;line-height:1.1}}.knob.kDim{opacity:.42}';document.head.appendChild(css);
+{const css=document.createElement('style');css.textContent='@media (min-width:1001px) and (pointer:fine){.deck>.rside{display:none!important}#core{padding-top:36px;box-sizing:border-box}#stones{gap:4px 6px!important}#stones .stone{height:21px!important;font-size:10px!important;letter-spacing:.06em!important}#knobs .knob span{font-size:10px!important}#pads button{font-size:10px!important}.ktabs .pill,.ktabs button{height:28px!important;min-height:0!important;padding-top:4px!important;padding-bottom:4px!important;padding-left:6px!important;padding-right:6px!important;line-height:1.1}}.knob.kDim{opacity:.42}';document.head.appendChild(css);
   const txt=k=>k==='car'?S.fc.toFixed(1)+' Hz':(k==='att'||k==='rel')?'×'+Math.pow(2,(S[k]-.5)*4).toFixed(2):String(Math.round((S[k]||0)*100));
   const kn=document.getElementById('knobs');
   const read=e=>{const k=e.target.closest('.knob');if(!k)return;const i=[...kn.querySelectorAll('.knob')].filter(x=>!x.dataset.k).indexOf(k);
