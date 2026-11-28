@@ -839,10 +839,13 @@ const PH={};
     ['backlit','The backlit animation of Tron, 1982: only the edges of things, burning as lines of light on black.','glow','how much picture stays'],
     ['pas de deux','Norman McLaren’s Pas de deux, 1968: each movement printed again and again, so a dancer trails her own ghosts.','ghosts','colour of the ghosts'],
     ['ink','Suminagashi, ink floated on water, Japan, twelfth century: the picture is dropped on a slow current and carried off in curls.','current','what is dropped in'],
-    ['pixel sort','Kim Asendorf’s pixel sorting, 2010: bright runs of the image pulled into long falling streaks.','length','threshold']];
+    ['pixel sort','Kim Asendorf’s pixel sorting, 2010: bright runs of the image pulled into long falling streaks.','length','threshold'],
+    ['blood','Liquid blood poured over the picture: thick, dark and glossy, catching the light as it runs down.','how much blood','how fast it runs'],
+    ['mercury','Quicksilver: the picture seen in a pool of liquid metal that ripples and shines.','depth of the ripples','size of the ripples'],
+    ['thermal','A thermal camera: the scene as heat, from black through red and orange to white-hot.','heat','shimmer']];
   const FEED=[2,5,10,11];
   let on=false,mode=0,P=null,CP=null,U={},tex=null,fb=[],cur=0,T=0,last=0,lvl=0,an=null;
-  const b=document.createElement('button');b.className='pill';b.id='bTrans';b.textContent='transmute';b.title='Open the Transmutation deck: the clip through thirteen image machines, steered by the vision dials';($('#bOwn')||$('#bFilm')).after(b);
+  const b=document.createElement('button');b.className='pill';b.id='bTrans';b.textContent='transmute';b.title='Open the Transmutation deck: the clip through sixteen image machines, steered by the vision dials';($('#bOwn')||$('#bFilm')).after(b);
   bar.querySelector('.tmodes').innerHTML=M.map(([k],i)=>`<button data-i="${i}">${k}</button>`).join('');
   const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
   const FS=`precision highp float;uniform sampler2D uV,uP;uniform vec2 uRes,uVR;uniform float uT,uL,uK,uW,uTw,uMi,uHue,uEx,uTr,uPk;uniform int uM;
@@ -896,10 +899,27 @@ void main(){vec2 fc0=gl_FragCoord.xy,uv0=fc0/uRes;float mn=min(uRes.x,uRes.y);ve
   else if(uM==11){vec2 q=p*2.;float e=.02,tt=t*.05;float n1=fbm(q+vec2(0.,e)+tt),n2=fbm(q-vec2(0.,e)+tt),n3=fbm(q+vec2(e,0.)+tt),n4=fbm(q-vec2(e,0.)+tt);
     vec2 curl=vec2(n1-n2,n4-n3)/(2.*e);vec3 pr=texture2D(uP,uv0-curl*(.0012+K*.007)*(1.+L*2.)).rgb;vec3 cc=vid(uv);
     float key=smoothstep(.25+W*.4,.6+W*.4,lum(cc));col=mix(pr*(.986+uTr*.012),cc,key*.16+.008);}
+  else if(uM==13){vec2 q=p*(1.5+W*1.1);float tt=t*(.05+W*.14);vec2 fl=vec2(0.,tt*3.);
+    vec2 w=vec2(fbm(q+vec2(0.,tt*2.)),fbm(q+vec2(4.3,1.7-tt*1.4)));float h=fbm(q*1.3+2.2*w+fl);float e=.012;
+    float hx=fbm((q+vec2(e,0.))*1.3+2.2*w+fl)-h,hy=fbm((q+vec2(0.,e))*1.3+2.2*w+fl)-h;vec3 n=normalize(vec3(-hx/e*.2,-hy/e*.2,1.));
+    vec3 cc=vid(uv+n.xy*(.02+K*.05));float l=lum(cc);float cover=smoothstep(.66-K*.6,.8-K*.45,h+l*.22+L*.15);
+    vec3 bl=mix(vec3(.16,0.,.008),vec3(.6,.015,.04),pow(l,.8))*(.65+.7*h);vec3 Ld=normalize(vec3(-.4,.55,.8));
+    float sp=pow(max(dot(reflect(-Ld,n),vec3(0.,0.,1.)),0.),56.);float rim=pow(1.-n.z,2.)*.7;
+    vec3 liquid=bl+vec3(1.,.8,.8)*sp*1.4+vec3(.45,.01,.03)*rim;vec3 pr=texture2D(uP,uv0+vec2(0.,(.0006+W*.0035)*(1.+h))).rgb;
+    col=mix(cc*.5,liquid,cover);col=mix(col,max(col,pr*vec3(.985,.86,.86)),cover*(.35+uTr*.5));}
+  else if(uM==14){vec2 q=p*(2.+W*3.);float tt=t*.25;vec2 o=vec2(tt,-tt*.7);float h=fbm(q+o)*.6+.4*fbm(q*2.3-vec2(tt*.6,tt));float e=.01;
+    float hx=(fbm(q+vec2(e,0.)+o)-fbm(q-vec2(e,0.)+o))/(2.*e),hy=(fbm(q+vec2(0.,e)+o)-fbm(q-vec2(0.,e)+o))/(2.*e);
+    vec3 n=normalize(vec3(-hx*(.25+K*.9),-hy*(.25+K*.9),1.));vec3 r=reflect(vec3(0.,0.,-1.),n);vec3 env=vidW(uv+r.xy*(.15+K*.35)+L*.02);
+    float l=lum(env);vec3 chrome=vec3(pow(l,1.4))*vec3(.92,.95,1.)*1.25;float sp=pow(max(dot(n,normalize(vec3(.3,.5,.8))),0.),60.);
+    col=mix(chrome,env*1.1,.18)+sp*.9;col*=.75+.35*h;}
+  else if(uM==15){vec3 cc=vid(uv);float l=lum(cc);float b=0.;vec2 px=3./uRes;
+    for(int i=-2;i<=2;i++)for(int j=-2;j<=2;j++)b+=lum(vid(uv+vec2(float(i),float(j))*px));b/=25.;
+    float x=clamp(mix(l,b,.5)*(1.+K*1.2)+L*.25+(fbm(p*3.+t*.1)-.5)*W*.35,0.,1.);
+    vec3 iron=clamp(vec3(1.6*x-.1,2.*x*x-.2,pow(x,4.)*1.6+(x<.35?(.35-x)*1.6:0.)),0.,1.);col=iron*(.92+.08*sin(fc0.y*.6));}
   else{float th=.3+W*.45;vec3 cc=vid(uv);col=cc;float stp=(1.5+K*7.)/uRes.y;vec2 su=uv;vec3 s=cc;float run=0.;
     if(lum(cc)>th*.6){for(int i=0;i<30;i++){su.y+=stp;vec3 x=vid(su);if(lum(x)<th)break;s=x;run+=1.;}col=mix(cc,s*(1.+run*.012),.92);}}
   /* trails for the machines that do not already live on their own past */
-  if(uM!=2&&uM!=5&&uM!=10&&uM!=11&&uM!=9)col=max(col,texture2D(uP,uv0).rgb*uTr*.9);
+  if(uM!=2&&uM!=5&&uM!=10&&uM!=11&&uM!=9&&uM!=13)col=max(col,texture2D(uP,uv0).rgb*uTr*.9);
   gl_FragColor=vec4(clamp(col,0.,1.),1.);}`;
   /* the last glass: the split dial fringes colour toward the edges, the grain dial dusts it, the corners fall dark */
   const CF='precision mediump float;uniform sampler2D uP;uniform vec2 uRes;uniform float uSp,uGr,uT,uHue,uEx;float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}void main(){vec2 uv=gl_FragCoord.xy/uRes;vec2 d=(uv-.5)*(.001+uSp*.014);vec3 c=vec3(texture2D(uP,uv+d).r,texture2D(uP,uv).g,texture2D(uP,uv-d).b);vec2 p=(gl_FragCoord.xy-.5*uRes)/min(uRes.x,uRes.y);if(uHue>.004){float a=uHue*6.2831;vec3 k=vec3(.57735);c=c*cos(a)+cross(k,c)*sin(a)+k*dot(k,c)*(1.-cos(a));}c*=.5+uEx*1.2;c*=smoothstep(1.3,.4,length(p*vec2(.9,1.1)));c+=(h(gl_FragCoord.xy+uT)-.5)*.09*uGr;gl_FragColor=vec4(c,1.);}';
@@ -1625,7 +1645,7 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
     new MutationObserver(()=>{if(!g.hidden)vpaint()}).observe(g,{attributes:true,attributeFilter:['hidden']});
     const paint=()=>grid.querySelectorAll('[data-m]').forEach(b=>{const m=+b.dataset.m;b.classList.toggle('on',m<0?!TRANS.on:TRANS.on&&b.classList.contains('cur'))});
     grid.addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;e.stopPropagation();const m=+b.dataset.m;
-      if(m<0){if(TRANS.on)TRANS.set(false)}else{if(!TRANS.on)TRANS.set(true);TRANS.pick(m);grid.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('cur',x===b))}paint()});
+      if(m<0){if(TRANS.on)TRANS.set(false)}else{TRANS.pick(m);if(!TRANS.on)TRANS.set(true);else say('transmutation · '+TRANS.names[m]);grid.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('cur',x===b))}paint()});
     new MutationObserver(()=>{if(!g.hidden)paint()}).observe(g,{attributes:true,attributeFilter:['hidden']});paint();return true};
   const w2=setInterval(()=>{if(tmBuild())clearInterval(w2)},250);
 
@@ -1707,3 +1727,79 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
     if(!lit()&&prev){S.tone=prev.tone;S.body=prev.body;prev=null;paintKnobs()}return go.call(b,e)}});
   const P=document.getElementById('presets');if(P)P.addEventListener('click',e=>{const b=e.target.closest('.pb');if(!b||!b.classList.contains('on'))return;
     e.stopImmediatePropagation();b.classList.remove('on');clearLayers();const bp=document.getElementById('bPresets');if(bp)bp.textContent='presets';say(b.textContent.toLowerCase()+' · off')},true)}
+
+/* the Monad follows the colour setting (owner, 2026-11-27): with cymatics on and 'colour · white', the oil-slick film on
+   the glass turns white too, instead of staying a yellow-heavy rainbow; 'colour · film' keeps its colours */
+{const sync=()=>{const c=document.getElementById('cymCol'),on=document.body.classList.contains('cymIn');document.body.classList.toggle('monWhite',!!(c&&on&&/white/.test(c.textContent)))};
+  const css=document.createElement('style');css.textContent='body.monWhite .monSwirl{filter:blur(2.5px) saturate(0) brightness(1.15)!important}';document.head.appendChild(css);
+  const w=setInterval(()=>{const c=document.getElementById('cymCol');if(!c)return;clearInterval(w);new MutationObserver(sync).observe(c,{childList:true,characterData:true,subtree:true});
+    new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});sync()},300)}
+
+/* the stone's sounds sit in the bottom-right box beside the keys (owner, 2026-11-27), where the old lower-right menu was:
+   always in view, no scrolling inside the right panel. Computers only; phones keep them in the stones tab. */
+{const desk=()=>matchMedia('(min-width:1001px) and (pointer:fine)').matches;
+  const css=document.createElement('style');css.textContent=`.deck>#pads{grid-column:4;grid-row:1;align-self:stretch;overflow-y:auto;overflow-x:hidden;max-height:100%;padding:8px 10px;border-radius:14px;
+    background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 2px 10px rgba(0,0,0,.6)}
+  .deck>#pads h3{margin:0 0 2px;font-size:18px}.deck>#pads .vh{font-size:11px;margin:0 0 6px}.deck>.rside.emptied{display:none!important}`;document.head.appendChild(css);
+  const home=document.getElementById('pads')?.parentNode,next=document.getElementById('pads')?.nextSibling;
+  const place=()=>{const p=document.getElementById('pads'),dk=document.querySelector('.deck');if(!p||!dk)return;if(desk()){if(p.parentNode!==dk)dk.appendChild(p)}else if(home&&p.parentNode!==home)home.insertBefore(p,next&&next.parentNode===home?next:null)};
+  setTimeout(place,500);addEventListener('resize',place)}
+
+/* ================= CYMATICS IN THE MONAD OR THE CENTRE DIAL; VISUALIZER BY THE VISION DIALS; LIVING STONES (owner, 2026-11-27) ================= */
+{const desk=()=>matchMedia('(min-width:1001px) and (pointer:fine)').matches;
+  const css=document.createElement('style');css.textContent=`
+  .cymDialHost{position:absolute;border-radius:50%;overflow:hidden;z-index:3;pointer-events:none}
+  .cymDialHost canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;left:0!important;top:0!important;background:radial-gradient(circle,rgba(0,0,0,.35),rgba(0,0,0,.55) 75%)}
+  body.cymDial #bHz,body.cymDial #bandN,body.cymDial #bandD{opacity:.12;transition:opacity .6s}
+  body.cymDial #monad>span,body.cymDial #monad>b,body.cymDial #monad>i{opacity:1!important}
+  .ktabs .visRow{display:inline-flex;gap:4px;margin-left:8px;vertical-align:middle}
+  #bFreeze{display:none!important}
+  /* the stones: each gem cut in facets of its own colour, a light that crosses it now and then, and the chosen one lit
+     from inside, brightening with the sound it is making */
+  .stone{position:relative;overflow:hidden}
+  .stone i{width:20px!important;height:20px!important;border-radius:3px!important;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
+    background:conic-gradient(from 25deg,color-mix(in srgb,var(--c) 55%,#fff),var(--c) 12%,color-mix(in srgb,var(--c) 45%,#000) 25%,var(--c) 37%,color-mix(in srgb,var(--c) 70%,#fff) 50%,color-mix(in srgb,var(--c) 35%,#000) 62%,var(--c) 75%,color-mix(in srgb,var(--c) 60%,#fff) 87%,var(--c))!important;
+    opacity:.75!important;box-shadow:none!important;filter:saturate(1.1)}
+  .stone::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.16) 50%,transparent 62%);transform:translateX(-120%);animation:stGlint 11s ease-in-out infinite}
+  .stone:nth-child(3n)::after{animation-delay:-4s}.stone:nth-child(3n+1)::after{animation-delay:-7.5s}
+  @keyframes stGlint{0%,78%{transform:translateX(-120%)}92%,100%{transform:translateX(120%)}}
+  .stone.on i{opacity:1!important;filter:saturate(1.3) brightness(calc(1 + var(--lv,0) * 1.6));box-shadow:none!important}
+  .stone.on{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #000,0 0 calc(6px + var(--lv,0) * 26px) color-mix(in srgb,var(--c) 70%,transparent)!important}
+  @media (prefers-reduced-motion:reduce){.stone::after{animation:none}}`;document.head.appendChild(css);
+
+  /* 1 cymatics: a place button in the plate bar: in the Monad, in the centre dial, or off */
+  let place='monad';const host=document.createElement('div');host.className='cymDialHost';host.hidden=true;
+  const fit=()=>{const d=document.getElementById('dial'),core=document.getElementById('core');if(!d||!core)return;if(host.parentNode!==core)core.appendChild(host);
+    if(getComputedStyle(core).position==='static')core.style.position='relative';const cr=core.getBoundingClientRect(),r=d.getBoundingClientRect(),s=r.width*.5;
+    host.style.width=host.style.height=s+'px';host.style.left=(r.left-cr.left+r.width/2-s/2)+'px';host.style.top=(r.top-cr.top+r.height/2-s/2)+'px'};
+  const apply=()=>{const c=document.getElementById('cym'),c2=document.getElementById('cym2'),m=document.getElementById('monad');if(!c||!m||!desk())return;
+    const on=document.body.classList.contains('cymIn');const inDial=on&&place==='dial';document.body.classList.toggle('cymDial',inDial);host.hidden=!inDial;
+    if(inDial){fit();if(c.parentNode!==host){host.appendChild(c);if(c2)host.appendChild(c2)}c.classList.remove('inMon');c2&&c2.classList.remove('inMon')}
+    else if(on&&c.parentNode===host){m.append(c);if(c2)c.after(c2);c.classList.add('inMon');c2&&c2.classList.add('inMon')}};
+  const btn=document.createElement('button');btn.id='cymPlace';btn.title='Where the plate sits: in the Monad, in the centre dial, or off';
+  const paint=()=>{btn.textContent='place · '+(place==='dial'?'centre':'monad')};
+  btn.onclick=e=>{e.stopPropagation();if(place==='monad'){place='dial';apply();say('cymatics · in the centre dial')}else{place='monad';const x=document.getElementById('cymX');apply();if(x)x.click()}paint()};
+  const w=setInterval(()=>{const bar=document.getElementById('cymBar'),big=document.getElementById('cymBig');if(!bar)return;clearInterval(w);if(desk()){(big||bar.lastChild).before(btn);if(big)big.hidden=true}paint();
+    new MutationObserver(apply).observe(document.body,{attributes:true,attributeFilter:['class']});addEventListener('resize',()=>{if(place==='dial')fit()})},300);
+
+  /* 2 the visualizer stepper and the dice sit with the vision dials */
+  setTimeout(()=>{if(!desk())return;const kt=document.querySelector('.ktabs'),pv=document.getElementById('bFilmPrev'),f=document.getElementById('bFilm'),dc=document.getElementById('bDice');if(!kt||!f)return;
+    const row=document.createElement('span');row.className='visRow';[pv,f,dc].forEach(x=>{if(x)row.appendChild(x)});kt.appendChild(row)},600);
+
+  /* 3 the chosen stone brightens with the level of the stone sounds (the world bus), thirty times a second */
+  let an=null,buf=null;const tick=()=>{requestAnimationFrame(tick);if(document.hidden||!A.ctx||!A.bankBus)return;if(!an){an=A.ctx.createAnalyser();an.fftSize=512;A.bankBus.connect(an);buf=new Float32Array(512)}
+    an.getFloatTimeDomainData(buf);let s=0;for(let i=0;i<buf.length;i+=2)s+=buf[i]*buf[i];const rms=Math.sqrt(s/(buf.length/2));const st=document.querySelector('.stone.on');if(st)st.style.setProperty('--lv',Math.min(1,rms*9).toFixed(3))};
+  requestAnimationFrame(tick)}
+
+/* ================= EACH STONE BRINGS ITS OWN VISUALIZER (owner, 2026-11-27) =================
+   Pressing a stone plays its clip, as each realm brings a video in Ascension (REALM_FILM). The owner is making new clips
+   (blood for the Blood stone and so on): to use one, put it in media/ as name.mp4, add the name to FILMS, and set it here.
+   Only a press on a stone changes the picture, so start-up and reset keep theirs. */
+{const STONEFILM={dream:'film-13-slowmoving-art-piece',nature:'film-31-behind-glowing-plants',wet:'film-26-underwater-gothic-cemetery',
+    breath:'film-35-static-horror-clouds',universe:'film-39-beautiful-view-city',magnetism:'film-28-eye-cat-cat',blood:'gate-04-red-sky',
+    underworld:'film-22-king-stays-shrouded',gold:'film-08-liminal',freeze:'film-37-women-braces-long',lust:'film-45-everything-inside-gel',
+    magic:'film-20-white-unicorn-runs',dragon:'film-25-dragon-entering-water',sand:'gate-serpent',celestial:'film-41-slow-dreamy-mist',
+    animal:'film-28-eye-cat-cat',heat:'gate-01-red-tide',wyrm:'film-23-shadow-king-waits'};
+  window.STONEFILM=STONEFILM;
+  $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{const id=b.dataset.id;if(ENV!==id)return;const own=document.getElementById('bOwn');if(own&&own.classList.contains('on'))return;
+    const i=FILMS.indexOf(STONEFILM[id]);if(i>=0&&i!==film)setFilm(i)},0)})}
