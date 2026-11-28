@@ -1037,7 +1037,7 @@ const filmPre=document.createElement('video');filmPre.muted=true;filmPre.playsIn
 function setFilm(i){film=(i+FILMS.length)%FILMS.length;const v=$('#veil'),url='media/'+FILMS[film]+'.mp4',want=film,go=u=>{v.src=u;v.load();const q=v.play();if(q&&q.catch)q.catch(()=>{})};
   clearTimeout(filmWatch);v.preload='auto';let done=false;const swap=()=>{if(done||film!==want)return;done=true;filmPre.oncanplaythrough=filmPre.onerror=null;go(url)};
   filmPre.oncanplaythrough=swap;filmPre.onerror=swap;filmPre.src=url;filmPre.load();setTimeout(swap,(v.currentSrc||'').startsWith('blob:')||!v.currentSrc?0:2500);
-  const b=$('#bFilm');if(b)b.textContent='visualizer '+(film+1)+' of '+FILMS.length;
+  const b=$('#bFilm');if(b)b.textContent='Visualizer '+(film+1);
   /* if it has not started in six seconds, ask again past any stuck request */
   filmWatch=setTimeout(()=>{if(film===want&&v.readyState<2)go(url+'?r='+Date.now())},6000)}
 function nextFilm(){setFilm(film+1)}
@@ -1543,7 +1543,7 @@ function frame(ms){
   pluck*=.94;vt+=window.FREEZE?0:dt*(.08+S.speed*2.3);descentTick(ms);
   gl.useProgram(pr);gl.bindFramebuffer(gl.FRAMEBUFFER,fbo[cur].f);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,fbo[1-cur].t);gl.uniform1i(U.pv,0);gl.uniform1f(U.fb,S.trails);
   gl.uniform2f(U.r,cv.width,cv.height);gl.uniform1f(U.t,vt);gl.uniform1f(U.lvl,lvl);gl.uniform1f(U.br,breath);gl.uniform1f(U.md,window.VMODE!=null?window.VMODE:s.vis);
-  gl.uniform1f(U.inten,.45+S.veil*1.1);gl.uniform1f(U.vis,S.vision);gl.uniform1f(U.mir,S.mirrors+(window.REVV||0)*.35);gl.uniform1f(U.tws,S.twist+(window.REVV||0)*.9);gl.uniform1f(U.wrp,S.warp);gl.uniform1f(U.hue,S.hue);vidTex();gl.uniform1f(U.spd,1);gl.uniform1f(U.pk,pluck);ptr.a*=.975;gl.uniform2f(U.m,ptr.x,ptr.y);gl.uniform1f(U.ma,ptr.a);
+  gl.uniform1f(U.inten,.45+S.veil*1.1);gl.uniform1f(U.vis,S.rot!=null?S.rot:S.vision);/* the rotate dial drives the picture; effect drives the transmute machine */gl.uniform1f(U.mir,S.mirrors+(window.REVV||0)*.35);gl.uniform1f(U.tws,S.twist+(window.REVV||0)*.9);gl.uniform1f(U.wrp,S.warp);gl.uniform1f(U.hue,S.hue);vidTex();gl.uniform1f(U.spd,1);gl.uniform1f(U.pk,pluck);ptr.a*=.975;gl.uniform2f(U.m,ptr.x,ptr.y);gl.uniform1f(U.ma,ptr.a);
   gl.uniform3fv(U.c1,rgb(window.ENVCOL||s.cols[0]));gl.uniform3fv(U.c2,rgb(s.cols[1]));gl.uniform3fv(U.c3,rgb(s.cols[2]));
   gl.drawArrays(gl.TRIANGLES,0,3);
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.useProgram(pr2);gl.bindTexture(gl.TEXTURE_2D,fbo[cur].t);gl.uniform1i(U2.s,0);gl.uniform2f(U2.r,cv.width,cv.height);gl.uniform1f(U2.t,vt);
@@ -1623,9 +1623,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1128s"></script>
-<script src="env.js?v=1128s"></script>
-<script src="table.js?v=1128s"></script>
-<script src="luxuria.js?v=1128s"></script>
+<script src="bank.js?v=1128t"></script>
+<script src="env.js?v=1128t"></script>
+<script src="table.js?v=1128t"></script>
+<script src="luxuria.js?v=1128t"></script>
 </body>
 </html>

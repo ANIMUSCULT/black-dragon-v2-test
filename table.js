@@ -58,7 +58,7 @@ function stopRun(quiet){if(!RUN)return;const r=RUN;RUN=null;clearInterval(r.tm);
 $('#rStop').onclick=()=>stopRun();
 function stageOn(r,st){
   (r.on||[]).forEach(id=>setLayer(id,null));r.on=[];const o=st[4]||{};
-  S.fc=st[1];S.beat=Array.isArray(st[2])?st[2][0]:st[2];if(st[3])S.mode=st[3];S.breath=!!o.breath;if(o.dim!=null)S.veil=o.dim;if(o.vis!=null)S.vision=o.vis;if(o.twist!=null)S.twist=o.twist;if(o.speed!=null)S.speed=o.speed;
+  S.fc=st[1];S.beat=Array.isArray(st[2])?st[2][0]:st[2];if(st[3])S.mode=st[3];S.breath=!!o.breath;if(o.dim!=null)S.veil=o.dim;if(o.vis!=null){S.vision=o.vis;S.rot=o.vis}if(o.twist!=null)S.twist=o.twist;if(o.speed!=null)S.speed=o.speed;
   window.VMODE=o.vm!=null?o.vm:null;if(A.ctx)A.breathT0=A.ctx.currentTime;
   (o.tones||[]).forEach(hz=>{const id=hid(hz);if(!BK[id])BK[id]={id,n:hz+' Hz',cat:'healing table',tag:TR,bus:'tone',hz,lvl:.35,gen:healGen(hz),info:''};if(!(id in S.layers)){setLayer(id,.45);r.on.push(id)}});
   Object.entries(o.layers||{}).forEach(([id,v])=>{if(BK[id]&&!(id in S.layers)){setLayer(id,v);r.on.push(id)}});
@@ -1500,9 +1500,9 @@ registerProcessor('bd-monad',M);`;
   b.title="New: the keys play on Ascension's voice. Old: each instrument's original sound. Voices, strings, nectar, breath and reed, electric and the dark have both.";
   b.onclick=e=>{e.stopPropagation();window.VENG=window.VENG==='v2'?'asc':'v2';p();say('synths · '+(window.VENG==='v2'?'old':'new'))};p();$('.rside').appendChild(b)}
 {const GROUPS=[
-   ['Vision','gVision','The visualizer, the machines that transmute it, flicker and possession.',['bDream','bPossess']],
+   ['Vision','gVision','The visualizer and the machines that transmute it.',[]],
    ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer, and new or old synths.',['bSynth','bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
-   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels and the forge.',['bHeal','bBody','bTrance','bRites','bVowels','bForge']],
+   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the dreamachine.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bDream']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video, play your own video.',['@slots','bSave','bShare','bLoad','bRec','bVid','bOwn']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
     const row=document.createElement('div');row.className='grpRow';
@@ -1638,8 +1638,8 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
     /* the visualizer itself, stepped from here: ‹ visualizer N of 33 › */
     const vh=document.createElement('h4');vh.textContent='Visualizer';const vrow=document.createElement('div');vrow.className='vg vzStep';
     vrow.innerHTML='<button class="vb" data-v="-1">‹</button><button class="vb vzNow" data-v="0"></button><button class="vb" data-v="1">›</button>';
-    const vpaint=()=>{vrow.querySelector('.vzNow').textContent=`visualizer ${film+1} of ${FILMS.length}`};
-    vrow.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;e.stopPropagation();const d=+b.dataset.v||1;setFilm(film+d);vpaint();say(`visualizer ${film+1} of ${FILMS.length}`)});
+    const vpaint=()=>{vrow.querySelector('.vzNow').textContent=`Visualizer ${film+1}`};
+    vrow.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;e.stopPropagation();const d=+b.dataset.v||1;setFilm(film+d);vpaint();say(`Visualizer ${film+1}`)});
     g.querySelector('.vh').after(vh,vrow,h,grid);vpaint();const h2=document.createElement('h4');h2.textContent='More';grid.after(h2);
     const bt=document.getElementById('bTrans');if(bt)bt.hidden=true;const fz=document.getElementById('bFreeze');if(fz)fz.hidden=true;
     new MutationObserver(()=>{if(!g.hidden)vpaint()}).observe(g,{attributes:true,attributeFilter:['hidden']});
@@ -1845,3 +1845,72 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
    panel draws is left empty and hidden */
 {const css=document.createElement('style');css.textContent='#pads #cymDock{display:none!important}#proof>#cymDock{margin-top:8px}#proof>#cymDock #cymBar{position:static!important;transform:none!important;width:100%!important;max-width:none!important}#shellR{overflow-y:auto}';document.head.appendChild(css);
   setTimeout(()=>{if(MOBILE)return;const pr=document.getElementById('proof');if(!pr||pr.querySelector('#cymDock'))return;const d=document.createElement('div');d.id='cymDock';const row=pr.querySelector('.ptRow');(row||pr.lastChild).after(d)},900)}
+
+/* ================= TWO NEW VISION DIALS, POSSESS BY THE DIALS (owner, 2026-11-27) =================
+   transmute (first of the vision dials): turned, it steps through off and each transmute machine in turn, with a short buzz
+   on each step on devices that can (phones; computers have no buzzer). rotate: what the effect dial used to do to the
+   picture; the effect dial now works the chosen machine. Possess sits with the dial tabs; the Vision button is gone. */
+{if(S.rot==null)S.rot=S.vision;
+  const mk=(label,get,set,txt)=>{const d=document.createElement('div');d.className='knob';d.dataset.b='v';d.tabIndex=0;d.setAttribute('role','slider');d.setAttribute('aria-label',label);
+    d.innerHTML=`<i></i><span>${label}</span>`;const paint=()=>{d.style.setProperty('--v',get());d.setAttribute('aria-valuetext',txt())};let y0=null,v0=0;
+    const put=v=>{set(clamp(v,0,1));paint()};
+    d.addEventListener('pointerdown',e=>{d.setPointerCapture(e.pointerId);y0=e.clientY;v0=get()});d.addEventListener('pointermove',e=>{if(y0!=null)put(v0+(y0-e.clientY)/160)});
+    ['pointerup','pointercancel'].forEach(t=>d.addEventListener(t,()=>{y0=null}));
+    d.addEventListener('keydown',e=>{const u=e.key==='ArrowUp'||e.key==='ArrowRight',dn=e.key==='ArrowDown'||e.key==='ArrowLeft';if(u||dn){e.preventDefault();put(get()+(u?.04:-.04))}});
+    d._paint=paint;paint();return d};
+  let tv=0,step=-1;const N=()=>window.TRANS?TRANS.names.length:0;
+  const tSet=v=>{tv=v;const n=N();if(!n)return;const k=Math.round(v*n);if(k===step)return;step=k;try{if(navigator.vibrate&&(!navigator.userActivation||navigator.userActivation.hasBeenActive))navigator.vibrate(12)}catch(_){}
+    if(k===0){if(TRANS.on)TRANS.set(false);say('transmute · off')}else{TRANS.pick(k-1);if(!TRANS.on)TRANS.set(true);say('transmute · '+TRANS.names[k-1])}};
+  const tTxt=()=>step<=0?'off':(TRANS.names[step-1]||'');
+  const w=setInterval(()=>{const kn=document.getElementById('knobs'),first=kn&&kn.querySelector('.knob[data-b=v]');if(!first||!window.TRANS)return;clearInterval(w);
+    const kt=mk('transmute',()=>tv,tSet,tTxt),kr=mk('rotate',()=>S.rot,v=>{S.rot=v;say('rotate · '+Math.round(v*100))},()=>String(Math.round(S.rot*100)));
+    first.before(kt,kr);
+    /* the knob panel shows the right set when its tab is chosen: copy the parent's own filter for data-b */
+    const pos=document.getElementById('bPossess'),kts=document.querySelector('.ktabs');if(pos&&kts){pos.classList.add('mini');kts.insertBefore(pos,kts.querySelector('.visRow')||null)}
+    const gv=document.getElementById('bgVision');if(gv)gv.hidden=true},400);
+  const css=document.createElement('style');css.textContent='#bgVision{display:none!important}'+
+    '@media (min-width:1001px) and (pointer:fine){#knobs[data-b=v]{grid-template-columns:repeat(7,52px)!important;gap:8px 4px!important}#knobs[data-b=v] .knob{width:50px}'+
+    '.ktabs{flex-wrap:wrap;row-gap:4px;max-width:100%}.ktabs .visRow{margin-left:0}}';document.head.appendChild(css)}
+
+/* ================= THE PROOF READOUT AS LIQUID (owner, 2026-11-27) =================
+   The live line under the Proof numbers is drawn as fluid: drops along the measured signal, run through a 'goo' filter
+   (blur, then a hard edge on the alpha) so they merge like liquid, with a thin highlight on top. Everything drawn comes
+   from the tone channel itself, the same signal the numbers read: wave (the waveform, slow and viscous), spectrum (molten
+   columns over a pool), two ears (left against right, the figure the pair makes), pulse (the two tones summed beat at
+   exactly the beat rate, and the drop swells with that real swell), and the forged seal when there is one. Press to change. */
+{const sp=document.getElementById('spec');if(sp){
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('width','0');svg.setAttribute('height','0');svg.style.position='absolute';
+  svg.innerHTML='<filter id="lqGoo"><feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="g"/><feComposite in="SourceGraphic" in2="g" operator="atop"/></filter>';document.body.appendChild(svg);
+  const wrap=sp.parentNode;if(getComputedStyle(wrap).position==='static')wrap.style.position='relative';
+  const lq=document.createElement('canvas'),hi=document.createElement('canvas');[lq,hi].forEach(c=>{c.style.cssText='position:absolute;pointer-events:none;border-radius:14px';wrap.insertBefore(c,sp.nextSibling)});lq.style.filter='url(#lqGoo)';
+  const css=document.createElement('style');css.textContent='#spec.lqOn{opacity:0}';document.head.appendChild(css);sp.classList.add('lqOn');
+  const lx=lq.getContext('2d'),hx=hi.getContext('2d');const VIEWS=['wave','spectrum','two ears','pulse','seal'];let view=0;
+  sp.addEventListener('click',e=>{e.stopImmediatePropagation();do{view=(view+1)%VIEWS.length}while(view===4&&!window.FORGED);say('proof · '+VIEWS[view])},true);
+  sp.title='Press to change the view: wave, spectrum, two ears, pulse'+(window.FORGED?', seal':'');
+  let bl=null,br=null,fq=null,sm=null,env=0;const col=()=>getComputedStyle(document.documentElement).getPropertyValue('--b').trim()||'#f2455c';
+  const place=()=>{const r=sp.getBoundingClientRect(),pr=wrap.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);[lq,hi].forEach(c=>{c.style.left=(r.left-pr.left)+'px';c.style.top=(r.top-pr.top)+'px';c.style.width=r.width+'px';c.style.height=r.height+'px';
+    const w=Math.round(r.width*d),h=Math.round(r.height*d);if(c.width!==w||c.height!==h){c.width=w;c.height=h}});return d};
+  const loop=()=>{requestAnimationFrame(loop);if(document.hidden||!sp.offsetParent||!A.ctx)return;const t=sigilTap();if(!t)return;const d=place(),W=lq.width,H=lq.height;
+    if(!bl){bl=new Float32Array(t.l.fftSize);br=new Float32Array(t.r.fftSize);fq=new Float32Array(t.l.frequencyBinCount);sm=new Float32Array(96)}
+    t.l.getFloatTimeDomainData(bl);t.r.getFloatTimeDomainData(br);lx.clearRect(0,0,W,H);hx.clearRect(0,0,W,H);const c=col();lx.fillStyle=c;lx.strokeStyle=c;
+    const drop=(x,y,r)=>{lx.beginPath();lx.arc(x,y,r,0,7);lx.fill()};let m=.02;for(let i=0;i<bl.length;i++)m=Math.max(m,Math.abs(bl[i]),Math.abs(br[i]));
+    const path=[];
+    if(view===0){/* the waveform, eased frame to frame so it moves like something thick */
+      let z=0;for(let i=1;i<bl.length/2;i++)if(bl[i-1]<0&&bl[i]>=0){z=i;break}const n=sm.length;
+      for(let k=0;k<n;k++){const v=bl[z+Math.floor(k*(bl.length/2-1)/n)]/m;sm[k]+=(v-sm[k])*.22;const x=(k+.5)*W/n,y=H/2-sm[k]*H*.36;path.push([x,y]);drop(x,y,(2.6+Math.abs(sm[k])*3.2)*d)}}
+    else if(view===1){/* the spectrum from 30 Hz to 3 kHz on a log scale, as molten columns rising out of a pool */
+      t.l.getFloatFrequencyData(fq);const n=40,sr=A.ctx.sampleRate,bin=sr/t.l.fftSize;lx.fillRect(0,H-5*d,W,5*d);
+      for(let k=0;k<n;k++){const f=30*Math.pow(100,k/(n-1)),i=Math.min(fq.length-1,Math.round(f/bin));const db=Math.max(fq[i],fq[Math.max(0,i-1)],fq[Math.min(fq.length-1,i+1)]);
+        const v=Math.max(0,Math.min(1,(db+95)/70));sm[k]+=(v-sm[k])*.2;const x=(k+.5)*W/n,top=H-5*d-sm[k]*(H-12*d);for(let y=H-5*d;y>top;y-=4*d)drop(x,y,2.4*d);if(sm[k]>.04){drop(x,top,3.4*d);path.push([x,top])}}}
+    else if(view===2){/* left ear across, right ear up: the figure the two tones draw together */
+      const k=H*.42/m;for(let i=0;i<1024;i+=6){const x=W/2+bl[i]*k,y=H/2-br[i]*k;path.push([x,y]);drop(x,y,2.4*d)}}
+    else if(view===3){/* the pair summed: two tones a beat apart rise and fall together at exactly the beat rate */
+      let s=0;for(let i=bl.length-480;i<bl.length;i++){const v=(bl[i]+br[i])*.5;s+=v*v}const rms=Math.sqrt(s/480)/m;env+=(rms-env)*.35;
+      const r=(H*.12+env*H*.32);drop(W/2,H/2,r);drop(W/2-r*1.25,H/2+r*.35,r*.28*env);drop(W/2+r*1.3,H/2-r*.25,r*.22*env);path.push([W/2-r*.45,H/2-r*.55]);
+      hx.fillStyle='rgba(255,255,255,.55)';hx.font=(10*d)+'px Michroma';hx.textAlign='right';hx.fillText((S.beat||0).toFixed(2)+' Hz',W-8*d,H-8*d)}
+    else if(view===4&&window.FORGED){const k=H*.9/176;FORGED.pts.forEach(p=>{const x=W/2+p[0]*k,y=H/2+p[1]*k;path.push([x,y]);drop(x,y,2.6*d)})}
+    /* the highlight: a thin bright line riding just above the liquid */
+    if(path.length>1&&view!==3){hx.strokeStyle='rgba(255,255,255,.55)';hx.lineWidth=1*d;hx.beginPath();path.forEach((p,i)=>i?hx.lineTo(p[0],p[1]-1.6*d):hx.moveTo(p[0],p[1]-1.6*d));hx.stroke()}
+    else if(view===3&&path.length){hx.fillStyle='rgba(255,255,255,.5)';hx.beginPath();hx.ellipse(path[0][0],path[0][1],5*d,2.6*d,-.5,0,7);hx.fill()}
+    hx.fillStyle='rgba(255,255,255,.4)';hx.font=(8.5*d)+'px Michroma';hx.textAlign='left';hx.fillText(VIEWS[view],8*d,12*d)};
+  requestAnimationFrame(loop)}}
