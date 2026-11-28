@@ -711,7 +711,7 @@ if(/[?&]diag\b/.test(location.search)){
  const CUES=[[210,'e:lust:1',.32,14],[215,'e:lust:3',.28,18],[360,'e:lust:0',.4,16],[372,'e:lust:8',.34,20],[420,'e:lust:7',.3,20],[460,'e:lust:9',.28,24],
    [596,'e:lust:9',0,10],[598,'e:lust:7',0,12],[600,'e:lust:8',0,14],[602,'e:lust:0',0,16],[606,'e:lust:11',.34,20],[640,'e:lust:1',0,24],
    [780,'e:lust:11',0,30],[790,'e:lust:3',0,30]];
- const lvlTo=(id,lv,secs)=>{if(!A.ctx)return;const L=act[id];if(lv>0){if(!L){setLayer(id,.001);UJ.added.add(id)}S.layers[id]=lv;const L2=act[id];if(L2)L2.g.gain.setTargetAtTime(lv*lyrLvl(id),A.ctx.currentTime,secs/3)}
+ const lvlTo=(id,lv,secs)=>{if(!A.ctx)return;const L=act[id];if(lv>0){if(!L){setLayer(id,.001);UJ.added.add(id)}S.layers[id]=lv;const L2=act[id];/* the journey keeps the levels it was made with: the stone loudness trim is taken back out here */const st=(id!=='umbra'&&BK[id]&&BK[id].env&&typeof STONETRIM!=='undefined'&&STONETRIM[BK[id].env])||1;if(L2)L2.g.gain.setTargetAtTime(lv*lyrLvl(id)/st,A.ctx.currentTime,secs/3)}
    else if(L){L.g.gain.setTargetAtTime(0,A.ctx.currentTime,secs/4);setTimeout(()=>{if(UJ.added.has(id)){setLayer(id,null);UJ.added.delete(id)}},secs*1000)}};
  const beatAt=s=>{for(let i=1;i<BEAT.length;i++){const [t1,b1]=BEAT[i],[t0,b0]=BEAT[i-1];if(s<=t1){const f=(s-t0)/(t1-t0);return b0*Math.pow(b1/b0,f)}}return BEAT[BEAT.length-1][1]};
  const ujTick=()=>{if(!UJ.on)return;const s=(performance.now()-UJ.t0)/1000;
@@ -758,7 +758,7 @@ if(/[?&]diag\b/.test(location.search)){
   #keysBar .kstep{padding:5px 11px;min-height:26px;font-size:13px;line-height:1}#keysBar .kstep::before{display:none!important}
   @media (max-width:1000px),(pointer:coarse){
    #keysBar{display:none;margin:0 0 6px;gap:6px}.hud[data-tab=play] #keysBar{display:flex}
-   #keysBar #bVoice{flex:1;max-width:none;min-height:44px;font-size:11px}#keysBar .kstep{min-height:44px;min-width:52px;font-size:18px}}`;
+   #keysBar #bVoice{flex:1 1 0;min-width:0;max-width:none;min-height:44px;font-size:11px}#keysBar .kmode{flex:0 0 auto;min-width:84px;padding:5px 8px}#keysBar .kstep{min-height:44px;min-width:52px;font-size:18px}}`;
  document.head.appendChild(st);setVoice(S.voice)}
 
 /* ================= PHANTOMS: sounds the ear finishes for itself =================
@@ -1397,7 +1397,7 @@ registerProcessor('bd-monad',M);`;
 {const GROUPS=[
    ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
    ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
-   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
+   ['Rituals','gRituals','The workings: the healing table, body programs, extasis, the ritual chamber, vowels, fornax and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video.',['@slots','bSave','bShare','bLoad','bRec','bVid']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
     const row=document.createElement('div');row.className='grpRow';
@@ -1480,7 +1480,8 @@ document.addEventListener('click',e=>{if(e.target.closest('.drawer,.sideTab,#gat
 {const off=()=>document.body.classList.remove('peek');
   document.addEventListener('pointerdown',e=>{const k=e.target.closest('.knob');if(k&&k.dataset.b==='v')document.body.classList.add('peek')},true);
   addEventListener('pointerup',off);addEventListener('pointercancel',off);addEventListener('blur',off)}
-setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElementById('keysBar');if(g&&kb){kb.appendChild(g);g.classList.add('kbSound');g.textContent='soundbar';const h=document.querySelector('#gSound h3');if(h)h.textContent='Soundbar'}},120);
+/* on phones the keys bar has no room for it: the soundbar stays with Vision, Rituals and Session under 'more', named the same */
+setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElementById('keysBar'),narrow=matchMedia('(max-width:1000px),(pointer:coarse)').matches;if(g&&narrow){g.textContent='Soundbar';const h=document.querySelector('#gSound h3');if(h)h.textContent='Soundbar'}if(g&&kb&&!narrow){kb.appendChild(g);g.classList.add('kbSound');g.textContent='soundbar';const h=document.querySelector('#gSound h3');if(h)h.textContent='Soundbar'}},120);
 
 /* ================= ONE LIGHT WARNING, AT THE DOOR =================
    The board flickers and floods the screen in several places (the Dreamachine, the flicker, the Ganzfeld), so the warning

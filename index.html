@@ -882,7 +882,7 @@ body.peek .knobwrap .ktabs{opacity:.35;transition:opacity .25s ease}
     <div class="knobwrap"><div class="ktabs"><button class="pill on" data-b="s">sound dials</button><button class="pill" data-b="v">vision dials</button></div><div class="jelly knobs" id="knobs" data-b="s"></div></div>
     <button id="monad" aria-label="Monad. Tap to change planet, hold to trace the square"><svg class="monOrn" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="monArc" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/></defs><circle class="o1" cx="100" cy="100" r="98"/><circle class="o2" cx="100" cy="100" r="88.5"/><circle class="o3" cx="100" cy="100" r="77.5"/><g class="spin"><text><textPath href="#monArc" textLength="500" lengthAdjust="spacing">♄︎ SATVRNVS · ♃︎ IVPITER · ♂︎ MARS · ☉︎ SOL · ♀︎ VENVS · ☿︎ MERCVRIVS · ☽︎ LVNA ·</textPath></text></g><circle class="gem" cx="100.0" cy="11.5" r="1.7"/><circle class="gem" cx="169.2" cy="44.8" r="1.7"/><circle class="gem" cx="186.3" cy="119.7" r="1.7"/><circle class="gem" cx="138.4" cy="179.7" r="1.7"/><circle class="gem" cx="61.6" cy="179.7" r="1.7"/><circle class="gem" cx="13.7" cy="119.7" r="1.7"/><circle class="gem" cx="30.8" cy="44.8" r="1.7"/></svg><span id="monP">saturn</span><b id="monN">15</b><i>monad</i></button>
     <div id="keys"></div>
-    <div class="rside"><button class="pill" id="bHeal">healing</button><button class="pill" id="bBody">body</button><button class="pill" id="bTrance">extasis</button><button class="pill" id="bRites">rites</button><button class="pill" id="bForge">fornax</button><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">keys</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
+    <div class="rside"><button class="pill" id="bHeal">healing table</button><button class="pill" id="bBody">body programs</button><button class="pill" id="bTrance">extasis</button><button class="pill" id="bRites">ritual chamber</button><button class="pill" id="bForge">fornax</button><button class="pill" id="bPresets">presets</button><button class="pill" id="bVoice">keys</button><button class="pill" id="bBank">sounds</button><button class="pill" id="bCodex">codex</button><button class="pill" id="bHide">hide panels</button></div>
   </footer>
   <div class="jelly drawer" id="vox" hidden></div><div class="jelly drawer" id="bank" hidden></div><div class="jelly drawer" id="presets" hidden></div><div class="jelly drawer" id="codex" hidden></div><div class="jelly drawer" id="heal" hidden></div><div class="jelly drawer" id="body" hidden></div><div class="jelly drawer" id="trance" hidden></div><div class="jelly drawer" id="rites" hidden></div><div class="jelly drawer" id="forge" hidden></div>
   <p class="hint">Play the bottom two rows of your keyboard, a MIDI keyboard, or touch the keys. Every note is in tune with the state. Space bar is pause.</p>
@@ -1073,13 +1073,35 @@ registerProcessor('bd-hall',H);`;
    about 120 Hz folded to mono so the low end sits in the centre of the chest, the image above it opened a little, and a
    soft tape curve that rounds peaks and adds warmth. Level is matched by measurement to the chain without it. */
 const MASTW=`class MS extends AudioWorkletProcessor{constructor(){super();this.a=1-Math.exp(-6.283185307179586*120/sampleRate);this.s1=0;this.s2=0;this.d=[0,0,0,0];this.width=1.14;this.drive=1.25;this.trim=1;this.hd=.4;
+ /* oversampling (2026-11-27): the warmth curve runs at twice the sample rate between two 47-tap half-band filters, so the
+    harmonics it makes above the top of hearing are filtered out instead of folding back down as harshness */
+ const N=47,M=(N-1)/2,h=new Float32Array(N);let sum=0;for(let n=0;n<N;n++){const x=n-M,sc=x===0?.5:Math.sin(Math.PI*x/2)/(Math.PI*x),w=.42-.5*Math.cos(2*Math.PI*n/(N-1))+.08*Math.cos(4*Math.PI*n/(N-1));h[n]=sc*w;sum+=h[n]}
+ for(let n=0;n<N;n++)h[n]/=sum;this.h=h;this.N=N;this.nz=Int16Array.from([...h.keys()].filter(k=>Math.abs(h[k])>1e-9));this.osOn=1;/* every other tap of a half-band filter is zero: skip them */this.u=[new Float32Array(N*2),new Float32Array(N*2)];this.v=[new Float32Array(N*2),new Float32Array(N*2)];this.ui=[0,0];this.vi=[0,0];
  this.port.onmessage=e=>{const m=e.data;for(const k in m)this[k]=m[k]}}
+ fir(buf,pos){const h=this.h,nz=this.nz;let acc=0;for(let j=0;j<nz.length;j++){const k=nz[j];acc+=h[k]*buf[pos+k]}return acc}
+ push(buf,idxArr,c,x){const N=this.N;let p=idxArr[c];p=(p+N-1)%N;buf[p]=x;buf[p+N]=x;idxArr[c]=p;return p}
+ os(c,x,dr,hd,nm){const u=this.u[c],v=this.v[c];let p=this.push(u,this.ui,c,x*2);const a=this.fir(u,p);p=this.push(u,this.ui,c,0);const b=this.fir(u,p);
+  this.push(v,this.vi,c,Math.tanh(a*dr*hd)/nm);p=this.push(v,this.vi,c,Math.tanh(b*dr*hd)/nm);return this.fir(v,p)}
  process(ins,outs){const I=ins[0],O=outs[0];if(!I||!I[0])return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],a=this.a,dr=this.drive,hd=this.hd,nm=Math.tanh(dr)*hd,w=this.width,tr=this.trim,d=this.d;
   for(let i=0;i<l.length;i++){const m=(l[i]+r[i])*.5;let s=(l[i]-r[i])*.5;this.s1+=a*(s-this.s1);this.s2+=a*(this.s1-this.s2);s=(s-this.s2)*w;
-   let L=m+s,R=m-s;L=Math.tanh(L*dr*hd)/nm;R=Math.tanh(R*dr*hd)/nm;
+   let L,R;if(this.osOn){L=this.os(0,m+s,dr,hd,nm);R=this.os(1,m-s,dr,hd,nm)}else{L=Math.tanh((m+s)*dr*hd)/nm;R=Math.tanh((m-s)*dr*hd)/nm}/* phones run the plain curve to save power */
    const yl=L-d[0]+.9995*d[1];d[0]=L;d[1]=yl;const yr=R-d[2]+.9995*d[3];d[2]=R;d[3]=yr;ol[i]=yl*tr;if(or!==ol)or[i]=yr*tr}return true}}
 registerProcessor('bd-master',MS);`;
 /* headroom (2026-11-27): the warmth curve sees the mix at 0.4 and is scaled back up, so a full chord over the start-up sound no longer squashes into it (it was bending peaks by a quarter and adding grit); the small-signal level is unchanged */
+/* the look-ahead limiter: it sees each peak 2 ms early and turns it down smoothly. Since 2026-11-27 it also hears the
+   peaks that fall between samples: a 4x interpolated estimate of each channel (three extra points per sample from a
+   32-tap filter), so a peak a converter or a recording would rebuild above the ceiling is caught too */
+const LOOKW=`class L extends AudioWorkletProcessor{constructor(){super();this.la=Math.max(16,Math.round(sampleRate*.002))+8;this.n=this.la+256;
+      this.b=[new Float32Array(this.n),new Float32Array(this.n)];this.qv=new Float32Array(this.n);this.qi=new Int32Array(this.n);this.qh=0;this.qt=0;this.t=0;this.w=0;this.g=1;this.c=.24;
+      this.att=1-Math.exp(-4/this.la);this.rel=1-Math.exp(-1/(sampleRate*.2));
+      const P=4,T=8,NN=P*T,h=new Float32Array(NN),M=(NN-1)/2;for(let n=0;n<NN;n++){const x=(n-M)/P,sc=x===0?1:Math.sin(Math.PI*x)/(Math.PI*x),w=.42-.5*Math.cos(2*Math.PI*n/(NN-1))+.08*Math.cos(4*Math.PI*n/(NN-1));h[n]=sc*w}
+      this.ph=[];for(let q=0;q<P;q++){const f=new Float32Array(T);let s=0;for(let k=0;k<T;k++){f[k]=h[q+k*P];s+=f[k]}for(let k=0;k<T;k++)f[k]/=s;this.ph.push(f)}this.T=T;this.hx=[new Float32Array(T*2),new Float32Array(T*2)];this.hp=0}
+    tp(c,x){const T=this.T,hb=this.hx[c],p=this.hp;hb[p]=x;hb[p+T]=x;let m=0;for(let q=0;q<4;q++){const f=this.ph[q];let a=0;for(let k=0;k<T;k++)a+=f[k]*hb[p+k];const v=Math.abs(a);if(v>m)m=v}return m}
+    process(i,o){const I=i[0],O=o[0];if(!I||!I.length)return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],n=this.n,la=this.la,T=this.T;
+      for(let k=0;k<l.length;k++){const w=this.w;this.b[0][w]=l[k];this.b[1][w]=r[k];this.hp=(this.hp+T-1)%T;const v=Math.max(this.tp(0,l[k]),this.tp(1,r[k]),Math.abs(l[k]),Math.abs(r[k])),t=this.t++;
+        while(this.qt>this.qh&&this.qv[(this.qt-1)%n]<=v)this.qt--;this.qv[this.qt%n]=v;this.qi[this.qt%n]=t;this.qt++;while(this.qi[this.qh%n]<t-la)this.qh++;const m=this.qv[this.qh%n];
+        const tg=m>this.c?this.c/m:1;this.g+=(tg-this.g)*(tg<this.g?this.att:this.rel);const rd=(w-la+n)%n;ol[k]=this.b[0][rd]*this.g;or[k]=this.b[1][rd]*this.g;this.w=(w+1)%n}
+      return true}}registerProcessor('bd-look',L);`;
 const A={};
 function initAudio(){
   /* a buffer with room to breathe (2026-11-27): at the smallest buffer a brief spike, a burst of new sounds or a heavy frame, missed its deadline and crackled, on phones most of all. About 20 ms on a computer, 50 on a phone; keys still answer quickly. */
@@ -1093,20 +1115,13 @@ function initAudio(){
   /* a look-ahead limiter between the trim and the ceiling: it sees each peak 5 ms early and turns it down smoothly, so the
      soft ceiling below is a safety net and loud moments stay clean instead of saturating. Stereo-linked, ceiling just under
      the curve's knee; if the browser cannot run it, the chain stays as it was */
-  if(ctx.audioWorklet){const src=`class L extends AudioWorkletProcessor{constructor(){super();this.la=Math.max(16,Math.round(sampleRate*.002));this.n=this.la+256;
-      this.b=[new Float32Array(this.n),new Float32Array(this.n)];this.qv=new Float32Array(this.n);this.qi=new Int32Array(this.n);this.qh=0;this.qt=0;this.t=0;this.w=0;this.g=1;this.c=.24;
-      this.att=1-Math.exp(-4/this.la);this.rel=1-Math.exp(-1/(sampleRate*.2))}
-    process(i,o){const I=i[0],O=o[0];if(!I||!I.length)return true;const l=I[0],r=I[1]||I[0],ol=O[0],or=O[1]||O[0],n=this.n,la=this.la;
-      for(let k=0;k<l.length;k++){const w=this.w;this.b[0][w]=l[k];this.b[1][w]=r[k];const v=Math.max(Math.abs(l[k]),Math.abs(r[k])),t=this.t++;
-        while(this.qt>this.qh&&this.qv[(this.qt-1)%n]<=v)this.qt--;this.qv[this.qt%n]=v;this.qi[this.qt%n]=t;this.qt++;while(this.qi[this.qh%n]<t-la)this.qh++;const m=this.qv[this.qh%n];
-        const tg=m>this.c?this.c/m:1;this.g+=(tg-this.g)*(tg<this.g?this.att:this.rel);const rd=(w-la+n)%n;ol[k]=this.b[0][rd]*this.g;or[k]=this.b[1][rd]*this.g;this.w=(w+1)%n}
-      return true}}registerProcessor('bd-look',L);`;
+  if(ctx.audioWorklet){const src=LOOKW;
     ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([src],{type:'application/javascript'}))).then(()=>{
       const lk=new AudioWorkletNode(ctx,'bd-look',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2]});pre.disconnect(ceil);pre.connect(lk).connect(ceil);A.look=lk}).catch(()=>{})}
   /* the mastering chain goes in front of the ceiling once its processor has loaded; until then the chain is as before */
   if(ctx.audioWorklet){ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([MASTW],{type:'application/javascript'}))).then(()=>{
     const glue=ctx.createDynamicsCompressor();glue.threshold.value=-22;glue.knee.value=12;glue.ratio.value=1.6;glue.attack.value=.06;glue.release.value=.7;
-    const ms=new AudioWorkletNode(ctx,'bd-master',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2],channelCount:2,channelCountMode:'explicit'});ms.port.postMessage({trim:MAST_TRIM});
+    const ms=new AudioWorkletNode(ctx,'bd-master',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2],channelCount:2,channelCountMode:'explicit'});ms.port.postMessage({trim:MAST_TRIM,osOn:MOBILE?0:1});
     A.master.disconnect(lim);A.master.connect(glue).connect(ms).connect(lim);A.glue=glue;A.mast=ms;A.limC=lim}).catch(()=>{})}
   A.toneBus=ctx.createGain();A.toneBus.connect(A.master);const split=ctx.createChannelSplitter(2);A.toneBus.connect(split);
   A.anM=ctx.createAnalyser();A.anM.fftSize=32768;A.anM.smoothingTimeConstant=.6;lim.connect(A.anM);A.bufM=new Float32Array(A.anM.frequencyBinCount);
@@ -1190,7 +1205,9 @@ function initAudio(){
 const at=(p,v,t=.08)=>p&&p.setTargetAtTime(v,A.ctx.currentTime,t);
 function applyBeat(){
   if(!A.ctx)return;const m=S.mode,f=S.fc,b=S.beat;
-  at(A.oA.frequency,f,.05);at(A.oB.frequency,f+b,.05);at(A.lfo.frequency,b,.05);A.lfo.type=b<12?'sine':'square';A.lfoLP.frequency.value=b<12?200:Math.max(12,b*3);
+  at(A.oA.frequency,f,.05);at(A.oB.frequency,f+b,.05);at(A.lfo.frequency,b,.05);
+  /* the pulse shape changes once, with a little margin either side of 12 Hz, so dragging the dial across it never chatters */
+  {const sq=A.lfo.type==='square'?b>=11.5:b>=12.5,ty=sq?'square':'sine';if(A.lfo.type!==ty)A.lfo.type=ty;at(A.lfoLP.frequency,sq?Math.max(12,b*3):200,.05)}
   at(A.pA.pan,m==='binaural'?-1:0);at(A.pB.pan,m==='binaural'?1:0);
   at(A.gA.gain,m==='isochronic'?.9:.5);at(A.gB.gain,m==='isochronic'?0:.5);
   at(A.lfoG.gain,m==='isochronic'?.5:0);at(A.iso.gain,m==='isochronic'?.5:1);
@@ -1330,11 +1347,14 @@ dial.addEventListener('keydown',e=>{const k={ArrowUp:1.03,ArrowRight:1.03,ArrowD
 /* ---------- knobs ---------- */
 const KN=[['vol','volume','s'],['tone','tone','s'],['body','body','s'],['air','air','s'],['close','close','s'],['space','space','s'],['echo','echo','s'],['att','attack','s'],['rel','release','s'],['car','carrier','s'],['vision','effect','v'],['trails','trails','v'],['veil','exposure','v'],['speed','speed','v'],['twist','twist','v'],['mirrors','mirrors','v'],['warp','warp','v'],['hue','colour','v'],['split','split','v'],['grain','grain','v'],['lens','lens','v']];
 const knobEls={};
+/* what a knob reads: the carrier in hertz, every other knob out of a hundred */
+const kText=k=>k==='car'?S.fc.toFixed(1)+' Hz':String(Math.round(S[k]*100));
 KN.forEach(([k,l,bk])=>{const d=document.createElement('div');d.className='knob';d.dataset.b=bk;d.tabIndex=0;d.innerHTML=`<i></i><span>${l}</span>`;$('#knobs').appendChild(d);knobEls[k]=d;
-  const set=v=>{S[k]=clamp(v,0,1);d.style.setProperty('--v',S[k]);applyAll();$('#veil').style.opacity=S.veil};
+  d.setAttribute('role','slider');d.setAttribute('aria-label',l);d.setAttribute('aria-valuemin','0');d.setAttribute('aria-valuemax','100');
+  const set=v=>{S[k]=clamp(v,0,1);d.style.setProperty('--v',S[k]);applyAll();$('#veil').style.opacity=S.veil;d.setAttribute('aria-valuenow',Math.round(S[k]*100));d.setAttribute('aria-valuetext',kText(k))};
   let y0,v0;d.addEventListener('pointerdown',e=>{d.setPointerCapture(e.pointerId);y0=e.clientY;v0=S[k]});
   d.addEventListener('pointermove',e=>{if(y0!=null)set(v0+(y0-e.clientY)/160)});d.addEventListener('pointerup',()=>y0=null);
-  d.addEventListener('keydown',e=>{if(e.key==='ArrowUp'||e.key==='ArrowRight')set(S[k]+.04);if(e.key==='ArrowDown'||e.key==='ArrowLeft')set(S[k]-.04)});
+  d.addEventListener('keydown',e=>{const u=e.key==='ArrowUp'||e.key==='ArrowRight',dn=e.key==='ArrowDown'||e.key==='ArrowLeft';if(!u&&!dn)return;e.preventDefault();set(S[k]+(u?.04:-.04));say(`${l} · ${kText(k)}`)});
   d._set=set});
 function paintKnobs(){KN.forEach(([k])=>knobEls[k]._set(S[k]))}
 
@@ -1603,9 +1623,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1128d"></script>
-<script src="env.js?v=1128d"></script>
-<script src="table.js?v=1128d"></script>
-<script src="luxuria.js?v=1128d"></script>
+<script src="bank.js?v=1128e"></script>
+<script src="env.js?v=1128e"></script>
+<script src="table.js?v=1128e"></script>
+<script src="luxuria.js?v=1128e"></script>
 </body>
 </html>

@@ -166,7 +166,8 @@ const act={};
 /* from measuring every world sound: these peaked far above the rest, or sat mostly in the piercing range */
 const CALM={'e:underworld:8':.4,'e:gold:13':.4,thunder:.7,'e:blood:9':.7,'e:blood:14':.7,'e:blood:15':.7,womb:.75,'e:heat:10':.6,'e:animal:9':.6,'e:wet:8':.75,'e:underworld:2':.75,'e:nature:13':.65,'e:nature:6':.75,'e:heat:12':.75,'e:wet:2':.75,'e:wet:5':.8,'e:wet:1':.7,'e:freeze:15':.7,'e:freeze:12':.8};
 const EASE=new Set(['e:nature:0','e:nature:1','e:nature:2','e:nature:3','e:nature:5','e:nature:6','e:nature:8','e:dream:5','e:heat:10','e:heat:12','e:heat:7','e:wet:1','e:wet:2','e:wet:5','e:wet:12','e:animal:9','e:animal:13','e:celestial:5','e:celestial:14','e:magnetism:10','e:lust:2','e:gold:14','cicadas']);
-const lyrLvl=id=>(BK[id].lvl||1)*(CALM[id]||1);
+/* the stone loudness trims (env.js) leave Umbra exactly as it is */
+const lyrLvl=id=>(BK[id].lvl||1)*(CALM[id]||1)*(id!=='umbra'&&BK[id].env&&typeof STONETRIM!=='undefined'&&STONETRIM[BK[id].env]||1);
 
 /* ---------- layers on and off ---------- */
 function bankInit(){
@@ -324,7 +325,7 @@ function buildBank(){
   /* a bank sound that has the same name as a stone layer shows once, in its stone; the copy stays in BANK for presets */
   const STONE_N=new Set(BANK.filter(b=>/ stone$/.test(b.cat)).map(b=>b.n.toLowerCase()));
   const SHOWN=BANK.filter(b=>!HIDE.has(b.cat)&&(/ stone$/.test(b.cat)||!STONE_N.has(b.n.toLowerCase())));
-  const el=$('#bank');el.innerHTML=`<p class="vh">${SHOWN.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
+  const el=$('#bank');el.innerHTML=`<h3>Sounds</h3><p class="vh">${SHOWN.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
     +group(SHOWN,b=>b.cat,b=>`<button class="vb lb" data-id="${b.id}">${b.n}</button>`)+'<button class="vb" id="bClear" style="margin-top:14px">clear the mix</button>';
   el.addEventListener('click',e=>{const b=e.target.closest('.lb'),off=e.target.dataset.off;if(off)return setLayer(off,null);if(e.target.id==='bClear')return clearLayers();
     if(b){const id=b.dataset.id;showInfo(id);setLayer(id,id in S.layers?null:.5)}});
@@ -332,7 +333,7 @@ function buildBank(){
   el.addEventListener('pointerover',e=>{const b=e.target.closest('.lb');if(b)showInfo(b.dataset.id)});paintBank();
 }
 function buildPresets(){
-  $('#presets').innerHTML=`<p class="vh">${PRESETS.length} presets. Each sets a state, a voice and a mix. Change anything after.</p>`+group(PRESETS.map((p,i)=>({p,i})),x=>x.p[1],x=>`<button class="vb pb" data-i="${x.i}">${x.p[0]}</button>`);
+  $('#presets').innerHTML=`<h3>Presets</h3><p class="vh">${PRESETS.length} presets. Each sets a state, a voice and a mix. Change anything after.</p>`+group(PRESETS.map((p,i)=>({p,i})),x=>x.p[1],x=>`<button class="vb pb" data-i="${x.i}">${x.p[0]}</button>`);
   $('#presets').onclick=e=>{const b=e.target.closest('.pb');if(b)applyPreset(+b.dataset.i)};
 }
 /* the Codex lists every tone family, the healing table's held tones included: the library hides those copies, the Codex never does */
@@ -356,7 +357,7 @@ function buildCodex(){
   +`<h4>Volume</h4><p>Quiet works. Keep it at the level of a soft voice, and take the headphones off if your ears ring.</p>`;
 }
 
-function addSearch(id){const el=$('#'+id),q=document.createElement('input');q.className='q';q.type='search';q.placeholder='search';q.setAttribute('aria-label','Search');el.prepend(q);
+function addSearch(id){const el=$('#'+id),q=document.createElement('input');q.className='q';q.type='search';q.placeholder='search';q.setAttribute('aria-label','Search');{const h=el.querySelector(':scope > h3');h?h.after(q):el.prepend(q)}
   q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();el.querySelectorAll('.vb').forEach(b=>{if(b.id!=='bClear')b.hidden=!!v&&!b.textContent.toLowerCase().includes(v)});
     el.querySelectorAll('h4').forEach(h=>{const g=h.nextElementSibling;if(g)h.hidden=![...g.querySelectorAll('.vb')].some(b=>!b.hidden)})})}
 
@@ -386,7 +387,12 @@ function monadStop(){if(!MON.held)return;MON.held=false;clearTimeout(MON.tm);$('
 
 /* ---------- wire up ---------- */
 function bankBoot(){
-buildBank();buildPresets();buildCodex();['vox','bank','presets'].forEach(addSearch);setKamea(0);
+/* the Codex is long: a search keeps every entry whose words match, and the headings that still have one under them */
+function codexSearch(){const el=$('#codex'),q=document.createElement('input');q.className='q';q.type='search';q.placeholder='search';q.setAttribute('aria-label','Search the codex');el.querySelector('h3').after(q);
+  q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();let head=null,any=false;const close=()=>{if(head)head.hidden=!!v&&!any};
+    [...el.children].forEach(c=>{if(c===q||c.tagName==='H3'||c.classList.contains('dclose'))return;if(c.tagName==='H4'){close();head=c;any=false;return}
+      const ps=c.tagName==='P'?[c]:[...c.querySelectorAll('p')];ps.forEach(p=>{const hit=!v||p.textContent.toLowerCase().includes(v)||(head&&head.textContent.toLowerCase().includes(v));p.hidden=!hit;if(hit)any=true})});close()})}
+buildBank();buildPresets();buildCodex();codexSearch();['vox','bank','presets'].forEach(addSearch);setKamea(0);
 $('#bSilence').onclick=()=>silence();
 $('#bBank').onclick=e=>{e.stopPropagation();openDr('bank')};
 $('#bPresets').onclick=e=>{e.stopPropagation();openDr('presets')};
