@@ -1073,7 +1073,7 @@ registerProcessor('bd-hall',H);`;
 /* the mastering chain, in front of the ceiling: a slow glue compressor so everything moves together, the bass below
    about 120 Hz folded to mono so the low end sits in the centre of the chest, the image above it opened a little, and a
    soft tape curve that rounds peaks and adds warmth. Level is matched by measurement to the chain without it. */
-const MASTW=`class MS extends AudioWorkletProcessor{constructor(){super();this.a=1-Math.exp(-6.283185307179586*120/sampleRate);this.s1=0;this.s2=0;this.d=[0,0,0,0];this.width=1.14;this.drive=1.25;this.trim=1;this.hd=.4;
+const MASTW=`class MS extends AudioWorkletProcessor{constructor(){super();this.a=1-Math.exp(-6.283185307179586*120/sampleRate);this.s1=0;this.s2=0;this.d=[0,0,0,0];this.width=1.14;this.drive=1.25;this.trim=1;this.hd=.55;/* a little more warmth for weight (2026-11-27), still clear of the chord crunch .4 fixed */
  /* oversampling (2026-11-27): the warmth curve runs at twice the sample rate between two 47-tap half-band filters, so the
     harmonics it makes above the top of hearing are filtered out instead of folding back down as harshness */
  const N=47,M=(N-1)/2,h=new Float32Array(N);let sum=0;for(let n=0;n<N;n++){const x=n-M,sc=x===0?.5:Math.sin(Math.PI*x/2)/(Math.PI*x),w=.42-.5*Math.cos(2*Math.PI*n/(N-1))+.08*Math.cos(4*Math.PI*n/(N-1));h[n]=sc*w;sum+=h[n]}
@@ -1123,7 +1123,8 @@ function initAudio(){
   if(ctx.audioWorklet){ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([MASTW],{type:'application/javascript'}))).then(()=>{
     const glue=ctx.createDynamicsCompressor();glue.threshold.value=-22;glue.knee.value=12;glue.ratio.value=1.6;glue.attack.value=.06;glue.release.value=.7;
     const ms=new AudioWorkletNode(ctx,'bd-master',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[2],channelCount:2,channelCountMode:'explicit'});ms.port.postMessage({trim:MAST_TRIM,osOn:MOBILE?0:1});
-    A.master.disconnect(lim);A.master.connect(glue).connect(ms).connect(lim);A.glue=glue;A.mast=ms;A.limC=lim}).catch(()=>{})}
+    /* weight: a gentle lift under 100 Hz before the glue, giving back what the chain took from the low end (2026-11-27) */const lift=ctx.createBiquadFilter();lift.type='lowshelf';lift.frequency.value=100;lift.gain.value=2;A.lift=lift;
+    A.master.disconnect(lim);A.master.connect(lift).connect(glue).connect(ms).connect(lim);A.glue=glue;A.mast=ms;A.limC=lim}).catch(()=>{})}
   A.toneBus=ctx.createGain();A.toneBus.connect(A.master);const split=ctx.createChannelSplitter(2);A.toneBus.connect(split);
   A.anM=ctx.createAnalyser();A.anM.fftSize=32768;A.anM.smoothingTimeConstant=.6;lim.connect(A.anM);A.bufM=new Float32Array(A.anM.frequencyBinCount);
   A.anL=ctx.createAnalyser();A.anR=ctx.createAnalyser();
@@ -1623,9 +1624,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1128z"></script>
-<script src="env.js?v=1128z"></script>
-<script src="table.js?v=1128z"></script>
-<script src="luxuria.js?v=1128z"></script>
+<script src="bank.js?v=1129a"></script>
+<script src="env.js?v=1129a"></script>
+<script src="table.js?v=1129a"></script>
+<script src="luxuria.js?v=1129a"></script>
 </body>
 </html>
