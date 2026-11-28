@@ -1480,10 +1480,10 @@ registerProcessor('bd-monad',M);`;
   b.title="New: the keys play on Ascension's voice. Old: each instrument's original sound. Voices, strings, nectar, breath and reed, electric and the dark have both.";
   b.onclick=e=>{e.stopPropagation();window.VENG=window.VENG==='v2'?'asc':'v2';p();say('synths · '+(window.VENG==='v2'?'old':'new'))};p();$('.rside').appendChild(b)}
 {const GROUPS=[
-   ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
+   ['Vision','gVision','The machines that transmute the picture, flicker, possession and freeze.',['bDream','bPossess','bFreeze']],
    ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer, and new or old synths.',['bSynth','bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
-   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
-   ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video.',['@slots','bSave','bShare','bLoad','bRec','bVid']]];
+   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels and the forge.',['bHeal','bBody','bTrance','bRites','bVowels','bForge']],
+   ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video, play your own video.',['@slots','bSave','bShare','bLoad','bRec','bVid','bOwn']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
     const row=document.createElement('div');row.className='grpRow';
     GROUPS.forEach(([name,id,line,ids])=>{
@@ -1589,9 +1589,13 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
    4 the Soundbar opens on the Dream spells and dials: Dream level, drift and the spell's sound, the room, and the five levels. */
 {const desk=()=>matchMedia('(min-width:1001px) and (pointer:fine)').matches;
   const css=document.createElement('style');css.textContent=`
-  .hud>#live{grid-column:1/-1;justify-content:center;margin-top:2px}
-  .vzGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin:10px 0 4px}
-  .vzGrid button{min-height:40px;padding:4px 6px;font-size:11px;line-height:1.2;text-transform:lowercase}
+  .deck>#live{grid-column:3;grid-row:1;align-self:start;justify-self:center;margin-top:40px;z-index:2;flex-wrap:wrap;justify-content:center;gap:5px;max-width:100%;min-height:0}
+  .deck>#live>b{font-family:var(--tech);font-size:8.5px;letter-spacing:.14em;opacity:.6;margin-right:4px}
+  @media (min-width:1001px) and (pointer:fine){#monad{width:180px;height:180px;align-self:center;margin-top:0}#monad b{font-size:40px}}
+  .sbTabs{display:flex;gap:6px;margin:10px 0 4px;flex-wrap:wrap}.sbTabs .vb{flex:1 1 90px}
+  .sbPane[hidden]{display:none!important}
+  .vzGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:10px 0 6px}
+  .vzGrid button{min-height:42px;padding:4px 8px;font-size:12px;line-height:1.2;text-transform:lowercase}
   .vzGrid button b{display:block;font-family:var(--tech);font-size:10px;opacity:.7}
   .pnX{position:absolute;top:6px;right:8px;z-index:4;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#eee;font:14px/18px var(--body);cursor:pointer;opacity:.6;padding:0}
   .pnX:hover{opacity:1;border-color:rgba(245,96,114,.8)}
@@ -1600,19 +1604,21 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
   .sbDials .knob{width:62px}`;document.head.appendChild(css);
 
   /* 1 */
-  const moveLive=()=>{const l=document.getElementById('live'),h=document.querySelector('.hud');if(!l||!h)return;if(desk()){if(l.parentNode!==h)h.appendChild(l)}else{const r=document.getElementById('row2');if(r&&l.parentNode!==r)r.prepend(l)}};
+  const moveLive=()=>{const l=document.getElementById('live'),dk=document.querySelector('.deck'),kb=document.getElementById('keysBar');if(!l||!dk)return;if(desk()){if(l.parentNode!==dk)(kb&&kb.parentNode===dk?kb.after(l):dk.appendChild(l))}else{const r=document.getElementById('row2');if(r&&l.parentNode!==r)r.prepend(l)}};
   setTimeout(moveLive,0);addEventListener('resize',moveLive);
 
   /* 2 */
   const nm=f=>f.replace(/^(gate|film)-?\d*-?/,'').replace(/-/g,' ')||f;
-  const vizBuild=()=>{const g=document.getElementById('gVision');if(!g||g.querySelector('.vzGrid'))return !!g;
-    const h=document.createElement('h4');h.textContent='Visualizers';const grid=document.createElement('div');grid.className='vzGrid';
-    grid.innerHTML=FILMS.map((f,i)=>`<button class="vb" data-f="${i}"><b>${i+1}</b>${nm(f)}</button>`).join('');
-    g.querySelector('.vh').after(h,grid);const h2=document.createElement('h4');h2.textContent='Machines and rooms';grid.after(h2);
-    grid.addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;e.stopPropagation();setFilm(+b.dataset.f);paintViz();say('visualizer '+(+b.dataset.f+1)+' · '+nm(FILMS[+b.dataset.f]))});
-    const paintViz=()=>grid.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',+b.dataset.f===film));
-    new MutationObserver(()=>{if(!g.hidden)paintViz()}).observe(g,{attributes:true,attributeFilter:['hidden']});paintViz();return true};
-  const w2=setInterval(()=>{if(vizBuild())clearInterval(w2)},250);
+  /* the Vision page holds the transmute machines themselves: press one to run the picture through it, off to stop */
+  const tmBuild=()=>{const g=document.getElementById('gVision');if(!g||!window.TRANS)return false;if(g.querySelector('.tmGrid'))return true;
+    const h=document.createElement('h4');h.textContent='Transmute';const grid=document.createElement('div');grid.className='vzGrid tmGrid';
+    grid.innerHTML=TRANS.names.map((n,i)=>`<button class="vb" data-m="${i}">${n}</button>`).join('')+'<button class="vb" data-m="-1">off</button>';
+    g.querySelector('.vh').after(h,grid);const h2=document.createElement('h4');h2.textContent='More';grid.after(h2);const bt=document.getElementById('bTrans');if(bt)bt.hidden=true;
+    const paint=()=>grid.querySelectorAll('[data-m]').forEach(b=>{const m=+b.dataset.m;b.classList.toggle('on',m<0?!TRANS.on:TRANS.on&&b.classList.contains('cur'))});
+    grid.addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;e.stopPropagation();const m=+b.dataset.m;
+      if(m<0){if(TRANS.on)TRANS.set(false)}else{if(!TRANS.on)TRANS.set(true);TRANS.pick(m);grid.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('cur',x===b))}paint()});
+    new MutationObserver(()=>{if(!g.hidden)paint()}).observe(g,{attributes:true,attributeFilter:['hidden']});paint();return true};
+  const w2=setInterval(()=>{if(tmBuild())clearInterval(w2)},250);
 
   /* 3 */
   setTimeout(()=>[['#shellL','L'],['#shellR','R']].forEach(([sel,k])=>{const sh=document.querySelector(sel);if(!sh||sh.querySelector('.pnX'))return;
@@ -1645,10 +1651,39 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
     /* every sound: the whole library, with the mix of what is playing (each with its level) at its head, lives on this page */
     const lib=document.createElement('section');lib.className='sbSec sbLib';lib.innerHTML='<h4>Every sound</h4>';const bank=document.getElementById('bank');
     if(bank){const i=DR.indexOf('bank');if(i>=0)DR.splice(i,1);bank.classList.remove('drawer','jelly');bank.hidden=false;const x=bank.querySelector('.dclose');if(x)x.remove();lib.appendChild(bank);
-      const bb=document.getElementById('bBank');if(bb){bb.onclick=e=>{e.stopPropagation();openDr('gSound');setTimeout(()=>lib.scrollIntoView({block:'start'}),30)}}}
+      const bb=document.getElementById('bBank');if(bb){bb.onclick=e=>{e.stopPropagation();openDr('gSound');window.SBSHOW&&SBSHOW(1)}}}
     const more=document.createElement('h4');more.textContent='More';more.className='sbSec';
     const grid=g.querySelector('.grpGrid');grid.before(dream,room,lv,lib,more);
+    /* one part at a time: Dream, every sound, the mix (room and levels), and the rest */
+    const mix=document.createElement('div');mix.className='sbPane';room.before(mix);mix.append(room,lv);
+    const rest=document.createElement('div');rest.className='sbPane';more.before(rest);rest.append(more,grid);more.remove();
+    dream.classList.add('sbPane');lib.classList.add('sbPane');
+    const panes=[['Dream',dream],['Every sound',lib],['Mix',mix],['More',rest]],tabs=document.createElement('div');tabs.className='sbTabs';
+    tabs.innerHTML=panes.map(([n],i)=>`<button class="vb" data-p="${i}">${n}</button>`).join('');g.querySelector('.vh').textContent='The Dream spells, every sound, the mix and the rest, one at a time.';g.querySelector('.vh').after(tabs);
+    let pi=0;const show=i=>{pi=i;panes.forEach(([,el],j)=>{el.hidden=j!==i});tabs.querySelectorAll('.vb').forEach((b,j)=>b.classList.toggle('on',j===i))};show(0);
+    tabs.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;e.stopPropagation();show(+b.dataset.p);g.scrollTop=0});
+    window.SBSHOW=show;
     const paintSp=()=>dream.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',+b.dataset.s===DREAMSP.cur));
     dream.querySelector('.sbSpells').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;e.stopPropagation();DREAMSP.cast(+b.dataset.s);setTimeout(()=>{paintSp();ks.forEach(k=>k._paint())},50)});
     new MutationObserver(()=>{if(!g.hidden){paintSp();ks.forEach(k=>k._paint())}}).observe(g,{attributes:true,attributeFilter:['hidden']});paintSp();return true};
   const w4=setInterval(()=>{if(sbBuild())clearInterval(w4)},250)}
+
+/* cymatics in the Proof panel, beside the test tone, sharing its row (owner, 2026-11-27) */
+setTimeout(()=>{const b=document.getElementById('bScope'),t=document.getElementById('bTone');if(!b||!t||t.parentNode.classList.contains('ptRow'))return;
+  const row=document.createElement('div');row.className='ptRow';t.before(row);row.append(b,t);
+  const c=document.createElement('style');c.textContent='.ptRow{display:flex;gap:8px;margin-top:8px}.ptRow>button{flex:1 1 0;margin:0!important;min-height:30px;display:block}';document.head.appendChild(c)},700);
+
+/* the codex on the home screen, in the top row beside Session (owner, 2026-11-27) */
+setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElementById('bgSession');if(c&&ses&&ses.nextSibling!==c){ses.after(c);c.classList.add('grpBtn')}},400);
+
+/* ================= REALM KEYS: each stone brings its Ascension realm voice to the keys (owner, 2026-11-27) =================
+   Ascension's map (SOUND-SYSTEM-FOR-V2 and its REALM_VOICE): Dream opal keys, Nature moss reed, Water tide glass, Air cloud flute,
+   Cosmos star pad, Electric arc lead, Blood heart strings, Underworld ash organ, Gold sun brass, Freeze frost bells, Lust velvet
+   sigh, Magic fairy glass, Dragon dragon throat, Sand duduk (V2 has no 'sand keys'). V2's own stones take their realm's voice.
+   Only a press on a stone does it, so start-up, reset and presets keep their own keys. */
+{const RKV={dream:'opal keys',nature:'moss reed',wet:'tide glass',breath:'cloud flute',universe:'star pad',celestial:'star pad',magnetism:'arc lead',
+    blood:'heart strings',animal:'heart strings',underworld:'ash organ',wyrm:'ash organ',gold:'sun brass',freeze:'frost bells',lust:'velvet sigh',
+    magic:'fairy glass',dragon:'dragon throat',heat:'dragon throat',sand:'duduk'};
+  window.REALMKEYS={voice:id=>RKV[id]};
+  $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{const id=b.dataset.id,v=RKV[id];
+    if(ENV!==id||!v)return;const i=VOICES.indexOf(v);if(i>=0&&i!==S.voice){setVoice(i);say(`${ENVS.find(x=>x.id===id).n.toLowerCase()} · keys: ${v}`)}},0)})}
