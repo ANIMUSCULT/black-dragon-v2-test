@@ -1480,7 +1480,7 @@ registerProcessor('bd-monad',M);`;
   b.title="New: the keys play on Ascension's voice. Old: each instrument's original sound. Voices, strings, nectar, breath and reed, electric and the dark have both.";
   b.onclick=e=>{e.stopPropagation();window.VENG=window.VENG==='v2'?'asc':'v2';p();say('synths · '+(window.VENG==='v2'?'old':'new'))};p();$('.rside').appendChild(b)}
 {const GROUPS=[
-   ['Vision','gVision','The machines that transmute the picture, flicker, possession and freeze.',['bDream','bPossess','bFreeze']],
+   ['Vision','gVision','The visualizer, the machines that transmute it, flicker and possession.',['bDream','bPossess']],
    ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer, and new or old synths.',['bSynth','bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
    ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels and the forge.',['bHeal','bBody','bTrance','bRites','bVowels','bForge']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video, play your own video.',['@slots','bSave','bShare','bLoad','bRec','bVid','bOwn']]];
@@ -1594,6 +1594,8 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
   @media (min-width:1001px) and (pointer:fine){#monad{width:180px;height:180px;align-self:center;margin-top:0}#monad b{font-size:40px}}
   .sbTabs{display:flex;gap:6px;margin:10px 0 4px;flex-wrap:wrap}.sbTabs .vb{flex:1 1 90px}
   .sbPane[hidden]{display:none!important}
+  #transBar{display:none!important}
+  .vzStep{display:flex;gap:6px;margin:8px 0}.vzStep .vzNow{flex:1}
   .vzGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:10px 0 6px}
   .vzGrid button{min-height:42px;padding:4px 8px;font-size:12px;line-height:1.2;text-transform:lowercase}
   .vzGrid button b{display:block;font-family:var(--tech);font-size:10px;opacity:.7}
@@ -1613,7 +1615,14 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
   const tmBuild=()=>{const g=document.getElementById('gVision');if(!g||!window.TRANS)return false;if(g.querySelector('.tmGrid'))return true;
     const h=document.createElement('h4');h.textContent='Transmute';const grid=document.createElement('div');grid.className='vzGrid tmGrid';
     grid.innerHTML=TRANS.names.map((n,i)=>`<button class="vb" data-m="${i}">${n}</button>`).join('')+'<button class="vb" data-m="-1">off</button>';
-    g.querySelector('.vh').after(h,grid);const h2=document.createElement('h4');h2.textContent='More';grid.after(h2);const bt=document.getElementById('bTrans');if(bt)bt.hidden=true;
+    /* the visualizer itself, stepped from here: ‹ visualizer N of 33 › */
+    const vh=document.createElement('h4');vh.textContent='Visualizer';const vrow=document.createElement('div');vrow.className='vg vzStep';
+    vrow.innerHTML='<button class="vb" data-v="-1">‹</button><button class="vb vzNow" data-v="0"></button><button class="vb" data-v="1">›</button>';
+    const vpaint=()=>{vrow.querySelector('.vzNow').textContent=`visualizer ${film+1} of ${FILMS.length}`};
+    vrow.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;e.stopPropagation();const d=+b.dataset.v||1;setFilm(film+d);vpaint();say(`visualizer ${film+1} of ${FILMS.length}`)});
+    g.querySelector('.vh').after(vh,vrow,h,grid);vpaint();const h2=document.createElement('h4');h2.textContent='More';grid.after(h2);
+    const bt=document.getElementById('bTrans');if(bt)bt.hidden=true;const fz=document.getElementById('bFreeze');if(fz)fz.hidden=true;
+    new MutationObserver(()=>{if(!g.hidden)vpaint()}).observe(g,{attributes:true,attributeFilter:['hidden']});
     const paint=()=>grid.querySelectorAll('[data-m]').forEach(b=>{const m=+b.dataset.m;b.classList.toggle('on',m<0?!TRANS.on:TRANS.on&&b.classList.contains('cur'))});
     grid.addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b)return;e.stopPropagation();const m=+b.dataset.m;
       if(m<0){if(TRANS.on)TRANS.set(false)}else{if(!TRANS.on)TRANS.set(true);TRANS.pick(m);grid.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('cur',x===b))}paint()});
@@ -1687,3 +1696,14 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
   window.REALMKEYS={voice:id=>RKV[id]};
   $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{const id=b.dataset.id,v=RKV[id];
     if(ENV!==id||!v)return;const i=VOICES.indexOf(v);if(i>=0&&i!==S.voice){setVoice(i);say(`${ENVS.find(x=>x.id===id).n.toLowerCase()} · keys: ${v}`)}},0)})}
+
+/* ================= PRESS AGAIN TO SILENCE (owner, 2026-11-27) =================
+   A state pressed while it is the one playing goes quiet: its beat tone and body chord fade out and no state is lit, so with
+   nothing chosen there is no drone. Pressing any state brings its drone back at the levels it had. A preset pressed again
+   clears the sounds it chose. Stones and library sounds already turn off on a second press. */
+{let prev=null;const lit=()=>[...document.querySelectorAll('.st')].some(b=>b.classList.contains('on'));
+  document.querySelectorAll('.st').forEach((b,i)=>{const go=b.onclick;b.onclick=e=>{
+    if(S.state===i&&lit()){prev={tone:S.tone,body:S.body};S.tone=0;S.body=0;document.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));applyAll();paintKnobs();say(STATES[i].name.toLowerCase()+' · off');return}
+    if(!lit()&&prev){S.tone=prev.tone;S.body=prev.body;prev=null;paintKnobs()}return go.call(b,e)}});
+  const P=document.getElementById('presets');if(P)P.addEventListener('click',e=>{const b=e.target.closest('.pb');if(!b||!b.classList.contains('on'))return;
+    e.stopImmediatePropagation();b.classList.remove('on');clearLayers();const bp=document.getElementById('bPresets');if(bp)bp.textContent='presets';say(b.textContent.toLowerCase()+' · off')},true)}
