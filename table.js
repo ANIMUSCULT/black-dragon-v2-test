@@ -1738,7 +1738,7 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
 /* the stone's sounds sit in the bottom-right box beside the keys (owner, 2026-11-27), where the old lower-right menu was:
    always in view, no scrolling inside the right panel. Computers only; phones keep them in the stones tab. */
 {const desk=()=>matchMedia('(min-width:1001px) and (pointer:fine)').matches;
-  const css=document.createElement('style');css.textContent=`.deck>#pads{grid-column:4;grid-row:1;align-self:stretch;overflow-y:auto;overflow-x:hidden;max-height:100%;padding:8px 10px;border-radius:14px;
+  const css=document.createElement('style');css.textContent=`.deck>#pads{grid-column:4;grid-row:1;align-self:stretch;overflow-y:auto;overflow-x:hidden;height:0;min-height:100%;width:min(300px,22vw);justify-self:end;padding:8px 10px;border-radius:14px;
     background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 2px 10px rgba(0,0,0,.6)}
   .deck>#pads h3{margin:0 0 2px;font-size:18px}.deck>#pads .vh{font-size:11px;margin:0 0 6px}.deck>.rside.emptied{display:none!important}`;document.head.appendChild(css);
   const home=document.getElementById('pads')?.parentNode,next=document.getElementById('pads')?.nextSibling;
@@ -1749,10 +1749,16 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
 {const desk=()=>matchMedia('(min-width:1001px) and (pointer:fine)').matches;
   const css=document.createElement('style');css.textContent=`
   .cymDialHost{position:absolute;border-radius:50%;overflow:hidden;z-index:3;pointer-events:none}
+  .cymPanelHost{position:relative;margin:8px auto 4px;border-radius:50%;overflow:hidden;border:1px solid rgba(255,255,255,.14)}
+  .cymPanelHost canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;left:0!important;top:0!important;background:radial-gradient(circle,rgba(0,0,0,.35),rgba(0,0,0,.55) 75%)}
+  .cymPanelHost{flex:none}
+  .deck>#pads>.cymPanelHost{margin:2px auto 8px}
   .cymDialHost canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;left:0!important;top:0!important;background:radial-gradient(circle,rgba(0,0,0,.35),rgba(0,0,0,.55) 75%)}
   body.cymDial #bHz,body.cymDial #bandN,body.cymDial #bandD{opacity:.12;transition:opacity .6s}
-  body.cymDial #monad>span,body.cymDial #monad>b,body.cymDial #monad>i{opacity:1!important}
-  .ktabs .visRow{display:inline-flex;gap:4px;margin-left:8px;vertical-align:middle}
+  body.cymDial #monad>span,body.cymDial #monad>b,body.cymDial #monad>i,body.cymPanel #monad>span,body.cymPanel #monad>b,body.cymPanel #monad>i{opacity:1!important}
+  body.cymPanel.monWhite .monSwirl{filter:blur(2.5px) saturate(1.7) brightness(1.05)!important}
+  .ktabs .visRow{display:inline-flex;gap:4px;margin-left:6px;vertical-align:middle}
+  .ktabs .pill,.ktabs button{white-space:nowrap!important;padding-left:9px!important;padding-right:9px!important}
   #bFreeze{display:none!important}
   /* the stones: each gem cut in facets of its own colour, a light that crosses it now and then, and the chosen one lit
      from inside, brightening with the sound it is making */
@@ -1768,19 +1774,24 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
   @media (prefers-reduced-motion:reduce){.stone::after{animation:none}}`;document.head.appendChild(css);
 
   /* 1 cymatics: a place button in the plate bar: in the Monad, in the centre dial, or off */
-  let place='monad';const host=document.createElement('div');host.className='cymDialHost';host.hidden=true;
+  let place='panel';const host=document.createElement('div');host.className='cymDialHost';host.hidden=true;
+  /* the panel spot: the empty part of the right panel, under the cymatics button; the plate fills what room there is */
+  const ph=document.createElement('div');ph.className='cymPanelHost';ph.hidden=true;
+  const pfit=()=>{const pd=document.getElementById('pads');if(!pd)return 0;if(ph.parentNode!==pd||pd.firstChild!==ph)pd.prepend(ph);const sz=Math.max(120,Math.min(pd.clientWidth-24,200));ph.style.width=ph.style.height=ph.style.minHeight=sz+'px';pd.scrollTop=0;return sz};
+  const room=()=>document.getElementById('pads')?200:0;
   const fit=()=>{const d=document.getElementById('dial'),core=document.getElementById('core');if(!d||!core)return;if(host.parentNode!==core)core.appendChild(host);
     if(getComputedStyle(core).position==='static')core.style.position='relative';const cr=core.getBoundingClientRect(),r=d.getBoundingClientRect(),s=r.width*.5;
     host.style.width=host.style.height=s+'px';host.style.left=(r.left-cr.left+r.width/2-s/2)+'px';host.style.top=(r.top-cr.top+r.height/2-s/2)+'px'};
   const apply=()=>{const c=document.getElementById('cym'),c2=document.getElementById('cym2'),m=document.getElementById('monad');if(!c||!m||!desk())return;
-    const on=document.body.classList.contains('cymIn');const inDial=on&&place==='dial';document.body.classList.toggle('cymDial',inDial);host.hidden=!inDial;
-    if(inDial){fit();if(c.parentNode!==host){host.appendChild(c);if(c2)host.appendChild(c2)}c.classList.remove('inMon');c2&&c2.classList.remove('inMon')}
-    else if(on&&c.parentNode===host){m.append(c);if(c2)c.after(c2);c.classList.add('inMon');c2&&c2.classList.add('inMon')}};
+    const on=document.body.classList.contains('cymIn');const inDial=on&&place==='dial',inPanel=on&&place==='panel'&&room()>=140;document.body.classList.toggle('cymDial',inDial);document.body.classList.toggle('cymPanel',inPanel);host.hidden=!inDial;ph.hidden=!inPanel;
+    const to=h=>{if(c.parentNode!==h){h.appendChild(c);if(c2)h.appendChild(c2)}c.classList.remove('inMon');c2&&c2.classList.remove('inMon')};
+    if(inDial){fit();to(host)}else if(inPanel){pfit();to(ph)}
+    else if(on&&(c.parentNode===host||c.parentNode===ph)){m.append(c);if(c2)c.after(c2);c.classList.add('inMon');c2&&c2.classList.add('inMon')}};
   const btn=document.createElement('button');btn.id='cymPlace';btn.title='Where the plate sits: in the Monad, in the centre dial, or off';
-  const paint=()=>{btn.textContent='place · '+(place==='dial'?'centre':'monad')};
-  btn.onclick=e=>{e.stopPropagation();if(place==='monad'){place='dial';apply();say('cymatics · in the centre dial')}else{place='monad';const x=document.getElementById('cymX');apply();if(x)x.click()}paint()};
+  const paint=()=>{btn.textContent='place · '+({panel:'panel',monad:'monad',dial:'centre'})[place]};
+  btn.onclick=e=>{e.stopPropagation();if(place==='panel'){place='monad';apply();say('cymatics · in the Monad')}else if(place==='monad'){place='dial';apply();say('cymatics · in the centre dial')}else{place='panel';const x=document.getElementById('cymX');apply();if(x)x.click()}paint()};
   const w=setInterval(()=>{const bar=document.getElementById('cymBar'),big=document.getElementById('cymBig');if(!bar)return;clearInterval(w);if(desk()){(big||bar.lastChild).before(btn);if(big)big.hidden=true}paint();
-    new MutationObserver(apply).observe(document.body,{attributes:true,attributeFilter:['class']});addEventListener('resize',()=>{if(place==='dial')fit()})},300);
+    new MutationObserver(apply).observe(document.body,{attributes:true,attributeFilter:['class']});addEventListener('resize',()=>{if(place==='dial')fit();if(place==='panel')pfit()})},300);
 
   /* 2 the visualizer stepper and the dice sit with the vision dials */
   setTimeout(()=>{if(!desk())return;const kt=document.querySelector('.ktabs'),pv=document.getElementById('bFilmPrev'),f=document.getElementById('bFilm'),dc=document.getElementById('bDice');if(!kt||!f)return;
