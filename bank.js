@@ -325,7 +325,7 @@ function buildBank(){
   /* a bank sound that has the same name as a stone layer shows once, in its stone; the copy stays in BANK for presets */
   const STONE_N=new Set(BANK.filter(b=>/ stone$/.test(b.cat)).map(b=>b.n.toLowerCase()));
   const SHOWN=BANK.filter(b=>!HIDE.has(b.cat)&&(/ stone$/.test(b.cat)||!STONE_N.has(b.n.toLowerCase())));
-  const el=$('#bank');el.innerHTML=`<h3>Sounds</h3><p class="vh">${SHOWN.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
+  const el=$('#bank');el.innerHTML=`<p class="vh">${SHOWN.length} sounds. Any number can play at once.</p><div id="mix"></div><p id="binfo" class="binfo">Choose a sound to read what it is and how well it is supported.</p>`
     +group(SHOWN,b=>b.cat,b=>`<button class="vb lb" data-id="${b.id}">${b.n}</button>`)+'<button class="vb" id="bClear" style="margin-top:14px">clear the mix</button>';
   el.addEventListener('click',e=>{const b=e.target.closest('.lb'),off=e.target.dataset.off;if(off)return setLayer(off,null);if(e.target.id==='bClear')return clearLayers();
     if(b){const id=b.dataset.id;showInfo(id);setLayer(id,id in S.layers?null:.5)}});
@@ -333,7 +333,7 @@ function buildBank(){
   el.addEventListener('pointerover',e=>{const b=e.target.closest('.lb');if(b)showInfo(b.dataset.id)});paintBank();
 }
 function buildPresets(){
-  $('#presets').innerHTML=`<h3>Presets</h3><p class="vh">${PRESETS.length} presets. Each sets a state, a voice and a mix. Change anything after.</p>`+group(PRESETS.map((p,i)=>({p,i})),x=>x.p[1],x=>`<button class="vb pb" data-i="${x.i}">${x.p[0]}</button>`);
+  $('#presets').innerHTML=`<p class="vh">${PRESETS.length} presets. Each sets a state, a voice and a mix. Change anything after.</p>`+group(PRESETS.map((p,i)=>({p,i})),x=>x.p[1],x=>`<button class="vb pb" data-i="${x.i}">${x.p[0]}</button>`);
   $('#presets').onclick=e=>{const b=e.target.closest('.pb');if(b)applyPreset(+b.dataset.i)};
 }
 /* the Codex lists every tone family, the healing table's held tones included: the library hides those copies, the Codex never does */
@@ -357,7 +357,7 @@ function buildCodex(){
   +`<h4>Volume</h4><p>Quiet works. Keep it at the level of a soft voice, and take the headphones off if your ears ring.</p>`;
 }
 
-function addSearch(id){const el=$('#'+id),q=document.createElement('input');q.className='q';q.type='search';q.placeholder='search';q.setAttribute('aria-label','Search');{const h=el.querySelector(':scope > h3');h?h.after(q):el.prepend(q)}
+function addSearch(id){const el=$('#'+id),q=document.createElement('input');q.className='q';q.type='search';q.placeholder='search';q.setAttribute('aria-label','Search');el.prepend(q);
   q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();el.querySelectorAll('.vb').forEach(b=>{if(b.id!=='bClear')b.hidden=!!v&&!b.textContent.toLowerCase().includes(v)});
     el.querySelectorAll('h4').forEach(h=>{const g=h.nextElementSibling;if(g)h.hidden=![...g.querySelectorAll('.vb')].some(b=>!b.hidden)})})}
 

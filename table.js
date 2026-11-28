@@ -1476,9 +1476,9 @@ registerProcessor('bd-monad',M);`;
    into four panels. Each button is moved, not copied, so it keeps every behaviour it had. The top row keeps only the
    visualizer, the four groups, and hide panels (so the way back is always in reach). */
 {const GROUPS=[
-   ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, possession and freeze.',['bOwn','bTrans','bDream','bPossess','bFreeze']],
+   ['Vision','gVision','The picture: your own video, the machines that transmute it, flicker, sand, possession and freeze.',['bOwn','bTrans','bDream','bScope','bPossess','bFreeze']],
    ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer.',['bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
-   ['Rituals','gRituals','The workings: the healing table, body programs, extasis, the ritual chamber, vowels, fornax and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
+   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the codex.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bCodex']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video.',['@slots','bSave','bShare','bLoad','bRec','bVid']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
     const row=document.createElement('div');row.className='grpRow';
@@ -1647,10 +1647,11 @@ setTimeout(()=>{const kb=document.getElementById('keysBar');if(!kb||document.get
     nowEl.addEventListener('click',e=>{const b=e.target.closest('.sbOff');if(!b)return;e.stopPropagation();const r=(nowEl._r||[])[+b.dataset.i];if(r){r.off();paintKnobs();applyAll();say(r.n+' · off');paintNow(true)}});
     const tick=()=>{if(d.hidden)return;paintKeys();paintLv();paintNow()};setInterval(tick,500);
     new MutationObserver(()=>{if(!d.hidden){paintNow(true);tick()}}).observe(d,{attributes:true,attributeFilter:['hidden']});tick();return true};
-  const w=setInterval(()=>{if(build())clearInterval(w)},250);
+  /* the owner did not like this page (2026-11-27): it is left unbuilt, the Sound group keeps its plain grid */
+  void build;
 
   /* cymatics back where it began, in the Proof panel beside the test tone, as wide as it */
-  setTimeout(()=>{const b=document.getElementById('bScope'),t=document.getElementById('bTone');if(!b||!t||t.parentNode.classList.contains('ptRow'))return;const row=document.createElement('div');row.className='ptRow';t.before(row);row.append(b,t);b.classList.add('cymBtn')},700);
+  /* (cymatics stays in the Vision group, as before: the owner wanted the earlier layout back) */
   const css=document.createElement('style');css.textContent=`
   .sbPage .sbSec{margin-top:14px}.sbPage .sbSec h4{margin:0 0 6px}
   .sbPage .sbRow{display:flex;flex-wrap:wrap;gap:8px}.sbPage .sbRow .vb{flex:1 1 150px}
@@ -1660,5 +1661,4 @@ setTimeout(()=>{const kb=document.getElementById('keysBar');if(!kb||document.get
   .sbPage .sbOff{background:none;border:1px solid rgba(255,255,255,.18);color:inherit;border-radius:12px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer;opacity:.75}
   .sbPage .sbOff:hover{opacity:1;border-color:rgba(245,96,114,.7)}
   .ptRow{display:flex;gap:8px;margin-top:8px}.ptRow>button{flex:1 1 0;margin:0!important;min-height:30px;display:block}
-  /* the Monad sits in the middle of the space under the stones instead of pressing up against them */
-  @media (min-width:1001px) and (pointer:fine){#monad{width:184px;height:184px;align-self:center;margin-top:0}#monad b{font-size:42px}}`;document.head.appendChild(css)}
+`;document.head.appendChild(css)}
