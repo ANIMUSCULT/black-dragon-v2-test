@@ -737,8 +737,8 @@ if(/[?&]diag\b/.test(location.search)){
    setState(STATES.findIndex(x=>x.id==='desire'));
    Object.assign(S,{fc:+ROOT.toFixed(2),beat:.9,mode:'monaural',tone:.4,body:.45,air:0,close:0,space:.85,echo:.62,att:.72,rel:.8,tide:false,speed:.14,trails:.72,warp:.25,grain:.22,veil:.5,twist:0,mirrors:0});
    $('#bTide').classList.remove('on');tun=TUN.findIndex(t=>t[0]==='pythagorean');{const vx=$('#vox');if(vx&&vx._sync)vx._sync()}
-   setVoice(VOICES.indexOf('opium choir'));window.ENVCOL='#b1123c';paintDial();paintModes();paintKnobs();applyAll();setLayer('umbra',.6);ujStart()};
- const umbraOff=()=>{ujStop(false);UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear();setLayer('umbra',null);const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
+   setVoice(VOICES.indexOf('opium choir'));window.ENVCOL='#b1123c';window.UMBPRE=1;paintDial();paintModes();paintKnobs();applyAll();setLayer('umbra',.6);window.UMBPRE=0;ujStart()};
+ const umbraOff=()=>{ujStop(false);UJ.added.forEach(id=>setLayer(id,null));UJ.added.clear();setLayer('umbra',null);applyAll();const e=ENVS.find(x=>x.id===ENV);window.ENVCOL=e?e.col:null;say('umbra · released')};
  const umbPaint=()=>{const u=$('#bUmbra');if(u)u.classList.toggle('on',umbIsOn())};
  const b0=buildPads;buildPads=()=>{b0();if(ENV!=='universe')return;const u=document.createElement('button');u.id='bUmbra';u.className='umbraBtn';u.title='Umbra: a love hypnosis journey of about fourteen minutes, in sound alone. Umbra stays when it ends. Press again to release it.';
     u.textContent='Umbra';u.onclick=()=>{umbIsOn()?umbraOff():umbraOn();umbPaint()};$('#pads h3').after(u);umbPaint()};
@@ -1186,7 +1186,7 @@ ASC.make=fx=>ASC.load().then(()=>{const n=new AudioWorkletNode(A.ctx,'ascension'
   ASCV.forEach(([n,p,sh,tr])=>VOX.push({n,fam:'ascension',asc:p,sh,tr,oct:p==='bass'?-1:0}));
   /* the thirteen realm voices Ascension made, in this instrument's own recipe format (Ascension's SOUND-SYSTEM-FOR-V2, section 4) */
   VOX.push(
-  { n: 'opal keys', fam: 'ascension realms', osc: [['sine', 1, -3, .6], ['sine', 1, 3, .6], ['sine', 2, 0, .12]], fm: [2, .3, 1.6], parts: [[4, .05, 1.2]], lp: [5, .6, 1.5, .6], trem: [2.2, .05], a: .015, d: 3.6, s: .25, peak: .4, r: 2.8, trim: 0.93 },
+  { n: 'opal keys', fam: 'ascension realms', osc: [['sine', 1, -3, .6], ['sine', 1, 3, .6], ['sine', 2, 0, .12]], fm: [2, .3, 1.6], parts: [[4, .05, 1.2]], lp: [5, .6, 1.5, .6], trem: [2.2, .05], a: .015, d: 3.6, s: .5, peak: .4, r: 2.8, trim: 0.93 },
   { n: 'moss reed', fam: 'ascension realms', osc: [['triangle', 1, 0, .8], ['sine', 2, 0, .2]], noise: [[1, 4, .4, -.4]], parts: [[3.9, .12, .5]], lp: [4, .7, 2, .3], vib: [4.4, .004, .6], a: .04, peak: .4, r: 1.2, trim: 0.41 },
   { n: 'tide glass', fam: 'ascension realms', osc: [['triangle', 1, 0, .8], ['sine', 2, 4, .25]], uni: 2, spread: 7, lp: [3, .8, 2.2, 1.8], beat: .3, parts: [[2, .2, 4]], trem: [.3, .12], a: .5, peak: .4, r: 4, trim: 0.59 },
   { n: 'cloud flute', fam: 'ascension realms', oct: 1, osc: [['sine', 1, 0, .9], ['sine', 2, 0, .08]], noise: [[1, 2.5, .7, -.5], [2, 6, .2, -.5]], vib: [4.6, .004, .8], a: .2, peak: .34, r: 1.4, trim: 0.41 },

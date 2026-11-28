@@ -1,11 +1,13 @@
 /* Black Dragon II: the ten stone environments, the pad grid, the big Monad button, the readout line,
    and the wider frequency library. Loaded after bank.js and shares its globals. */
 
+/* noise beds sit 3 dB under the synth on every stone (owner, 2026-11-28: too much air, not enough synth); Umbra and its journey play as made */
+const NCUT=()=>(typeof S!=='undefined'&&('umbra' in S.layers||window.UMBPRE))?1:.708;
 /* ---------- primitives: every environment sound is a few of these ---------- */
 function prim(ctx,out,L,s){
   const g0=s.g==null?.5:s.g;
   switch(s.k){
-  case 'bed':{const src=loopN(ctx,NB[s.n||'pink']),f=bq(ctx,s.ft||'lowpass',s.f||800,s.q),g=gn(ctx,g0);src.connect(f).connect(g);let o=g;
+  case 'bed':{const g0=(s.g==null?.5:s.g)*NCUT(),src=loopN(ctx,NB[s.n||'pink']),f=bq(ctx,s.ft||'lowpass',s.f||800,s.q),g=gn(ctx,g0);src.connect(f).connect(g);let o=g;
     if(s.pan){const p=ctx.createStereoPanner();g.connect(p);o=p;L.src.push(lfo(ctx,s.pan,.9,p.pan))}o.connect(out);L.src.push(src);
     if(s.lfo)L.src.push(lfo(ctx,s.lfo[0],s.lfo[1]*g0,g.gain));if(s.sw)L.src.push(lfo(ctx,s.sw[0],s.sw[1],f.frequency));
     if(s.am){const m=ctx.createOscillator(),mg=gn(ctx,g0*.5);m.type='square';m.frequency.value=s.am;m.connect(mg).connect(g.gain);m.start();L.src.push(m)}break}
@@ -102,7 +104,7 @@ function v1env(ctx,out,L,layers){const TAU=Math.PI*2,Rn=a=>Array.isArray(a)?a[0]
     case 'zap':{const o=ctx.createOscillator();o.type='sawtooth';const d=Rn(e.d),g=g_(0);for(let j=0;j<10;j++)o.frequency.setValueAtTime(Rn(e.f),t+j*d/10);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(e.g,t+.005);g.gain.setValueAtTime(e.g,t+d*.8);g.gain.linearRampToValueAtTime(0,t+d);o.connect(filt('highpass',600)).connect(g).connect(pan(p)).connect(out);o.start(t);o.stop(t+d+.05);break}}};
   const evs=[],chords=[],chordsP=[],orbits=[],shep=[];
   layers.forEach(Ly=>{switch(Ly.k){
-    case 'bed':{const n=src(Ly.n),f=filt(Ly.ft||'lowpass',Ly.f,Ly.q||1),g=g_(Ly.g);n.connect(f).connect(g).connect(out);/* a swell never takes the level below silence, as in Ascension (a deeper one would flip the sound and throb twice a cycle) */if(Ly.lfo)lf(Ly.lfo[0],Math.min(Ly.lfo[1],Ly.g*.97),g.gain);if(Ly.sw)lf(Ly.sw[0],Ly.sw[1],f.frequency);break}
+    case 'bed':{const nk=NCUT(),n=src(Ly.n),f=filt(Ly.ft||'lowpass',Ly.f,Ly.q||1),g=g_(Ly.g*nk);n.connect(f).connect(g).connect(out);/* a swell never takes the level below silence, as in Ascension (a deeper one would flip the sound and throb twice a cycle) */if(Ly.lfo)lf(Ly.lfo[0],Math.min(Ly.lfo[1],Ly.g*.97)*nk,g.gain);if(Ly.sw)lf(Ly.sw[0],Ly.sw[1],f.frequency);break}
     case 'drone':{const g=g_(Ly.g),fl=filt(Ly.ft||'lowpass',Ly.ff||4000,.7);fl.connect(g).connect(out);(Ly.rel?Ly.rel.map(r=>root()*r):Ly.f).forEach(x=>{const o=osc(Ly.w,x);if(Ly.vib)lf(Ly.vib[0],Ly.vib[1],o.detune);if(Ly.swf)lf(Ly.swf[0],Ly.swf[1],o.frequency);o.connect(fl)});if(Ly.am)lf(Ly.am[0],Ly.g*Ly.am[1],g.gain);break}
     case 'choir':{const sc=scl();Ly.deg.forEach((deg,i)=>{const o=osc('sawtooth',root()*Ly.oct*sc[deg%sc.length]);o.detune.value=(i-1)*6;Ly.fm.forEach((ff,j)=>o.connect(filt('bandpass',ff,9)).connect(g_([1,.5,.2][j]*Ly.g*4)).connect(pan((i-1)*.6)).connect(out));lf(5+i*.3,6,o.detune);chords.push({o,deg,oct:Ly.oct})});break}
     case 'pad':{const lp=filt('lowpass',Ly.cut,.6),g=g_(Ly.g);lp.connect(g).connect(out);const vs=[],vib=osc('sine',.17),vg=g_(6);vib.connect(vg);
@@ -212,7 +214,7 @@ const ENVS=[
  ['ghost tone, 19',[D([19],.9),D([76,95],.2)]],['the tritone',[DRN([1,1.4],.5,{trem:[.05,.3]})]],
  ['toll',[{k:'ping',rate:.11,f:[65,65],d:9,g:.5,att:.008,h:2.4,tick:300},{k:'ping',rate:.11,f:[78,78],d:6,g:.25,att:.008,tick:300}]],
  ['voices below',[GL([1.5,2.5],[120,220],[.85],[1.4,2.2],.8,{form:.8,n:3,gap:.4})]],['descent',[{k:'shep',dir:-1,g:.5}]],['quake',[B('brown',60,1.6,{lfo:[.11,.7]}),BU(.2,[40,90],[.3,.6],1.5,{q:1,tick:500})]]]},
-{id:'dragon',n:'Dragon',col:'#ff7a1e',line:'Fire, hoard and the gold beneath the mountain.',sig:[0,4,11],snd:[
+{id:'dragon',n:'Dragon',col:'#ff7a1e',line:'Fire, hoard and the gold beneath the mountain.',sig:[0,1,11],snd:[
  ['float',[CH('lucid',136.1,[[0,2,4,6],[1,3,5,7],[-2,2,4,7],[3,5,7,9],[0,4,6,9]],[10,15],.21,{eg:4,fx:{root:136.1,shape:1.3,bloom:.5,shimmer:.5,space:.72,echo:.18,drive:.2}})]],
  ['choir',[CH('overtones',128,[[0,4,7],[2,5,9],[0,3,7],[4,7,11]],[12,18],.18,{w:'sine',vib:1,att:3.4,patch:'choir',eg:5.2,fx:{root:128,shape:2.2,bloom:.62,shimmer:.78,space:.9,echo:.1,drive:.15}})]],
  ['rise',[CH('timaeus',144,[[0,2,4,7],[1,4,6,8],[2,4,7,9],[3,5,7,10]],[7,10],.22,{att:1.8,rel:2.4,eg:4,fx:{root:144,shape:5.2,bloom:.72,shimmer:.62,space:.66,echo:.38,drive:.3}})]],

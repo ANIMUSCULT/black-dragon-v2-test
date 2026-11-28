@@ -1233,7 +1233,7 @@ function applyBeat(){
 }
 function applyAll(){
   applyBeat();if(!A.ctx)return;const s=STATES[S.state];
-  at(A.tone.gain,S.tone*.5);at(A.body.gain,S.body*.5);at(A.air.gain,S.air*.6);at(A.wet.gain,S.space*.7);at(A.echoIn.gain,S.echo*.56);at(A.close.gain,S.close*.9,.3);
+  /* the bed sits 2 dB lower so the synth comes through (owner, 2026-11-28); Umbra plays as made */const bk=('umbra' in S.layers||window.UMBPRE)?1:.794;at(A.tone.gain,S.tone*.5*bk);at(A.body.gain,S.body*.5*bk);at(A.air.gain,S.air*.6);at(A.wet.gain,S.space*.7);at(A.echoIn.gain,S.echo*.56);at(A.close.gain,S.close*.9,.3);
   at(A.airLP.frequency,s.airLP||6000,.8);at(A.sub.frequency,s.ghost||19,.2);at(A.subG.gain,s.ghost?S.tone*.5:0,.6);
   at(A.brG.gain,S.breath?S.body*.28:0,.5);
   if(!silenced)at(A.vol.gain,S.vol,.05);bankApply();
@@ -1638,9 +1638,9 @@ $('#gate').onclick=()=>{if(A.ctx)return;try{if(navigator.audioSession)navigator.
 window.__bd={S,A,STATES,setState};
 </script>
 <nav id="tabs" aria-label="Sections"><button data-t="play" class="on">play</button><button data-t="states">states</button><button data-t="stones">stones</button><button data-t="mix">mix</button><button data-t="proof">proof</button><button data-t="more">more</button></nav>
-<script src="bank.js?v=1129c"></script>
-<script src="env.js?v=1129c"></script>
-<script src="table.js?v=1129c"></script>
-<script src="luxuria.js?v=1129c"></script>
+<script src="bank.js?v=1129d"></script>
+<script src="env.js?v=1129d"></script>
+<script src="table.js?v=1129d"></script>
+<script src="luxuria.js?v=1129d"></script>
 </body>
 </html>
