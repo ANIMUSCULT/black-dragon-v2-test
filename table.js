@@ -1893,13 +1893,16 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
   const loop=()=>{requestAnimationFrame(loop);if(document.hidden||!sp.offsetParent||!A.ctx)return;const t=sigilTap();if(!t)return;const d=place(),W=lq.width,H=lq.height;
     if(!bl){bl=new Float32Array(t.l.fftSize);br=new Float32Array(t.r.fftSize);fq=new Float32Array(t.l.frequencyBinCount);sm=new Float32Array(96)}
     t.l.getFloatTimeDomainData(bl);t.r.getFloatTimeDomainData(br);lx.clearRect(0,0,W,H);hx.clearRect(0,0,W,H);const c=col();lx.fillStyle=c;lx.strokeStyle=c;
-    const drop=(x,y,r)=>{lx.beginPath();lx.arc(x,y,r,0,7);lx.fill()};let m=.02;for(let i=0;i<bl.length;i++)m=Math.max(m,Math.abs(bl[i]),Math.abs(br[i]));
+    /* black glass: each drop dark and clear at its heart with an oil-slick rim whose hue drifts across the strip and in time */
+    const tt=performance.now()/1000;const drop=(x,y,r)=>{if(r<.5)return;const hu=(x/W*220+tt*14)%360,g=lx.createRadialGradient(x-r*.35,y-r*.35,r*.05,x,y,r);
+      g.addColorStop(0,'rgba(16,14,24,.88)');g.addColorStop(.62,'rgba(6,6,12,.9)');g.addColorStop(.86,`hsla(${hu},70%,62%,.75)`);g.addColorStop(1,`hsla(${(hu+70)%360},80%,72%,.9)`);
+      lx.fillStyle=g;lx.beginPath();lx.arc(x,y,r,0,7);lx.fill()};let m=.02;for(let i=0;i<bl.length;i++)m=Math.max(m,Math.abs(bl[i]),Math.abs(br[i]));
     const path=[];
     if(view===0){/* the waveform, eased frame to frame so it moves like something thick */
       let z=0;for(let i=1;i<bl.length/2;i++)if(bl[i-1]<0&&bl[i]>=0){z=i;break}const n=sm.length;
-      for(let k=0;k<n;k++){const v=bl[z+Math.floor(k*(bl.length/2-1)/n)]/m;sm[k]+=(v-sm[k])*.22;const x=(k+.5)*W/n,y=H/2-sm[k]*H*.36;path.push([x,y]);drop(x,y,(2.6+Math.abs(sm[k])*3.2)*d)}}
+      for(let k=0;k<n;k++){const v=bl[z+Math.floor(k*(bl.length/2-1)/n)]/m;sm[k]+=(v-sm[k])*.22;const x=(k+.5)*W/n,y=H/2-sm[k]*H*.36,body=Math.pow(Math.sin(Math.PI*(k+.5)/n),.7);path.push([x,y]);drop(x,y,(1.2+body*3.4+Math.abs(sm[k])*1.6)*d)}}
     else if(view===1){/* the spectrum from 30 Hz to 3 kHz on a log scale, as molten columns rising out of a pool */
-      t.l.getFloatFrequencyData(fq);const n=40,sr=A.ctx.sampleRate,bin=sr/t.l.fftSize;lx.fillRect(0,H-5*d,W,5*d);
+      t.l.getFloatFrequencyData(fq);const n=40,sr=A.ctx.sampleRate,bin=sr/t.l.fftSize;{const g=lx.createLinearGradient(0,0,W,0);g.addColorStop(0,'rgba(8,8,14,.9)');g.addColorStop(.5,`hsla(${(tt*14)%360},60%,55%,.55)`);g.addColorStop(1,'rgba(8,8,14,.9)');lx.fillStyle=g;lx.fillRect(0,H-5*d,W,5*d)}
       for(let k=0;k<n;k++){const f=30*Math.pow(100,k/(n-1)),i=Math.min(fq.length-1,Math.round(f/bin));const db=Math.max(fq[i],fq[Math.max(0,i-1)],fq[Math.min(fq.length-1,i+1)]);
         const v=Math.max(0,Math.min(1,(db+95)/70));sm[k]+=(v-sm[k])*.2;const x=(k+.5)*W/n,top=H-5*d-sm[k]*(H-12*d);for(let y=H-5*d;y>top;y-=4*d)drop(x,y,2.4*d);if(sm[k]>.04){drop(x,top,3.4*d);path.push([x,top])}}}
     else if(view===2){/* left ear across, right ear up: the figure the two tones draw together */
@@ -1910,7 +1913,9 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
       hx.fillStyle='rgba(255,255,255,.55)';hx.font=(10*d)+'px Michroma';hx.textAlign='right';hx.fillText((S.beat||0).toFixed(2)+' Hz',W-8*d,H-8*d)}
     else if(view===4&&window.FORGED){const k=H*.9/176;FORGED.pts.forEach(p=>{const x=W/2+p[0]*k,y=H/2+p[1]*k;path.push([x,y]);drop(x,y,2.6*d)})}
     /* the highlight: a thin bright line riding just above the liquid */
-    if(path.length>1&&view!==3){hx.strokeStyle='rgba(255,255,255,.55)';hx.lineWidth=1*d;hx.beginPath();path.forEach((p,i)=>i?hx.lineTo(p[0],p[1]-1.6*d):hx.moveTo(p[0],p[1]-1.6*d));hx.stroke()}
+    /* starlight: a few faint points drifting inside the liquid, each twinkling on its own */
+    if(path.length){for(let j=0;j<7;j++){const p=path[(j*37+Math.floor(tt*2))%path.length],tw=.5+.5*Math.sin(tt*3+j*1.7);hx.fillStyle=`rgba(255,255,255,${(.12+.5*tw*tw).toFixed(2)})`;hx.beginPath();hx.arc(p[0]+Math.sin(j*9)*2*d,p[1]+Math.cos(j*7)*2*d,(.5+tw*.9)*d,0,7);hx.fill()}}
+    if(path.length>1&&view!==3){hx.strokeStyle='rgba(255,255,255,.28)';hx.lineWidth=1*d;hx.beginPath();path.forEach((p,i)=>i?hx.lineTo(p[0],p[1]-1.6*d):hx.moveTo(p[0],p[1]-1.6*d));hx.stroke()}
     else if(view===3&&path.length){hx.fillStyle='rgba(255,255,255,.5)';hx.beginPath();hx.ellipse(path[0][0],path[0][1],5*d,2.6*d,-.5,0,7);hx.fill()}
     hx.fillStyle='rgba(255,255,255,.4)';hx.font=(8.5*d)+'px Michroma';hx.textAlign='left';hx.fillText(VIEWS[view],8*d,12*d)};
   requestAnimationFrame(loop)}}
