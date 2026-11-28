@@ -287,6 +287,8 @@ const PHI=(1+Math.sqrt(5))/2,fold=x=>{while(x>=2)x/=2;while(x<1)x*=2;return x};
 const TUN=[['by state',null],['pythagorean',[1,9/8,81/64,3/2,27/16]],['tetractys',[1,4/3,3/2]],['overtones',[1,9/8,5/4,11/8,3/2,13/8,7/4,15/8]],['siamese 7',[0,1,2,3,4,5,6].map(k=>Math.pow(2,k/7))],
   ['hirajoshi',[1,9/8,6/5,3/2,8/5]],['phi spiral',[0,1,2,3,4].map(k=>fold(Math.pow(PHI,k))).sort((a,b)=>a-b)],['timaeus',[1,9/8,81/64,4/3,3/2,27/16,243/128]],['miyako-bushi',[1,16/15,4/3,3/2,8/5]]];
 /* the keys start on the pythagorean scale (owner, 2026-11-27) */
+/* three modes for the realms (2026-11-27), at the end so saved sessions keep their tuning numbers */
+TUN.push(['locrian',[1,16/15,6/5,4/3,64/45,8/5,9/5]],['phrygian',[1,16/15,6/5,4/3,3/2,8/5,9/5]],['minor pentatonic',[1,6/5,4/3,3/2,9/5]]);
 const DEFTUN=Math.max(0,TUN.findIndex(t=>t[0]==='pythagorean'));let tun=DEFTUN;
 {const d0=degFreq;degFreq=i=>{const sc=TUN[tun][1];if(!sc)return d0(i);const n=sc.length;let base=S.fc*2;while(base<150)base*=2;while(base>330)base/=2;return base*sc[((i%n)+n)%n]*Math.pow(2,Math.floor(i/n))}}
 /* the scale the keys play: chosen in step 4 of the instruments page */
@@ -1429,7 +1431,13 @@ registerProcessor('bd-monad',M);`;
    /* nightwave (2026-11-27): dark and glittering. A rolling eighth-note bass, root and octave; a soft arpeggio of chord tones
       on every sixteenth, filtered and fed to the dotted-eighth echo so it cascades; slow pads under it; the arp turns back on
       itself every fourth bar and climbs a step for four bars in eight; the chords walk minor i, VI, III, VII */
-   ['night','Nightwave',104,{kick:[0,8],roll:1,arp:[0,2,4,7,9,7,4,2],shk:[4,12],pad:2,prog:[0,5,2,6]}]];
+   ['night','Nightwave',104,{kick:[0,8],roll:1,arp:[0,2,4,7,9,7,4,2],shk:[4,12],pad:2,prog:[0,5,2,6]}],
+   /* the realm grooves (2026-11-27). witch house: slow, a pitched-down choir chopped on the off-beats, a semitone walk.
+      phonk: a long gliding bass and the soft cowbell melody, filtered dark. early dubstep: half-time, one deep note a bar
+      under a wobbling filter, a hushed knock where the snare would be. */
+   ['witch','Witch house',70,{kick:[0,10],sub:[[0,0],[8,0]],chant:[6,14],shk:[3,7,11,15],pad:1,prog:[0,1,0,6]}],
+   ['phonk','Phonk',140,{kick:[0,7,10],sub:[[0,0],[7,0],[10,4]],bell:[[0,0],[3,2],[6,4],[8,2],[11,0],[14,1]],shk:[2,6,10,14],prog:[0,0,5,4]}],
+   ['step','Dubstep',140,{kick:[0],tom:[[8,.9]],wob:1,shk:[4,12],prog:[0,0,5,6]}]];
   const G={cur:null,bus:null,echo:null,lp:null,level:.5,follow:true,step:0,next:0,bar:0,iv:null};
   const ctxOK=()=>!!A.ctx;
   const build=()=>{if(G.bus)return;const ctx=A.ctx;G.bus=gn(ctx,0);G.lp=bq(ctx,'lowpass',9000,.5);const out=gn(ctx,1);G.bus.connect(G.lp).connect(out);out.connect(A.master);
@@ -1456,6 +1464,18 @@ registerProcessor('bd-monad',M);`;
   /* arp: a short soft pluck, sine and a detuned triangle under a 2.6 kHz lowpass, half of it sent to the echo */
   const arp=(t,f,lv,s16)=>{const ctx=A.ctx,o=ctx.createOscillator(),o2=ctx.createOscillator(),g=gn(ctx,0),fl=bq(ctx,'lowpass',2600,.6);o.frequency.value=f;o2.type='triangle';o2.frequency.value=f;o2.detune.value=6;
     o.connect(fl);o2.connect(gn(ctx,.5)).connect(fl);fl.connect(g);g.connect(G.bus);g.connect(gn(ctx,.55)).connect(G.eIn);env(g,t,.004,.07*lv,s16*.9);o.start(t);o2.start(t);o.stop(t+s16*6);o2.stop(t+s16*6)};
+  /* chant: a chopped choir stab, three saws through an 'oh' (400 and 800 Hz), half into the echo */
+  const chant=(t,root,lv,spb)=>{const ctx=A.ctx,g=gn(ctx,0),mix=gn(ctx,1);[[400,.9],[800,.45]].forEach(([fr,a])=>{const b=bq(ctx,'bandpass',fr,7);mix.connect(b).connect(gn(ctx,a*3)).connect(g)});
+    [0,2,4].forEach((k,i)=>{const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=deg(root+k,2);o.detune.value=(i-1)*9;o.connect(mix);o.start(t);o.stop(t+spb*2)});
+    g.connect(G.bus);g.connect(gn(ctx,.5)).connect(G.eIn);env(g,t,.02,.05*lv,spb*.5)};
+  /* bell: the soft phonk cowbell, two triangles a fifth-and-a-bit apart under a dark lowpass */
+  const bell=(t,f,lv)=>{const ctx=A.ctx,g=gn(ctx,0),fl=bq(ctx,'lowpass',1700,.7);[1,1.48].forEach((r,i)=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=f*r;o.connect(gn(ctx,i?.5:1)).connect(fl);o.start(t);o.stop(t+.6)});
+    fl.connect(g).connect(G.bus);env(g,t,.003,.08*lv,.12)};
+  /* wob: one deep note a bar, two saws and a sine under a resonant lowpass swung by an LFO at a quarter or an eighth note */
+  const wob=(t,f,dur,lv,spb,bar)=>{const ctx=A.ctx,g=gn(ctx,0),fl=bq(ctx,'lowpass',620,5),lfo=ctx.createOscillator(),lg=gn(ctx,480);
+    lfo.frequency.value=(bar%2?2:1)/spb*(bar%4===3?2:1);lfo.connect(lg).connect(fl.frequency);
+    [['sawtooth',1,0,.5],['sawtooth',1,9,.5],['sawtooth',2,-5,.25],['sine',1,0,.5]].forEach(([w,r,dt,a])=>{const o=ctx.createOscillator();o.type=w;o.frequency.value=f*r;o.detune.value=dt;o.connect(gn(ctx,a)).connect(fl);o.start(t);o.stop(t+dur+.3)});
+    fl.connect(g).connect(G.bus);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.2*lv,t+.03);g.gain.setValueAtTime(.2*lv,t+dur*.9);g.gain.linearRampToValueAtTime(0,t+dur);lfo.start(t);lfo.stop(t+dur+.3)};
   const pad=(t,root,dur,lv)=>{const ctx=A.ctx,g=gn(ctx,0),f=bq(ctx,'lowpass',700,.5);f.connect(g).connect(G.bus);
     [0,2,4,7].forEach(k=>{const fr=deg(root+k,2);[-6,6].forEach(dt=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+dur+2)})});
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.04*lv,t+dur*.35);g.gain.linearRampToValueAtTime(0,t+dur+.6)};
@@ -1471,6 +1491,9 @@ registerProcessor('bd-monad',M);`;
       (P.shk||[]).forEach(k=>{if(k===st&&Math.random()>.08)shk(tt,lv*(st%4===2?1:.7))});
       if(bar%2===1&&P.shk&&P.shk.length&&st===15&&Math.random()<.5)shk(tt+s16*.5,.6);
       (P.stab||[]).forEach(k=>{if(k===st&&!(bar%4===2&&Math.random()<.3))stab(tt,root,lv,spb)});
+      (P.chant||[]).forEach(k=>{if(k===st&&Math.random()>.1)chant(tt,root,lv,spb)});
+      (P.bell||[]).forEach(([k,d])=>{if(k===st&&Math.random()>.06)bell(tt,deg(root+d+(bar%4===3?1:0),4),lv*(st===0?1:.8))});
+      if(P.wob&&st===0)wob(tt,deg(root,1),spb*4,lv*.8,spb,bar);
       if(P.roll&&st%2===0&&!(bar%4===3&&st>=12))sub(tt,deg(root,1)*(st%4===2?2:1),s16*1.7,lv*.75);
       if(P.arp&&Math.random()>.07){const seq=bar%4===3?P.arp.slice().reverse():P.arp,d=seq[st%seq.length]+(bar%8>=4?2:0);arp(tt,deg(root+d,4),lv*(st%4===0?1:.7),s16)}
       G.step++;G.next+=s16}};
@@ -1510,8 +1533,8 @@ registerProcessor('bd-monad',M);`;
   b.onclick=e=>{e.stopPropagation();window.VENG=window.VENG==='v2'?'asc':'v2';p();say('synths · '+(window.VENG==='v2'?'old':'new'))};p();$('.rside').appendChild(b)}
 {const GROUPS=[
    ['Vision','gVision','The visualizer and the machines that transmute it.',[]],
-   ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, phantoms, the room, the mixer, and new or old synths.',['bSynth','bPresets','bBank','bDreamSp','bLoops','bPhantom','bRoom','bMixer','bTide','bBreath']],
-   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge and the dreamachine.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bDream']],
+   ['Sound','gSound','What plays: presets, the sound library, the Dream spells, loops and grooves, the room, the mixer, and new or old synths.',['bSynth','bPresets','bBank','bDreamSp','bLoops','bRoom','bMixer']],
+   ['Rituals','gRituals','The workings: healing tones, body and trance programs, rites, the vowels, the forge, the dreamachine, phantoms, the breath and the tide.',['bHeal','bBody','bTrance','bRites','bVowels','bForge','bDream','bPhantom','bBreath','bTide']],
    ['Session','gSession','Keep what you made: three quick slots, save and load a session, share it by link, record sound or video, play your own video.',['@slots','bSave','bShare','bLoad','bRec','bVid','bOwn']]];
   const build=()=>{const acts=document.querySelector('.acts');if(!acts||document.getElementById('gVision'))return;
     const row=document.createElement('div');row.className='grpRow';
@@ -1932,8 +1955,11 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
 /* ================= BLACK ALTAR: the Black Magic stone's own voice (owner, 2026-11-27) =================
    Thick and low: two saws a tritone apart (the devil's interval) over a square an octave down and a sub, through a dark
    'oo' to 'oh' vowel, a slow throb and a little breath. Built in this instrument's own recipe format, levelled by measurement. */
-{VOX.push({n:'black altar',fam:'ascension realms',oct:-1,osc:[['sawtooth',1,0,.8],['sawtooth',1.41421356,-4,.22],['square',.5,0,.3]],uni:3,spread:14,sub:.45,
-    form:['oo','oh',3],noise:[[.5,2,.3,-.7]],lp:[3,1.4,.6,1.8],vib:[4.1,.004,1.2],trem:[.55,.14],a:.4,peak:.45,r:3.2,trim:.448});
+{/* rebuilt as a dark hoover (owner, 2026-11-27: 'do you know the dominator noise?'): the 1991 rave sound, a thick stack of
+     detuned saws chorused wide over a saw an octave down, each note swooping up into pitch; the top rolled off so it menaces
+     rather than screams */
+  VOX.push({n:'black altar',fam:'ascension realms',oct:-1,osc:[['sawtooth',1,0,.7],['sawtooth',1,14,.5],['sawtooth',1,-14,.5],['sawtooth',.5,0,.5]],uni:4,spread:22,sub:.5,
+    lp:[4,1.1,.8,1.2],vib:[5.5,.006,.4],a:.02,peak:.5,r:.9,trim:.666,swoop:[-520,.18]});
   VOICES.push('black altar')}
 
 /* ================= POSSESS, DARKER AND MODERN (owner, 2026-11-27: "more vibey... like animuscult") =================
@@ -1951,3 +1977,66 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
     if(d!=null){const i=clamp(base+d,0,14),id='pp'+performance.now();let len=1;while(step+len<8&&mot[step+len]===null&&len<3)len++;
       noteOn(id,i,.62);setTimeout(()=>noteOff(id,i),st*len*.92)}
     step=(step+1)%8;if(step===0)bar++;possess=setTimeout(possessStep,st)}}
+
+/* the hoover's swoop: a voice with swoop:[cents,seconds] slides up into each note from below */
+{const on0=noteOn;noteOn=function(id,i,vel){const r=on0.apply(this,arguments);try{const V=VOX[S.voice],h=held[id];if(V&&V.swoop&&h&&h.os&&A.ctx){const t=A.ctx.currentTime,[c,d]=V.swoop;
+    h.os.forEach(o=>{if(o&&o.detune){const v=o.detune.value;o.detune.cancelScheduledValues(t);o.detune.setValueAtTime(v+c,t);o.detune.linearRampToValueAtTime(v,t+d)}})}}catch(_){}return r}}
+
+/* ================= REALMS, PART ONE: Black Magic, Blood, Dragon (owner, 2026-11-27; notes/2026-11-27 realms plan.md) =================
+   Pressing one of these stones sets the board to its realm: the carrier moves to the realm's own tone, the keys to its mode,
+   the screen's two accent colours to its colours, and its groove waits on a button at the top of the stone panel. A switch
+   in the soundbar ('realms') turns this off, so a stone then only plays its sounds. Choosing a state brings its own colours back.
+   Tones: Black Magic 66 Hz (an octave over its 33 Hz floor), Blood 144.72 Hz (Cousto's Mars), Dragon 126.22 Hz (Cousto's Sun). */
+{const RLM={magic:{fc:66,tun:'locrian',a:'#1a1418',b:'#b0303f',groove:'witch',gn:'Witch house'},
+    blood:{fc:144.72,tun:'phrygian',a:'#3a0008',b:'#e01b3c',groove:'phonk',gn:'Phonk'},
+    dragon:{fc:126.22,tun:'minor pentatonic',a:'#3a1606',b:'#ff8a2a',groove:'step',gn:'Dubstep'}};
+  let on=true,touch=true;try{on=localStorage.getItem('bd-realms')!=='0';touch=localStorage.getItem('bd-touch')!=='0'}catch(_){}
+  window.REALMS={get on(){return on},data:RLM};
+  const root=document.documentElement,stateCols=()=>{const c=STATES[S.state].cols;root.style.setProperty('--a',c[0]);root.style.setProperty('--b',c[2])};
+  const enter=id=>{const R=RLM[id];if(!R||!on)return;S.fc=R.fc;const ti=TUN.findIndex(t=>t[0]===R.tun);if(ti>=0)tun=ti;applyAll();paintKnobs();if(typeof paintDial==='function')paintDial();
+    const v=document.getElementById('vox');if(v&&v._sync)v._sync();root.style.setProperty('--a',R.a);root.style.setProperty('--b',R.b)};
+  $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{if(ENV===b.dataset.id&&RLM[ENV])enter(ENV);else if(!ENV||!RLM[ENV])stateCols()},0)});
+  document.querySelectorAll('.st').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>{if(ENV&&RLM[ENV]&&on&&document.querySelector('.st.on')){/* a state chosen inside a realm takes the screen back to the state's colours */stateCols()}},0)));
+  /* the realm's groove, on a button at the top of the stone panel */
+  let gOn=null;const gBtn=()=>{const p=document.getElementById('pads'),R=ENV&&RLM[ENV];if(!p)return;let b=p.querySelector('.rlmG');if(!R){if(b)b.remove();return}
+    if(!b){b=document.createElement('button');b.className='vb rlmG';b.style.cssText='width:100%;margin:2px 0 8px';p.prepend(b);
+      b.onclick=e=>{e.stopPropagation();const R2=RLM[ENV];if(!R2)return;if(gOn===R2.groove){const st=[...document.querySelectorAll('#loops button')].find(x=>x.textContent.trim()==='stop the groove');if(st)st.click();gOn=null}
+        else{const gb=document.querySelector(`#loops [data-g=${R2.groove}]`);if(gb){gb.click();gOn=R2.groove}}gBtn()}}
+    b.textContent=(gOn===R.groove?'stop ':'play ')+'the '+R.gn.toLowerCase()+' groove';b.classList.toggle('on',gOn===R.groove)};
+  new MutationObserver(()=>gBtn()).observe(document.getElementById('pads'),{childList:true});gBtn();
+  /* switches in the soundbar */
+  const sw=(label,get,set)=>{const b=document.createElement('button');b.className='pill';const p=()=>{b.textContent=label+': '+(get()?'on':'off');b.classList.toggle('on',get())};b.onclick=e=>{e.stopPropagation();set(!get());p()};p();return b};
+  const addSw=()=>{const g=document.querySelector('#gSound .grpGrid');if(!g||g.querySelector('.rlmSw'))return !!g;
+    const r=sw('realms',()=>on,v=>{on=v;try{localStorage.setItem('bd-realms',v?'1':'0')}catch(_){}say('realms · '+(v?'a stone sets the board':'stones only play their sounds'))});r.classList.add('rlmSw');
+    const t=sw('touch sounds',()=>touch,v=>{touch=v;try{localStorage.setItem('bd-touch',v?'1':'0')}catch(_){}say('touch sounds · '+(v?'on':'off'))});g.append(r,t);return true};
+  const w=setInterval(()=>{if(addSw())clearInterval(w)},400);
+
+  /* ---------- touch: the picture answers in the realm's own sound ---------- */
+  let bus=null;const out=()=>{if(!bus&&A.ctx){bus=gn(A.ctx,1);bus.connect(A.master)}return bus};
+  const noise=(type,t,d)=>{const s=A.ctx.createBufferSource();s.buffer=NB[type]||NB.white;s.loop=true;s.start(t,Math.random()*2,d);return s};
+  const TAP={
+    blood:(t)=>{const c=A.ctx,o=c.createOscillator(),g=gn(c,0);o.frequency.setValueAtTime(260,t);o.frequency.exponentialRampToValueAtTime(70,t+.18);env2(g,t,.006,.22,.12);o.connect(g).connect(out());o.start(t);o.stop(t+.5);
+      const n=noise('pink',t,.2),f=bq(c,'lowpass',900,.7),g2=gn(c,0);env2(g2,t,.004,.06,.04);n.connect(f).connect(g2).connect(out())},
+    dragon:(t)=>{const c=A.ctx;for(let i=0;i<3;i++){const tt=t+i*.04+Math.random()*.03,n=noise('white',tt,.06),f=bq(c,'bandpass',900+Math.random()*700,1.2),g=gn(c,0);env2(g,tt,.004,.07,.015);n.connect(f).connect(g).connect(out())}
+      const n=noise('brown',t,.8),f=bq(c,'lowpass',300,.7),g=gn(c,0);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.16,t+.2);g.gain.linearRampToValueAtTime(0,t+.6);n.connect(f).connect(g).connect(out())},
+    magic:(t)=>{const c=A.ctx,f=bq(c,'lowpass',420,1.5),g=gn(c,0);[132,132*1.41421356].forEach(fr=>{const o=c.createOscillator();o.type='sawtooth';o.frequency.value=fr;o.connect(f);o.start(t);o.stop(t+.5)});
+      /* backwards: it swells in and stops short */g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.09,t+.36);g.gain.linearRampToValueAtTime(0,t+.4);f.connect(g).connect(out())}};
+  const TICK={blood:t=>{const c=A.ctx,o=c.createOscillator(),g=gn(c,0);o.frequency.setValueAtTime(700,t);o.frequency.exponentialRampToValueAtTime(330,t+.06);env2(g,t,.004,.03,.04);o.connect(g).connect(out());o.start(t);o.stop(t+.2)},
+    dragon:t=>{const c=A.ctx,n=noise('white',t,.05),f=bq(c,'bandpass',1100,1.4),g=gn(c,0);env2(g,t,.004,.04,.012);n.connect(f).connect(g).connect(out())},
+    magic:t=>{const c=A.ctx,o=c.createOscillator(),g=gn(c,0);o.frequency.value=120;env2(g,t,.01,.035,.06);o.connect(g).connect(out());o.start(t);o.stop(t+.3)}};
+  function env2(g,t,a,lv,d){g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(lv,t+a);g.gain.setTargetAtTime(0,t+a,d)}
+  const BG='button,input,select,label,a,.knob,.stone,.pad,.drawer,#dial,#monad,#keys,.st,#proof,#knobs,#pads,#stones,.ktabs,#keysBar,#live,.top,#cymBar,#tabs,.sideTab,#lightGate,#gate,.pnX,#shellL,#shellR';
+  const realm=()=>touch&&A.ctx&&ENV&&TAP[ENV]?ENV:null;
+  let drag=null;
+  document.addEventListener('pointerdown',e=>{const r=realm();if(!r||e.target.closest(BG))return;const c=A.ctx,t=c.currentTime;TAP[r](t);
+    /* a drag: a swirl that rises as you move up the screen and grows with speed */
+    const n=noise(r==='dragon'?'brown':'pink',t,600),f=bq(c,r==='dragon'?'lowpass':'bandpass',400,r==='blood'?4:r==='magic'?6:.8),g=gn(c,0);n.connect(f).connect(g).connect(out());
+    let f2=null;if(r==='magic'){f2=bq(c,'bandpass',800,6);n.connect(f2).connect(g)}
+    drag={n,f,f2,g,x:e.clientX,y:e.clientY,r}},true);
+  document.addEventListener('pointermove',e=>{if(!drag)return;const c=A.ctx,t=c.currentTime,dx=e.clientX-drag.x,dy=e.clientY-drag.y,sp=Math.hypot(dx,dy);drag.x=e.clientX;drag.y=e.clientY;
+    const up=1-e.clientY/innerHeight,base=drag.r==='dragon'?150+up*700:drag.r==='blood'?180+up*900:300+up*500;drag.f.frequency.setTargetAtTime(base,t,.05);if(drag.f2)drag.f2.frequency.setTargetAtTime(base*2,t,.05);
+    drag.g.gain.setTargetAtTime(Math.min(drag.r==='dragon'?.2:.14,sp*.004),t,.05);drag.g.gain.setTargetAtTime(0,t+.12,.25)},true);
+  const end=()=>{if(!drag)return;const t=A.ctx.currentTime;drag.g.gain.cancelScheduledValues(t);drag.g.gain.setTargetAtTime(0,t,.2);const n=drag.n;setTimeout(()=>{try{n.stop()}catch(_){}},1200);drag=null};
+  document.addEventListener('pointerup',end,true);document.addEventListener('pointercancel',end,true);
+  /* buttons: a very soft touch of the realm on every press */
+  document.addEventListener('click',e=>{const r=realm();if(r&&e.target.closest('button'))TICK[r](A.ctx.currentTime)},true)}
