@@ -1578,3 +1578,18 @@ setTimeout(()=>{const g=document.getElementById('bgSound'),kb=document.getElemen
     gate.onclick=e=>{if(ok())return go.call(gate,e);w.hidden=false};
     w.querySelector('#lgEnter').onclick=e=>{e.stopPropagation();try{localStorage.setItem(KEY,'1')}catch(_){}w.hidden=true;go.call(gate,e)};
     w.querySelector('#lgLeave').onclick=e=>{e.stopPropagation();w.hidden=true}}}
+
+/* ================= OLD OR NEW SOUND, BESIDE THE KEYS =================
+   The owner wants the switch between Ascension's voice (new) and each instrument's original voice (old) where the keys are,
+   not inside the instrument page. One button in the keys bar flips it; it dims when the instrument playing has only one sound.
+   The instrument page keeps its own Engine row in step with it. Computers only: on a phone the keys bar has no room. */
+setTimeout(()=>{const kb=document.getElementById('keysBar');if(!kb||document.getElementById('bEng')||matchMedia('(max-width:1000px),(pointer:coarse)').matches)return;
+  const b=document.createElement('button');b.className='pill kmode';b.id='bEng';
+  const two=()=>{const V=VOX[S.voice];return !!(V&&window.ASCP&&ASCP[V.n])};
+  const paint=()=>{const nw=window.VENG!=='v2';b.textContent='sound: '+(nw?'new':'old');b.classList.toggle('on',nw&&two());b.style.opacity=two()?'':'.45';
+    b.title=two()?'Switch this instrument between Ascension\'s voice (new) and its original voice (old)':'This instrument has one sound only. Voices, strings, nectar, breath and reed, electric and the dark have both.';b.setAttribute('aria-pressed',nw)};
+  b.onclick=e=>{e.stopPropagation();if(!two()){say('this instrument has one sound only');return}window.VENG=window.VENG==='v2'?'asc':'v2';paint();
+    const v=document.getElementById('vox');if(v&&v._sync)v._sync();say('keys · '+(window.VENG==='v2'?'old sound, the instrument\'s original':'new sound, Ascension\'s voice'))};
+  const mode=document.getElementById('bChordM');mode&&mode.parentNode===kb?mode.after(b):kb.appendChild(b);
+  const sv=setVoice;setVoice=function(){const r=sv.apply(this,arguments);paint();return r};
+  document.getElementById('vox')?.addEventListener('click',()=>setTimeout(paint,0));paint()},200);
