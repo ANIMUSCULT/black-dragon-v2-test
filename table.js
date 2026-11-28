@@ -1712,7 +1712,7 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
    Only a press on a stone does it, so start-up, reset and presets keep their own keys. */
 {const RKV={dream:'opal keys',nature:'moss reed',wet:'tide glass',breath:'cloud flute',universe:'star pad',celestial:'star pad',magnetism:'arc lead',
     blood:'heart strings',animal:'heart strings',underworld:'ash organ',wyrm:'ash organ',gold:'sun brass',freeze:'frost bells',lust:'velvet sigh',
-    magic:'fairy glass',dragon:'dragon throat',heat:'dragon throat',sand:'duduk'};
+    magic:'black altar',dragon:'dragon throat',heat:'dragon throat',sand:'duduk'};
   window.REALMKEYS={voice:id=>RKV[id]};
   $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{const id=b.dataset.id,v=RKV[id];
     if(ENV!==id||!v)return;const i=VOICES.indexOf(v);if(i>=0&&i!==S.voice){setVoice(i);say(`${ENVS.find(x=>x.id===id).n.toLowerCase()} · keys: ${v}`)}},0)})}
@@ -1809,7 +1809,7 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
 {const STONEFILM={dream:'film-13-slowmoving-art-piece',nature:'film-31-behind-glowing-plants',wet:'film-26-underwater-gothic-cemetery',
     breath:'film-35-static-horror-clouds',universe:'film-39-beautiful-view-city',magnetism:'film-28-eye-cat-cat',blood:'gate-04-red-sky',
     underworld:'film-22-king-stays-shrouded',gold:'film-08-liminal',freeze:'film-37-women-braces-long',lust:'film-45-everything-inside-gel',
-    magic:'film-20-white-unicorn-runs',dragon:'film-25-dragon-entering-water',sand:'gate-serpent',celestial:'film-41-slow-dreamy-mist',
+    magic:'film-12-cultist',dragon:'film-25-dragon-entering-water',sand:'gate-serpent',celestial:'film-41-slow-dreamy-mist',
     animal:'film-28-eye-cat-cat',heat:'gate-01-red-tide',wyrm:'film-23-shadow-king-waits'};
   window.STONEFILM=STONEFILM;
   $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{const id=b.dataset.id;if(ENV!==id)return;const own=document.getElementById('bOwn');if(own&&own.classList.contains('on'))return;
@@ -1919,3 +1919,26 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
     else if(view===3&&path.length){hx.fillStyle='rgba(255,255,255,.5)';hx.beginPath();hx.ellipse(path[0][0],path[0][1],5*d,2.6*d,-.5,0,7);hx.fill()}
     hx.fillStyle='rgba(255,255,255,.4)';hx.font=(8.5*d)+'px Michroma';hx.textAlign='left';hx.fillText(VIEWS[view],8*d,12*d)};
   requestAnimationFrame(loop)}}
+
+/* ================= BLACK ALTAR: the Black Magic stone's own voice (owner, 2026-11-27) =================
+   Thick and low: two saws a tritone apart (the devil's interval) over a square an octave down and a sub, through a dark
+   'oo' to 'oh' vowel, a slow throb and a little breath. Built in this instrument's own recipe format, levelled by measurement. */
+{VOX.push({n:'black altar',fam:'ascension realms',oct:-1,osc:[['sawtooth',1,0,.8],['sawtooth',1.41421356,-4,.22],['square',.5,0,.3]],uni:3,spread:14,sub:.45,
+    form:['oo','oh',3],noise:[[.5,2,.3,-.7]],lp:[3,1.4,.6,1.8],vib:[4.1,.004,1.2],trem:[.55,.14],a:.4,peak:.45,r:3.2,trim:.448});
+  VOICES.push('black altar')}
+
+/* ================= POSSESS, DARKER AND MODERN (owner, 2026-11-27: "more vibey... like animuscult") =================
+   Instead of wandering at random, the machine plays like a dark track: a short motif in the low register, repeated with
+   small changes, locked to a slow tempo taken from the beat (folded into 68 to 96 a minute), with rests, long held notes
+   and now and then a low two-note chord. It plays whatever voice is on the keys. */
+{const MOT=[[0,null,2,1,0,null,-1,0],[0,0,3,2,null,1,0,null],[0,4,3,null,2,1,null,0],[0,null,-1,0,2,null,1,null],[0,1,0,null,3,null,2,1]];
+  let mot=MOT[0],step=0,bar=0,base=2;
+  const bpm=()=>{let b=(S.beat||6)*60;while(b>96)b/=2;while(b<68)b*=2;return b};
+  possessStep=function(){if(!possess)return;const st=60/bpm()/2*1000;/* eighth notes */
+    if(step===0){if(bar%4===0){mot=MOT[Math.random()*MOT.length|0];base=[0,2,7][Math.random()*3|0]}if(bar%4===3&&Math.random()<.6){/* a low held chord to close the phrase */
+        const id='pc'+performance.now(),a=base,b=clamp(base+(Math.random()<.5?3:4),0,14);noteOn(id+'a',a,.6);noteOn(id+'b',b,.5);setTimeout(()=>{noteOff(id+'a',a);noteOff(id+'b',b)},st*8*.95);
+        bar++;possess=setTimeout(possessStep,st*8);return}}
+    let d=mot[step];if(d!=null&&Math.random()<.12)d+=Math.random()<.5?1:-1;/* a small change now and then */
+    if(d!=null){const i=clamp(base+d,0,14),id='pp'+performance.now();let len=1;while(step+len<8&&mot[step+len]===null&&len<3)len++;
+      noteOn(id,i,.62);setTimeout(()=>noteOff(id,i),st*len*.92)}
+    step=(step+1)%8;if(step===0)bar++;possess=setTimeout(possessStep,st)}}
