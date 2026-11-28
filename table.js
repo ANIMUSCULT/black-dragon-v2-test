@@ -289,6 +289,8 @@ const TUN=[['by state',null],['pythagorean',[1,9/8,81/64,3/2,27/16]],['tetractys
 /* the keys start on the pythagorean scale (owner, 2026-11-27) */
 /* three modes for the realms (2026-11-27), at the end so saved sessions keep their tuning numbers */
 TUN.push(['locrian',[1,16/15,6/5,4/3,64/45,8/5,9/5]],['phrygian',[1,16/15,6/5,4/3,3/2,8/5,9/5]],['minor pentatonic',[1,6/5,4/3,3/2,9/5]]);
+/* four more for the stones (2026-11-28), again at the end */
+TUN.push(['just major',[1,9/8,5/4,3/2,5/3]],['lydian',[1,9/8,5/4,45/32,3/2,5/3,15/8]],['dorian',[1,9/8,6/5,4/3,3/2,5/3,9/5]],['double harmonic',[1,16/15,5/4,4/3,3/2,8/5,15/8]]);
 const DEFTUN=Math.max(0,TUN.findIndex(t=>t[0]==='pythagorean'));let tun=DEFTUN;
 {const d0=degFreq;degFreq=i=>{const sc=TUN[tun][1];if(!sc)return d0(i);const n=sc.length;let base=S.fc*2;while(base<150)base*=2;while(base>330)base/=2;return base*sc[((i%n)+n)%n]*Math.pow(2,Math.floor(i/n))}}
 /* the scale the keys play: chosen in step 4 of the instruments page */
@@ -2073,4 +2075,20 @@ setTimeout(()=>{const c=document.getElementById('bCodex'),ses=document.getElemen
   if(d&&h){const fill=()=>{if(!d.hidden&&!h.textContent)h.textContent=H};new MutationObserver(fill).observe(d,{attributes:true,attributeFilter:['hidden']});fill()}}
 /* the Proof's waiting line goes once the sound is running */
 {const w=setInterval(()=>{if(!A.ctx||A.ctx.state!=='running')return;const e=document.getElementById('proofWait');if(e)e.remove();clearInterval(w)},400)}
+
+/* ================= EACH STONE ITS OWN SCALE AND ROOM (owner, 2026-11-28) =================
+   Pressing a stone sets the keys' scale and the reverb room to that stone's own, as pressing it already sets its keys voice.
+   Never at start-up, reset or presets; with realms on, a realm's own scale wins. Both can still be changed by hand after. */
+{const SST={dream:['overtones','hall'],nature:['just major','hall'],blood:['phrygian','chamber'],breath:['tetractys','chamber'],magnetism:['siamese 7','hall'],
+    heat:['minor pentatonic','hall'],wet:['hirajoshi','cave'],universe:['timaeus','hall'],lust:['miyako-bushi','chamber'],celestial:['pythagorean','cathedral'],
+    animal:['dorian','chamber'],underworld:['locrian','cave'],dragon:['pythagorean','cave'],gold:['lydian','cathedral'],freeze:['phi spiral','hall'],
+    magic:['locrian','cathedral'],wyrm:['phrygian','cave'],sand:['double harmonic','hall']};
+  window.STONESET=SST;
+  /* reset and silence go back to the hall, as the board starts */
+  const rr=resetAll;resetAll=function(){const r=rr.apply(this,arguments);S.room='hall';if(A.ctx&&A.setRoom&&(!A.room||A.room.id!=='hall'))A.setRoom('hall');return r};
+  $('#stones').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;setTimeout(()=>{const id=b.dataset.id,m=SST[id];if(ENV!==id||!m)return;
+    const said=[];const realm=window.REALMS&&REALMS.on&&REALMS.data&&REALMS.data[id];
+    if(!realm){const ti=TUN.findIndex(t=>t[0]===m[0]);if(ti>=0&&ti!==tun){tun=ti;const vx=$('#vox');if(vx&&vx._sync)vx._sync();said.push('scale: '+m[0])}}
+    if(A.ctx&&A.setRoom&&(S.room||'hall')!==m[1]){S.room=m[1];A.setRoom(m[1]);const rb=$('#bRoom');if(rb&&rb._label)rb._label();said.push('room: '+((A.ROOMS&&A.ROOMS[m[1]]||{}).n||m[1]))}
+    if(said.length)setTimeout(()=>say(ENVS.find(x=>x.id===id).n.toLowerCase()+' · '+said.join(' · ')),900)},30)})}
 
